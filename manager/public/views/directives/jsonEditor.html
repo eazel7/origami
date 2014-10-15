@@ -1,0 +1,99 @@
+<div style="margin-bottom: 1em" class="btn-group" ng-if="parent">
+  <a ng-repeat="p in parentsList()" href="javascript:" class="btn btn-default" ng-click="goParent(p)">{{p.k}}</a>
+</div>
+
+<div style="margin-bottom: 1em">{{typeName(model) === 'array' ? '[' : '{'}}</div>
+
+<table class="table table-hover">
+  <tr ng-repeat="(k,v) in model" ng-controller="FieldCtrl">
+    <td>
+      <span class="btn-group">
+          <a href="javascript:" ng-click="delete()" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-fire"></span></a>
+          <a ng-if="editing" ng-click="doneEdit()" href="javascript:" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-ok"></span></a>
+          <a ng-if="!editing" ng-click="edit()" href="javascript:" class="btn btn-sm btn-default"><span class="glyphicon glyphicon-edit"></span></a>
+          <a ng-if="typeName(model) === 'array'" ng-disabled="k === 0" ng-click="moveUp()" href="javascript:" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-chevron-up"></span></a>
+          <a ng-if="typeName(model) === 'array'" ng-disabled="k === model.length - 1" ng-click="moveDown()" href="javascript:" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-chevron-down"></span></a>
+      </span>
+    </td>
+    <td style="vertical-align: middle">
+      <span ng-if="typeName(model) === 'array'">{{k}}</span>
+      <input ng-if="typeName(model) !== 'array'" ng-show="!editing" type="text" class="form-control" disabled ng-model="k" />
+      <input ng-if="typeName(model) !== 'array'" ng-hide="typeName(model) === 'array' || !editing" type="text" class="form-control" ng-model="newName" />
+    </td>
+    <td style="vertical-align: middle">
+      <select ng-disabled="true" ng-show="!editing || typeName(v) === 'array' || typeName(v) === 'object'" class="form-control">
+        <option ng-selected="typeName(model[k]) === 'string'" ng-value="'string'">string</option>
+        <option ng-selected="typeName(model[k]) === 'number'" ng-value="'number'">number</option>
+        <option ng-selected="typeName(model[k]) === 'boolean'" ng-value="'boolean'">boolean</option>
+        <option disabled="disabled" ng-selected="typeName(model[k]) === 'object'" ng-value="'object'">object</option>
+        <option disabled="disabled" ng-selected="typeName(model[k]) === 'array'" ng-value="'array'">array</option>
+      </select>
+      <select ng-disabled="false" ng-hide="!editing || typeName(v) === 'array' || typeName(v) === 'object'" ng-model="newType" class="form-control">
+        <option ng-value="'string'">string</option>
+        <option ng-value="'number'">number</option>
+        <option ng-value="'boolean'">boolean</option>
+      </select>
+    </td>
+    <td>
+      <div ng-switch on="typeName(v)" style="max-width: 200px">
+        <div ng-switch-when="boolean">
+          <a ng-disabled="editing" href="javascript:" class="btn btn-block btn-default" ng-class="{'active': model[k]}" ng-click="model[k] = !model[k]">{{model[k]}}</a>
+        </div>
+        <div ng-controller="EditFieldValueCtrl" ng-switch-when="string">
+          <span class="input-group">
+            <input ng-show="!editingValue" ng-disabled="true" class="form-control" type="text" ng-model="model[k]" />
+            <input ng-show="editingValue" class="form-control" type="text" ng-model="newValue" />
+            <span class="input-group-btn">
+              <a class="btn btn-default" ng-disabled="editing" ng-show="!editingValue" ng-click="editValue()" href="javascript:"><span class="glyphicon glyphicon-edit"></span></a>
+              <a class="btn btn-default" ng-show="editingValue" ng-click="doneEditValue()" href="javascript:"><span class="glyphicon glyphicon-ok"></span></a>
+            </span>
+          </span>
+        </div>
+        <div ng-controller="EditFieldValueCtrl" ng-switch-when="number">
+          <span class="input-group">
+            <input ng-show="!editingValue" ng-disabled="true" class="form-control" type="text" ng-model="model[k]" />
+            <input ng-show="editingValue" class="form-control" type="text" ng-model="newValue" />
+            <span class="input-group-btn">
+              <a class="btn btn-default" ng-disabled="editing" ng-show="!editingValue" ng-click="editValue()" href="javascript:"><span class="glyphicon glyphicon-edit"></span></a>
+              <a class="btn btn-default" ng-show="editingValue" ng-click="doneEditValue()" href="javascript:"><span class="glyphicon glyphicon-ok"></span></a>
+            </span>
+          </span>
+        </div>
+        <div ng-switch-when="array">
+          <a ng-disabled="editing" class="btn btn-default btn-block" ng-click="stepInto(k)" href="javascript:">Array ({{model[k].length}})</a>
+        </div>
+        <div ng-switch-when="object">
+          <a ng-disabled="editing" class="btn btn-default btn-block" ng-click="stepInto(k)" href="javascript:">Object</a>
+        </div>
+        <div ng-switch-default>
+        (mmm {{typeName(v)}}){{v}}
+        </div>
+      </div>
+    </td>
+  </tr>
+  <tr ng-controller="AppendFieldCtrl">
+    <td>
+      <a class="btn btn-default btn-sm" ng-disabled="!newField.name && typeName(model) !== 'array'" href="javascript:" ng-click="appendField()"><span class="glyphicon glyphicon-plus"></span></a>
+    </td>
+    <td>
+      <input ng-show="typeName(model) !== 'array'" type="text" ng-model="newField.name" class="form-control" />
+    </td>
+    <td>
+      <select ng-disabled="false" ng-model="newField.type" class="form-control">
+        <option ng-value="'string'">string</option>
+        <option ng-value="'number'">number</option>
+        <option ng-value="'boolean'">boolean</option>
+        <option ng-value="'object'">object</option>
+        <option ng-value="'array'">array</option>
+      </select>
+    </td>
+    <td>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="4">
+      <span>{{typeName(model) === 'array' ? '}' : '}'}}</span>
+    </td>
+  </tr>
+</table>
+

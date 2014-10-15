@@ -1,0 +1,50 @@
+<div class="container" style="padding-top: 1em" ng-controller="ExploreDataCtrl">
+  <page-title title="Collection {{box.name}}/{{collection.name}}"></page-title>
+  <tabset>
+    <tab heading="Filter">
+      <json ng-model="find.filter"></json>
+    </tab>
+    <tab heading="Insert" ng-controller="AppendCollectionObjectCtrl">
+      <div class="btn-group btn-group-justified">
+        <a class="btn btn-default" ng-click="insert()" href="javascript:"><span class="glyphicon glyphicon-plus"></span>&nbsp;Insert</a>
+      </div>
+      <json ng-model="newObject"></json>
+    </tab>
+    <tab heading="Find" ng-controller="CollectionResultsCtrl">
+      <div class="btn-group btn-group-justified">
+        <a class="btn btn-default" ng-click="refresh()" href="javascript:"><span class="glyphicon glyphicon-refresh"></span>&nbsp;Refresh</a>
+      </div>
+      <div style="width: 100%; overflow-x: scroll">
+        <table class="table">
+          <thead>
+            <th ng-repeat="k in find.allKeys">{{k}}</th>
+            
+          </thead>
+          <tbody>
+            <tr ng-repeat="r in find.results">
+              <td ng-repeat="k in find.allKeys">
+              <span ng-if="k !== '_id'">
+              {{r[k]}}
+              </span>
+              <a ng-click="select(r)" href="javascript:" ng-if="k === '_id'">{{r[k]}}</a</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </tab>
+    <tab heading="Operations">
+      <div class="btn-group btn-group-justified">
+        <a href="javascript:" class="btn btn-danger"><span class="glyphicon glyphicon-fire"></span>&nbsp;Destroy collection</a>
+        <a href="javascript:" class="btn btn-default"><span class="glyphicon glyphicon-download"></span>&nbsp;Download .json</a>
+        <a href="javascript:" class="btn btn-default"><span class="glyphicon glyphicon-upload"></span>&nbsp;Upload .json</a>
+      </div>
+    </tab>
+    <tab ng-controller="ObjectDetailsCtrl" heading="Details" active="tab.details" ng-if="selectedObject._id">
+      <div class="btn-group btn-group-justified">
+        <a class="btn btn-default" ng-click="save(selectedObject)" href="javascript:"><span class="glyphicon glyphicon-ok"></span>&nbsp;Save</a>
+        <a class="btn btn-danger" ng-click="remove(selectedObject)" href="javascript:"><span class="glyphicon glyphicon-fire"></span>&nbsp;Destroy</a>
+      </div>
+      <json ng-model="selectedObject"></json>
+    </tab>
+  </tab>
+</div>

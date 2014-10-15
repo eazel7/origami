@@ -1,0 +1,16 @@
+<div class="container" style="padding-top: 1em" ng-controller="LoginCtrl">
+  <div class="row text-center">
+    <p>You must be logged in to perform this action</p>
+    <h3 class="text-info" ng-if="noMasterUser">Hurry up!<br />Take the first seat and be the master of this server!</h3>
+    
+    <div ng-if="loginForm" ng-include src="loginForm"></div>
+    <div class="text-center" style="margin-top: 1em">
+      <span class="btn-group" ng-if="loginForm">
+        <a ng-click="loginForm = null" href="javascript:">Try another method</a>
+      </span>
+      <span class="btn-group" ng-if="!loginForm">
+        <a ng-click="loginWith(m)" class="btn btn-default" ng-repeat="m in methods">{{m.title}}</a>
+      </span>
+    </div>
+  </div>
+</div>

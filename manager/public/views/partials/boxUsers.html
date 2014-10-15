@@ -1,0 +1,23 @@
+<table class="table">
+  <tbody>
+    <tr ng-controller="BoxUserDetailsCtrl" ng-repeat="(alias, role) in boxUsers">
+      <th>{{profile.displayName || alias}}</th><td>{{role}}</td>
+    </tr>
+  </tbody>
+  <tfoot ng-controller="SearchUserCtrl">
+    <tr>
+      <td colspan="2">
+        <span class="input-group" style="float: left; width: 100%">
+          <select class="form-control" ng-model="selectedUser">
+            <option ng-value="u.alias" ng-repeat="u in users track by u.alias">{{u.displayName}}</option>
+          </select>
+          <span class="input-group-btn">
+            <a ng-click="addUser(selectedUser)" class="btn btn-default" ng-disabled="!selectedUser">
+              <span class="glyphicon glyphicon-plus"></span>
+            </a>
+          </span>
+        </span>
+      </td>
+    </tr>
+  </tfoot>
+</table>

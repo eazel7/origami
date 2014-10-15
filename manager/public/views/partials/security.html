@@ -1,0 +1,18 @@
+<div class="container" style="padding-top: 1em">
+  <div class="row">
+    <div class="col-md-6">
+      <ul class="list-group">
+        <a href="javascript:" class="list-group-item" ng-click="selectBox(box)" ng-class="{'active': isBoxSelected(box)}" ng-repeat="box in boxes">
+          {{box}}
+        </a>
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <ul class="list-group">
+        <a href="javascript:" ng-class="{'list-group-item-danger': !userHasAccess(user), 'list-group-item-success': userHasAccess(user)}" class="list-group-item" ng-repeat="user in users" ng-click="toggleAccess(user)">
+          <span class="pull-right" ng-if="selectedBox && userHasAccess(user)"><span class="glyphicon glyphicon-ok"></span></span>{{user.displayName}}
+        </a>
+      </ul>
+    </div>
+  </div>
+</div>

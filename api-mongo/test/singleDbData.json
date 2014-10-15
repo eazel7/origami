@@ -1,0 +1,110 @@
+[{
+  "database": "origami-test",
+  "collection": "my-box-_graphs",
+  "data":[{
+    "_id": "someId",
+    "name": "My graph",
+    "graph": {
+    }
+  }]
+},{
+  "database": "origami-test",
+  "collection": "existing-box-user-collection",
+  "data":[{
+    "title": "sample-item"
+  }]
+},{
+  "database": "origami-test",
+  "collection": "packages",
+  "data":[{
+    "name": "My package",
+    "files": ["my-file.txt"]
+  }]
+},{
+  "database": "origami-test",
+  "grid": "package_assets",
+  "data":[{
+    "file": "test/my-file.txt",
+    "metadata": {
+      "package": "My package",
+      "path": "my-file.txt"
+    }
+  }]
+},{
+  "database": "origami-test",
+  "collection": "existing-box-_views",
+  "data": [{
+    "name": "home",
+    "template": "<h1>Home view template</h1>"
+  }]
+},{
+  "database": "origami-test",
+  "collection": "config",
+  "data": [{
+    "key": "some-value",
+    "value": true
+  }]
+},{
+  "database": "origami-test",
+  "collection": "existing-box-_syncLog",
+  "data": []
+},{
+  "database": "origami-test",
+  "collection": "boxes",
+  "data": [{
+    "name": "existing-box",
+    "collections": {
+      "_views": {
+        "database": "origami-test",
+        "collection": "existing-box-_views"
+      },
+      "user-collection": {
+        "database": "origami-test",
+        "collection": "existing-box-user-collection"
+      },
+      "offline-collection": {
+        "database": "origami-test",
+        "collection": "existing-box-offline-collection"
+      },
+      "admin-collection": {
+        "database": "origami-test",
+        "collection": "existing-box-admin-collection",
+        "sync": false
+      },
+      "log-collection": {
+        "database": "origami-test",
+        "collection": "existing-box-log-collection"
+      }
+    }
+  }]
+},{
+  "database": "origami-test",
+  "collection": "existing-box-_views",
+  "data": []
+},{
+  "database": "origami-test",
+  "collection": "users",
+  "data": [{
+    "alias": "john-doe",
+    "displayName": "John Doe",
+    "roles": {
+      "ticket-system": "user"
+    }
+  },{
+    "alias": "mary-smith",
+    "displayName": "Mary Smith",
+    "roles": {
+      "ticket-system": "owner"
+    }
+  },{
+    "alias": "jane-bells",
+    "displayName": "Jane Bells",
+    "metadata": {
+      "passwordHash": "abcd-1234"
+    },
+    "roles": {
+      "financial-system": "owner",
+      "ticket-system": "user"
+    }
+  }]
+}]

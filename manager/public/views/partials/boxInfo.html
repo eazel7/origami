@@ -1,0 +1,29 @@
+<div class="form-group">
+    <label class="control-label">Box name:</label>
+    <input class="form-control" type="text" disabled value="{{boxName}}" />
+</div>
+<div class="form-group">
+    <label class="control-label">URL:</label>
+    <span class="input-group">
+      <input class="form-control" disabled ng-value="boxUrl(box)">
+      <span class="input-group-btn">
+        <a class="btn btn-default" ng-href="{{boxUrl(box)}}"><span class="glyphicon glyphicon-globe"></a>
+      </span>
+    </span>
+</div>
+<div class="form-group">
+    <label class="control-label">MongoDB url (read acccess):</label>
+    <span class="input-group">
+      <input class="form-control" disabled ng-value="showPassword ? mongoUrl() : mongoUrl(true)">
+      <span class="input-group-btn" ng-mouseenter="showPassword = true" ng-mouseleave="showPassword = false" >
+        <a class="btn btn-danger">Reveal password <span class="glyphicon glyphicon-lock"></a>
+      </span>
+    </span>
+</div>
+<div class="form-group">
+  <label class="control-label">Description:</label>
+  <textarea ng-change="$emit('changes')" class="form-control" style="resize: none" ng-model="info.description" rows="4"></textarea>
+</div>
+<div class="btn-group btn-group-justified">
+  <a ng-click="save()" class="btn btn-default" ng-disabled="!changes"><span class="glyphicon glyphicon-ok"></span>&nbsp;Save</a>
+</div>

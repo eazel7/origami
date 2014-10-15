@@ -1,0 +1,17 @@
+<div style="position: absolute; top: 0; right: 0; left: 0; bottom: 0" hide-element="navbarBottom">
+  <page-title title="{{routeParams.view}}"></page-title>
+  <local-find-one collection="'_views'" to="view" predicate="{name: routeParams.view}"></local-find-one>
+  <local-update collection="'_views'" name="saveView" predicate="{name: routeParams.view}" replacement="{ $set: { template: view.template, controller: view.controller } }"></local-update>
+  <span content-for="navbarAction">
+    <span class="btn-group">
+      <a ng-click="showCode = !showCode" class="btn btn-default" ng-class="{'active': showCode}">
+        <i class="fa fa-code"></i> Code
+      </a>
+      <a ng-click="saveView()" class="btn btn-navbar">
+        <i class="fa fa-save"></i> Save
+      </a>
+    </span>
+  </span>
+  <div ng-hide="showCode" ng-model="view.template" ui-ace="{theme: 'twilight', showGutter: true, useWrapMode: true, mode:'html', onLoad: setupAce}" style="position: absolute; top: 0; right: 0; left: 0; bottom: 0"></div>
+  <div ng-show="showCode" ng-model="view.controller" ui-ace="{theme: 'twilight', showGutter: true, useWrapMode: true, mode:'javascript', onLoad: setupAce}" style="position: absolute; top: 0; right: 0; left: 0; bottom: 0"></div>
+</div>

@@ -1,0 +1,20 @@
+<div class="form-inline">
+  <select ng-options="box as box for box in boxes" placeholder="Manage box" ng-controller="ManageBoxSelectorCtrl" ng-model="selectedBox" class="form-control">
+    <option value="">Manage a box</option>
+  </select>
+
+  <ul class="nav nav-pills pull-right">
+    <li>
+      <a href="#/">Home</a>
+    </li>
+    <li>
+      <a href="#/about">About</a>
+    </li>
+    <li>
+      <a href="#/packages">Packages</a>
+    </li>
+    <li>
+      <a href="#/boxes">Boxes</a>
+    </li>
+  </ul>
+</div>

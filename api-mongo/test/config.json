@@ -1,0 +1,12 @@
+{
+  "mongo": {
+    "host": "127.0.0.1",
+    "port": 27017,
+    "database": "origami-test",
+    "username": "admin",
+    "password": "P@ssw0rd!"
+  },
+  "defaultHomeTemplate": "<div>DefaultHomeTemplate</div>",
+  "defaultSidebarTemplate": "<div>DefaultSidebarTemplate</div>",
+  "singleDbMode": true
+}

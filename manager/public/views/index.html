@@ -1,0 +1,91 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" ng-app="boxes3.manager">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <base href="/">
+    <title ng-bind-template="{{pageTitle}}">Boxes</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="bower_components/bootstrap-select/bootstrap-select.css" />
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+
+<body>
+    <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+    <div class="container" style="padding: 0.6em; margin-bottom: 1em" ng-include src="'views/partials/navbar.html'"></div>
+    <div ui-view></div>
+
+    <div class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Modal title</h4>
+          </div>
+          <div class="modal-body">
+            <p>One fine body&hellip;</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <!--[if lt IE 9]>
+    <script src="bower_components/es5-shim/es5-shim.js"></script>
+    <script src="bower_components/json3/lib/json3.min.js"></script>
+    <![endif]-->
+
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+<!--    <script src="bower_components/ng-file-upload/angular-file-upload-shim.js"></script>-->
+    <script src="bower_components/ng-file-upload/angular-file-upload-html5-shim.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="bower_components/angular-resource/angular-resource.js"></script>
+    <script src="bower_components/angular-cookies/angular-cookies.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+    <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.js"></script>
+    <script src="bower_components/angular-strap/dist/angular-strap.js"></script>
+    <script src="bower_components/angular-strap/dist/angular-strap.tpl.js"></script>
+    <script src="bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js"></script>
+    <script src="bower_components/angular-ui-utils/ui-utils.js"></script>
+    <script src="bower_components/bootstrap-select/bootstrap-select.js"></script>
+    <script src="bower_components/angular-bootstrap-select/build/angular-bootstrap-select.js"></script>
+    <script src="bower_components/ng-file-upload/angular-file-upload.js"></script>
+    <script src="bower_components/ace/ace.js"></script>
+    <script src="bower_components/ace/ui-ace.js"></script>
+
+    <script src="scripts/app.js"></script>
+    <script src="scripts/info.js"></script>
+    <script src="scripts/controllers/boxesApi.js"></script>
+    <script src="scripts/controllers/collectionApi.js"></script>
+    <script src="scripts/controllers/exploreData.js"></script>
+    <script src="scripts/controllers/gettingStarted.js"></script>
+    <script src="scripts/controllers/main.js"></script>
+    <script src="scripts/controllers/manageBox.js"></script>
+    <script src="scripts/controllers/navbar.js"></script>
+    <script src="scripts/controllers/createBox.js"></script>
+    <script src="scripts/controllers/usersApi.js"></script>
+    <script src="scripts/controllers/packages.js"></script>
+    <script src="scripts/directives/pageTitle.js"></script>
+    <script src="scripts/filters/skipLimit.js"></script>
+    <script src="scripts/controllers/login.js"></script>
+
+</body>
+
+</html>

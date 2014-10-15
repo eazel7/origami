@@ -1,0 +1,21 @@
+<div class="container" style="padding-top: 1em">
+    <page-title title="Manage {{box.name}}"></page-title>
+    <div class="row">
+        <div class="col-md-12">
+          <tabset style="margin-bottom: 1em">
+            <tab heading="General">
+              <div ng-include src="'/views/partials/boxInfo.html'"></div>
+            </tab>
+            <tab heading="Data" ng-controller="BoxCollectionsCtrl">
+              <div ng-include src="'/views/partials/boxCollections.html'"></div>
+            </tab>
+            <tab heading="Users" ng-controller="BoxUsersCtrl">
+              <div ng-include src="'/views/partials/boxUsers.html'"></div>
+            </tab>
+            <tab heading="Packages" ng-controller="BoxPackagesCtrl">
+              <div ng-include src="'/views/partials/boxPackages.html'"></div>
+            </tab>
+          </tabset>
+        </div>
+    </div>
+</div>

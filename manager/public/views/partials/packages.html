@@ -1,0 +1,37 @@
+<div class="container" style="padding-top: 1em">
+    <style>
+      .about-file-drop {
+        border-style: dashed;
+        border-color: #blue;
+      }
+      
+      .upload-icon {
+        display: none;
+      }
+      .file-drop-items > .about-file-drop > .upload-icon {
+        display: inline-block;
+      }
+    </style>
+    <div class="row">
+        <div class="col-md-12">
+          <div class="form-group" ng-if="newPackage">
+            <label>Package name:</label>
+            <span class="input-group">
+              <input type="text" class="form-control" ng-model="newPackage.name" />
+              <span class="input-group-btn">
+                <a href="javascript:" ng-click="cancelNewPackage()" class="btn btn-default"><span class="glyphicon glyphicon-remove"></span></a>
+                <a href="javascript:" ng-disabled="!newPackage.name" ng-click="saveNewPackage()"ng-class="{'btn-success': newPackage.name, 'btn-default': !newPackage.name}" class="btn"><span class="glyphicon glyphicon-ok"></span></a>
+              </span>
+            </span>
+          </div>
+          <ul class="list-group">
+            <a class="list-group-item" href="javascript:" ng-click="createNewPackage()">Create new</a>
+            <a ng-href="#/packages/{{p}}" ng-repeat="p in packages" class="list-group-item" href="javascript:">{{p}}</a>
+            
+            <il class="file-drop-items list-group-item"  ng-file-drop="importPackages($files)" ng-file-drag-over-class="about-file-drop">
+              <i class="fa fa-upload"></i>&nbsp;Import package
+            </il>
+          </ul>
+        </div>
+    </div>
+</div>

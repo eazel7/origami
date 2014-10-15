@@ -1,0 +1,27 @@
+<table class="table table-striped">
+  <tbody>
+    <tr ng-repeat="collection in collections | orderBy:'name'">
+      <td>
+        <a ng-click="exploreData(collection)" href="javascript:">{{collection}}</a>
+      </td>
+    </tr>
+    <tr ng-if="!collections.length">
+      <td>No collections</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr ng-controller="CreateCollectionCtrl">
+      <td colspan="2" style="padding-left: 0; padding-right: 0; padding-bottom: 0">
+        <div class="input-group" style="width: 100%">
+          <input placeholder="New collection name" ui-keypress="{'enter':'createCollection()'}" type="text" class="form-control" ng-model="collection.name" />
+          <span class="input-group-btn">
+            <a ng-click="createCollection()" class="btn btn-default" ng-disabled="!collection.name" href="javascript:">
+              <span class="glyphicon glyphicon-ok"></span>
+            </a>
+          </span>
+        </div>
+      </td>
+    </tr>
+  </tfoot>
+</table>
+

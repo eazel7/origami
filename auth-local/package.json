@@ -1,0 +1,27 @@
+{
+  "name": "origami-auth-local",
+  "version": "0.1.0",
+  "description": "Origami local user authentication",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.com:origami/auth-local.git"
+  },
+  "keywords": [
+    "Origami",
+    "local",
+    "authentication"
+  ],
+  "author": "Diego Pérez",
+  "license": "BSD",
+  "dependencies": {
+    "mongodb": "~1.4.7",
+    "express": "~4.5.0",
+    "passport": "~0.2.0",
+    "passport-local": "~1.0.0",
+    "password-hash": "~1.2.2"
+  }
+}

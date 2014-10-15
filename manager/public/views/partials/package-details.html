@@ -1,0 +1,142 @@
+<div class="container" style="padding-top: 1em">
+  <style>
+    .about-file-drop {
+      border-style: dashed;
+      border-color: #blue;
+    }
+    
+    .upload-icon {
+      display: none;
+    }
+    .file-drop-items > .about-file-drop > .upload-icon {
+      display: inline-block;
+    }
+  </style>
+  <page-title title="{{package}} assets"></page-title>
+  
+  <tabset style="margin-bottom: 1em">
+    <tab heading="Assets">
+      <div>
+        <div class="row">
+          <div class="col-md-6">
+            <ul class="list-group file-drop-items">
+              <li style="border: 2px #ddd dashed" class="list-group-item" ng-file-drop="onFileSelect($files)" ng-file-drag-over-class="about-file-drop"><i class="pull-right upload-icon glyphicon glyphicon-upload"></i>Drop a file</li>
+              
+              <a ng-repeat="a in assets|filter:inFolder(null)" class="list-group-item" ng-class="{'active': selected == a}"
+     ng-click="selectAsset(a)" href="javascript:">{{a}}</a>
+     
+              <a href="javascript:" ng-class="{'active': folderSelected == f}" style="border: 2px #ddd dashed" class="list-group-item" ng-repeat-start="f in folders" ng-file-drop="onFileSelect($files, f)" ng-file-drag-over-class="about-file-drop" ng-click="selectFolder(f)">
+                <span class="glyphicon glyphicon-folder-open"></span>&nbsp;&nbsp;{{f}}
+              </a>
+              <span ng-repeat-end ng-if="folderSelected == f">
+                <a href="javascript:" ng-class="{'active': selected === a}" ng-click="selectAsset(a)" class="list-group-item" ng-repeat="a in assets|filter:inFolder(folderSelected)">{{a}}</a>
+              </span>
+              
+              <span ng-controller="CreateFolderCtrl">
+                <a href="javascript:" ng-if="!showCreate" class="list-group-item text-center" ng-click="$parent.showCreate = true">
+                  Create folder
+                </a>
+                <li ng-if="showCreate" class="list-group-item">
+                  <span class="input-group">
+                    <input type="text" class="form-control" ng-model="folderName" placeholder="Folder name" />
+                    <span class="input-group-btn">
+                      <a ng-click="createFolder(folderName)" href="javascript:" ng-disabled="!folderName" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i></a>
+                    </span>
+                  </span>
+                </li>
+              </span>
+            </ul>
+          </div>
+          
+          <div class="col-md-6 text-center" ng-if="folderSelected">
+            <a class="btn btn-danger" href="javascript:" ng-click="deleteFolder(folderSelected)"><i class="glyphicon glyphicon-fire"></i>&nbsp;&nbsp;Delete folder</a>
+          </div>
+          
+          <div class="col-md-6" ng-if="selected">
+            <div class="form-group">
+              <label>Path:</label>
+              <input type="text" class="form-control" value="{{selected}}" disabled />
+            </div>
+            <div class="btn-group btn-group-justified">
+              <a target="_blank" ng-href="/api/packages/{{package}}/assets/{{selected}}" class="btn btn-default"><i class="glyphicon glyphicon-eye-open"></i>&nbsp;Open</a>
+              <a ng-click="removeAsset(selected)" class="btn btn-default"><i class="glyphicon glyphicon-fire"></i>&nbsp;Remove</a>
+              <a ng-click="unzipAsset(selected)" class="btn btn-default"><i class="glyphicon glyphicon-compressed"></i>&nbsp;Unzip</a>
+            </div>
+            
+            <div class="btn-group btn-group-justified">
+              <a href="javascript:" ng-click="switchMetadata(selected, selectedMetadata, 'style')" class="btn btn-default" ng-class="{'active': selectedMetadata.use == 'style'}">
+                Stylesheet
+              </a>
+              <a href="javascript:" ng-click="switchMetadata(selected, selectedMetadata, 'script')" class="btn btn-default" ng-class="{'active': selectedMetadata.use == 'script'}">
+                Script
+              </a>
+              <a href="javascript:" ng-click="switchMetadata(selected, selectedMetadata, 'offline')" class="btn btn-default" ng-class="{'active': selectedMetadata.use == 'offline'}">
+                Just offline
+              </a>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </tab>
+    <tab heading="Scripts" ng-controller="PackageScriptsCtrl" select="refreshScripts()">
+      <ul class="list-group">
+        <a href="javascript:" class="list-group-item" ng-repeat="s in scripts">
+        <span class="btn-group pull-right">
+        <button ng-disabled="$first" ng-click="moveUp(s)" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-chevron-up"></i></button>
+        <button ng-disabled="$last"  ng-click="moveDown(s)" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-chevron-down"></i></button>
+        </span>
+        {{s}}</a>
+      </ul>
+    </tab>
+    <tab heading="Styles" ng-controller="PackageStylesCtrl" select="refreshStyles()">
+      <ul class="list-group">
+        <a href="javascript:" class="list-group-item" ng-repeat="s in styles">
+        <span class="btn-group pull-right">
+        <button ng-disabled="$first"  ng-click="moveUp(s)" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-chevron-up"></i></button>
+        <button ng-disabled="$last"  ng-click="moveDown(s)" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-chevron-down"></i></button>
+        </span>
+        {{s}}</a>
+      </ul>
+    </tab>
+    <tab heading="Angular Modules" ng-controller="AngularModulesCtrl" select="refreshModules()">
+      <ul class="list-group">
+        <li class="list-group-item" ng-repeat="m in angularModules">
+          <span class="pull-right btn-group">
+            <a ng-click="remove(m)" href="javascript:" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-fire"></i></a>
+          </span>
+        {{m}}</li>
+        <li class="list-group-item">
+          <span class="input-group">
+            <input type="text" class="form-control" ng-model="newModule" />
+            <span class="input-group-btn">
+              <a ng-disabled="!newModule" class="btn btn-default" href="javascript:" ng-click="addModule()"><i class="glyphicon glyphicon-plus"></i></a>
+            </span>
+          </span>
+        </li>
+      </ul>
+    </tab>
+    <tab heading="Configuration">
+      <div class="form-group">
+        <label>Package type:</label>
+        <div class="btn-group btn-group-justified">
+          <a ng-class="{'active': packageType == 'global'}" ng-click="changePackageType(package, 'global')" class="btn btn-default" href="javascript:">Global</a>
+          <a ng-class="{'active': packageType == 'local'}" ng-click="changePackageType(package, 'local')" class="btn btn-default" href="javascript:">Local</a>
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="btn-group">
+          <a class="btn btn-danger" ng-click="removePackage()"><i class="glyphicon glyphicon-fire"></i>&nbsp;Delete package</a>
+          <a class="btn btn-success" ng-href="/api/packages/{{package}}/export" target="_blank"><i class="glyphicon glyphicon-export"></i>&nbsp;Export package</a>
+        </div>
+      </div>
+    </tab>
+    <tab heading="Dependencies">
+      <ul class="list-group">
+        <a class="list-group-item" href="javascript:" ng-click="switchDependency(i)" ng-class="{'active': dependsUpon(i)}" ng-repeat="i in otherPackages">
+          {{i}}<span class="pull-right"><i ng-show="dependsUpon(i)" class="glyphicon glyphicon-ok"></i></span>
+        </a>
+      </ul>
+    </tab>
+  </tabset>
+</div>
