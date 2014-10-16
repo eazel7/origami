@@ -2,6 +2,7 @@
 
 var express = require('express'),
     fs = require('fs'),
+    path = require('path'),
     app = express();
 
 // Set default node environment to development
@@ -9,13 +10,14 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 var config = require('./config');
 
+
 function spdyServer(app) {
   var spdy = require('spdy');
   
   var options = {
-    key: fs.readFileSync(config.keys.key),
-    cert: fs.readFileSync(config.keys.cert),
-    ca: fs.readFileSync(config.keys.ca)
+    key: fs.readFileSync(path.resolve(__dirname, config.keys.key)),
+    cert: fs.readFileSync(path.resolve(__dirname, config.keys.cert)),
+    ca: fs.readFileSync(path.resolve(__dirname, config.keys.ca))
   };
 
   var server = spdy.createServer(options, app);
