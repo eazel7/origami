@@ -1,5 +1,5 @@
-{
-  "root": ".",
+module.exports = {
+  "root": __dirname,
   "env": "development",
   "ip": "0.0.0.0",
   "port": 9000,
@@ -39,4 +39,4 @@
   },
   "defaultHomeTemplate": "<div class=\"section\">  <h1>Welcome home</h1>\n  <p>\n    <a href=\"#/e/home\">Edit me</a>\n  </p>\n</div>",
   "defaultSidebarTemplate": "<div>\n  <a class=\"list-group-item\"  ng-href=\"{{viewLink('home')}}\">Home<i class=\"fa fa-chevron-right pull-right\"></i></a>\n  <a class=\"list-group-item\" href=\"#/e/left-sidebar\">Edit me<i class=\"fa fa-chevron-right pull-right\"></i></a>\n</div>"
-}
+};

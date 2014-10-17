@@ -40,12 +40,6 @@ if (config.protocol == 'spdy') {
 
 var io = require('socket.io')(server);
 
-io.on('connection', function (socket) {
-  socket.on('hello', function () {
-    console.log(arguments);
-  });
-});
-
 require('./express-io')(app, io);
 
 server.listen(config.port, config.ip, function () {
