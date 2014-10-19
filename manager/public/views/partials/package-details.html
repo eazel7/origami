@@ -59,6 +59,7 @@
             </div>
             <div class="btn-group btn-group-justified">
               <a target="_blank" ng-href="/api/packages/{{package}}/assets/{{selected}}" class="btn btn-default"><i class="glyphicon glyphicon-eye-open"></i>&nbsp;Open</a>
+              <a target="_blank" ng-href="#/edit-asset/{{package}}/{{selected}}" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i>&nbsp;Edit</a>
               <a ng-click="removeAsset(selected)" class="btn btn-default"><i class="glyphicon glyphicon-fire"></i>&nbsp;Remove</a>
               <a ng-click="unzipAsset(selected)" class="btn btn-default"><i class="glyphicon glyphicon-compressed"></i>&nbsp;Unzip</a>
             </div>

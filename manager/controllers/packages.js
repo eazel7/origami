@@ -42,10 +42,20 @@ module.exports = function (api) {
             api.packages.updateAsset(req.params.packageName, filename, bytes, callback);
           });
         }, function (err) {
-          res.status(200);
-          res.end();        
+          async.each(Object.keys(fields), function (fileEntry, callback) {
+            var filename = fileEntry;
+                
+            var bytes = new Buffer(fields[fileEntry]);
+            
+            api.packages.createAsset(req.params.packageName, filename, function (err) {
+              api.packages.updateAsset(req.params.packageName, filename, bytes, callback);
+            });
+          }, function (err) {
+            res.status(200);
+            res.end();        
+          });
         });
-      });      
+      });
     },
     removeAsset: function (req, res) {
       api.packages.removeAsset(req.params.packageName, req.params.filename, function (err) {

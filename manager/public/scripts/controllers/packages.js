@@ -51,6 +51,15 @@ angular.module("boxes3.manager")
     url: "/edit-asset/:packageName/{path:.*}",
     templateUrl: 'views/partials/edit-asset.html',
     controller: function ($scope, $stateParams, $http, $upload) {
+      
+      var setupAce = function (editor) {
+        ace = editor;
+        editor.setFontSize(20);
+      };
+      
+      $scope.aceOptions = {theme: 'twilight', showGutter: true, useWrapMode: true, onLoad: setupAce};
+      var ace;
+    
       $scope.save = function () {
         var data = {};
         
@@ -63,14 +72,17 @@ angular.module("boxes3.manager")
         });
       };
       
-      $http.get('/api/packages/' + $stateParams.packageName + '/assets/' + $stateParams.path)
+      $http.get('/api/packages/' + $stateParams.packageName + '/assets/' + encodeURIComponent($stateParams.path))
       .success(function (data) {
         $scope.source = data;
+        
+        $http.get('/api/packages/' + $stateParams.packageName + '/asset-metadata/' + encodeURIComponent($stateParams.path))
+        .success(function (metadata) {
+          if (metadata.use === 'script') return $scope.aceOptions.mode = "javascript";
+          if (metadata.use === 'style') return $scope.aceOptions.mode = "css";
+          if ($stateParams.path.lastIndexOf(".html") >= 0) return $scope.aceOptions.mode = "html";
+        });
       });
-      
-      $scope.setupAce = function (editor) {
-        editor.setFontSize(20);
-      };
     }
   });
   $stateProvider.state('package-details', {
