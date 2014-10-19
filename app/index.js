@@ -7,7 +7,7 @@ module.exports = function (api) {
         app = express();
 
     app.get('/scripts/info.js', function (req, res) {
-      var script = 'angular.module(\'box.info\', [])\n' +
+      var script = 'angular.module(\'box-info\', [])\n' +
                    '.value(\'boxName\', ' + JSON.stringify(boxName) +  ');';
 
       res.setHeader('Content-Type', 'application/javascript');
@@ -53,7 +53,14 @@ module.exports = function (api) {
     });
     
     app.get('/angular-modules.json', function (req, res) {
-      res.json(require('./angular-modules'));
+      api.boxes.getBox(boxName, function (err, doc) {
+        if (err) {
+          res.status(418);
+          return res.end();
+        }
+        
+        res.json(doc.angularModules || []);
+      });
     });
     
     app.get('/api/graphs/componentGallery', function (req, res) {
@@ -320,7 +327,7 @@ module.exports = function (api) {
     });
     
     app.get('/', function (req, res) {
-      return res.sendfile(__dirname + '/public/index.html');
+      return res.redirect('index.html');
     });
     var assetsMap = {};
         

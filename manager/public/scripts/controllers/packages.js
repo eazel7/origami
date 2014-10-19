@@ -55,6 +55,17 @@ angular.module("boxes3.manager")
       var setupAce = function (editor) {
         ace = editor;
         editor.setFontSize(20);
+        editor.commands.addCommand({
+            name: 'saveFile',
+            bindKey: {
+            win: 'Ctrl-S',
+            mac: 'Command-S',
+            sender: 'editor|cli'
+          },
+          exec: function(env, args, request) {
+            $scope.save();
+          }
+        });
       };
       
       $scope.aceOptions = {theme: 'twilight', showGutter: true, useWrapMode: true, onLoad: setupAce};
