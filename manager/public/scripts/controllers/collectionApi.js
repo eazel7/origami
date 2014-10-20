@@ -3,6 +3,15 @@
 angular.module('boxes3.manager')
 .service("CollectionApi", function ($http, $q) {
   return {
+    transfer: function (from, target, collections) {
+      var defer = $q.defer();
+      
+      $http.post('/api/data-transfer', {from: from, target: target, collections: collections})
+      .success(defer.resolve)
+      .error(defer.reject);
+      
+      return defer.promise;
+    },
     createCollection: function (boxName, collectionName) {
       var defer = $q.defer();
       

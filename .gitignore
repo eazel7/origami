@@ -3,4 +3,5 @@ app/node_modules
 auth-local/node_modules
 manager/node_modules
 random-names/node_modules
-
+*~
+**/*~

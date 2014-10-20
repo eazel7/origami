@@ -21,6 +21,10 @@ module.exports = function(app, api) {
 
   app.route('/')
   .get(controllers.misc.index);
+  
+  app
+  .route('/api/data-transfer')
+  .post(controllers.dataTransfer.transfer);
 
   // Server API Routes
   app

@@ -6,6 +6,7 @@ module.exports = function (api) {
     users: require('./users')(api),
     views: require('./views')(api),
     authentication: require('./authentication')(api),
-    packages: require('./packages')(api)
+    packages: require('./packages')(api),
+    dataTransfer: require('./data-transfer')(api)
   };
 }

@@ -1,0 +1,31 @@
+<div class="container" style="margin-top: 1em">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="form-group">
+        <label>From:</label>
+        <select class="form-control" ng-model="from" ng-options="b as b for b in boxes">
+          <option value="" ng-show="!from">Select source box</option>
+        </select>
+      </div>
+      
+      <ul class="list-group">
+        <a href="javascript:" ng-class="{'active': isSelected(c)}" ng-click="toggleSelected(c)" class="list-group-item" ng-repeat="c in sourceCollections">{{c}}</a>
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <div class="form-group">
+        <label>Target:</label>
+        <select class="form-control" ng-model="target" ng-options="b as b for b in boxes">
+          <option value="" ng-show="!target">Select target box</option>
+        </select>
+      </div>
+<!--      -->
+<!--      <ul class="list-group">-->
+<!--        <li class="list-group-item" ng-repeat="c in targetCollections" ng-if="c[0] !== '_'">{{c}}</li>-->
+<!--      </ul>-->
+    </div>
+  </div>
+  <p class="text-center">
+    <button ng-disabled="!canTransfer || busy" ng-click="transfer()" class="btn btn-lg btn-primary" type="button">Transfer data</button>
+  </p>
+</div>
