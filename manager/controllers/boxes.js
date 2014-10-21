@@ -89,6 +89,13 @@ module.exports = function (api) {
         res.status(err ? 418 : 200);
         res.end();
       });
+    },
+    destroyCollection: function (req, res) {
+      console.log(req.params);
+      api.collections.destroyCollection(req.params.boxName, req.params.collectionName, function (err) {
+        res.status(err ? 418 : 200);
+        res.end();
+      });
     }
   };
 };

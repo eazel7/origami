@@ -89,7 +89,8 @@ angular.module("boxes3.manager")
         
         $http.get('/api/packages/' + $stateParams.packageName + '/asset-metadata/' + encodeURIComponent($stateParams.path))
         .success(function (metadata) {
-          if (metadata.use === 'script') return $scope.aceOptions.mode = "javascript";
+          debugger;
+          if (metadata.use === 'script' || $stateParams.path.indexOf(".js") > -1) return $scope.aceOptions.mode = "javascript";
           if (metadata.use === 'style') return $scope.aceOptions.mode = "css";
           if ($stateParams.path.lastIndexOf(".html") >= 0) return $scope.aceOptions.mode = "html";
         });

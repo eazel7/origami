@@ -106,6 +106,30 @@ module.exports = function (api) {
         });
     });
     
+    
+    app.post('/api/collection/:collection/count', function (req, res) {
+      api.collections.getCollection(
+        boxName,
+        req.params.collection,
+        function (err, collection){
+          if (err) {
+            console.log({ box: boxName, url: req.params.url, err: err});
+            res.status(418);
+            return res.end();
+          }
+
+          collection.count(req.body || {}, function (err, docs) {
+            if (err) {
+              console.log({ box: boxName, url: req.params.url, err: err});
+              res.status(418);
+              return res.end();
+            }
+
+            return res.json(docs);
+          });
+        });
+    });
+    
     app.post('/api/collection/:collection/findOne', function (req, res) {
       return api.collections.getCollection(
         boxName,
@@ -326,16 +350,11 @@ module.exports = function (api) {
       });
     });
     
-    app.get('/', function (req, res) {
-      return res.redirect('index.html');
-    });
-    var assetsMap = {};
-        
-    app.use(function (req, res, next) {
-      if (!assetsMap[req.url]) return next();
+    function findAsset(url, res, next) {
+      if (!assetsMap[url]) return next();
       
-      var packageName = assetsMap[req.url].packageName,
-          path = assetsMap[req.url].path;
+      var packageName = assetsMap[url].packageName,
+          path = assetsMap[url].path;
           
       api.packages.getAsset(packageName, path, function (err, buffer) {
         if (err) { res.status(418); return res.end('Not found: ' + JSON.stringify(path)); }
@@ -356,6 +375,17 @@ module.exports = function (api) {
           res.end(buffer);
         });
       });
+    }
+    
+    app.get('/', function (req, res, next) {
+      return findAsset('/index.html', res, next);
+    });
+    var assetsMap = {};
+        
+    app.use(function (req, res, next) {
+      if (!assetsMap[req.url]) return next();
+      
+      findAsset(req.url, res, next);
     });
     
     api.packages.getActivePackagesWithDependencies(boxName, function(err, packages) {

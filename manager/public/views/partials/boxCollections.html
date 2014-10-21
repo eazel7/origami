@@ -1,8 +1,8 @@
 <table class="table table-striped">
   <tbody>
-    <tr ng-repeat="collection in collections | orderBy:'name'">
+    <tr ng-repeat="collection in collections">
       <td>
-        <a ng-click="exploreData(collection)" href="javascript:">{{collection}}</a>
+        <a ng-href="#/{{boxName}}/explore-data/{{collection}}">{{collection}}</a>
       </td>
     </tr>
     <tr ng-if="!collections.length">

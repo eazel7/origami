@@ -16,7 +16,16 @@ angular.module('boxes3.manager')
     templateUrl: 'views/partials/exploreData.html'
   });
 })
-.controller("ExploreDataCtrl", function ($scope, CollectionApi, $stateParams) {
+.controller("ExploreDataCtrl", function ($scope, CollectionApi, $stateParams, $location) {
+  $scope.destroyCollection = function () {
+    CollectionApi.remove($stateParams.boxName, $stateParams.collectionName, {})
+    .then(function () {
+      CollectionApi.destroyCollection($stateParams.boxName, $stateParams.collectionName)
+      .then(function () {
+        $location.url("/manage-box/" + $stateParams.boxName);
+      });
+    });
+  };
   $scope.find = {
     filter: {},
     results: []

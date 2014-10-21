@@ -5,7 +5,7 @@ angular.module('boxes3.manager')
   $scope.createCollection = function () {
     CollectionApi.createCollection($scope.boxName, $scope.collection.name)
     .then(function (collection) {
-      $scope.collections.push(collection.name);
+      $scope.collections.push($scope.collection.name);
       $scope.collection = {};
     });
   };

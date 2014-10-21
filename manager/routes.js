@@ -25,6 +25,10 @@ module.exports = function(app, api) {
   app
   .route('/api/data-transfer')
   .post(controllers.dataTransfer.transfer);
+  
+  app
+  .route('/api/box/:boxName/destroy-collection/:collectionName')
+  .post(controllers.boxes.destroyCollection);
 
   // Server API Routes
   app

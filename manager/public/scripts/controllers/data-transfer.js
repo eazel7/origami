@@ -10,22 +10,36 @@ angular.module("boxes3.manager")
         $scope.boxes = boxes;
       });
       
-      $scope.isSelected = function (c) {
+      $scope.isCollectionSelected = function (c) {
         return $scope.selectedCollections.indexOf(c) > -1;
       };
       
-      $scope.toggleSelected = function (c) {
-        if ($scope.isSelected(c)) $scope.selectedCollections.splice($scope.selectedCollections.indexOf(c), 1);
+      $scope.toggleCollectionSelected = function (c) {
+        if ($scope.isViewSelected(c)) $scope.selectedCollections.splice($scope.selectedCollections.indexOf(c), 1);
         else $scope.selectedCollections.push(c);
+      };
+      
+      $scope.isViewSelected = function (v) {
+        return $scope.selectedViews.indexOf(v._id) > -1;
+      };
+      
+      $scope.toggleViewSelected = function (c) {
+        if ($scope.isViewSelected(c)) $scope.selectedViews.splice($scope.selectedViews.indexOf(c), 1);
+        else $scope.selectedViews.push(c);
       };
       
       $scope.$watch("from", function (box) {
         $scope.selectedCollections = [];
+        $scope.selectedViews = [];
       
         if (!box) { $scope.sourceCollections = []; return; };
         
         CollectionApi.getCollections(box).then(function (cols) {
           $scope.sourceCollections = cols;
+        });
+        CollectionApi.find(box, "_views", {})
+        .then(function (views) {
+          $scope.sourceViews = views;
         });
       });
       
@@ -51,6 +65,20 @@ angular.module("boxes3.manager")
         $scope.busy = true;
       };
     }
+  });
+})
+.controller("DataTransferCollection", function ($scope, CollectionApi) {
+  $scope.$watch("from", function (b) {
+    if (!b) $scope.sourceCount = '?'
+    else CollectionApi.count(b, $scope.c, {}).then(function (c) {
+      $scope.sourceCount = c;
+    });
+  });
+  $scope.$watch("target", function (b) {
+    if (!b) $scope.targetCount = '?'
+    else CollectionApi.count(b, $scope.c, {}).then(function (c) {
+      $scope.targetCount = c;
+    });
   });
 });
 

@@ -7,10 +7,6 @@
           <option value="" ng-show="!from">Select source box</option>
         </select>
       </div>
-      
-      <ul class="list-group">
-        <a href="javascript:" ng-class="{'active': isSelected(c)}" ng-click="toggleSelected(c)" class="list-group-item" ng-repeat="c in sourceCollections">{{c}}</a>
-      </ul>
     </div>
     <div class="col-md-6">
       <div class="form-group">
@@ -19,10 +15,18 @@
           <option value="" ng-show="!target">Select target box</option>
         </select>
       </div>
-<!--      -->
-<!--      <ul class="list-group">-->
-<!--        <li class="list-group-item" ng-repeat="c in targetCollections" ng-if="c[0] !== '_'">{{c}}</li>-->
-<!--      </ul>-->
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <ul class="list-group">
+        <a ng-controller="DataTransferCollection" href="javascript:" ng-class="{'active': isCollectionSelected(c)}" ng-click="toggleCollectionSelected(c)" class="list-group-item" ng-if="c[0] !== '_'" ng-repeat="c in sourceCollections">{{c}}<span class="badge pull-right">{{sourceCount}} vs {{targetCount}}</span></a>
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <ul class="list-group">
+        <a href="javascript:" ng-class="{'active': isViewSelected(v)}" ng-click="toggleViewSelected(v)" class="list-group-item" ng-repeat="v in sourceViews">{{v.name}}</a>
+      </ul>
     </div>
   </div>
   <p class="text-center">

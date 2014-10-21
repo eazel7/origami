@@ -182,6 +182,22 @@ module.exports = function (config, connect, collectionWrapper, router, callback)
             });
           });
         });
+      },
+      destroyCollection: function (boxName, collectionName, callback) {
+        var unset = {};
+        unset["collections."  + collectionName] = "";
+        
+        var filter = {
+          name: boxName
+        }, replacement = {
+          $unset: unset
+        };
+        console.log(filter, replacement);
+        db
+        .collection("boxes")
+        .update(filter, replacement, {
+          journal: true
+        }, callback);
       }
     });
   });
