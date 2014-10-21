@@ -19,7 +19,8 @@ module.exports = function (config, callback) {
   }
   
   require('./connect')(config.mongo, function (err, db) {
-    function updateBoxesManifest(predicate, boxDependencyResolver, callback) {
+    function updateBoxesManifest(boxDependencyResolver, callback) {
+
         db.collection("boxes")
         .find({})
         .toArray(function (err, affectedBoxes) {
@@ -40,7 +41,6 @@ module.exports = function (config, callback) {
             
             boxDependencyResolver(box.name, function (err, activePackages) {
               async.eachSeries(activePackages || [], function (packageName, callback) {
-                console.log(activePackages);
                 db
                 .collection('packages')
                 .findOne({
@@ -145,15 +145,22 @@ module.exports = function (config, callback) {
           callback (null, doc.dependencies || []);
         });
       },
-      setDependencies: function (packageName, dependencies, callback) {
+      setDependencies: function (packageName, dependencies, callback, silent) {
+        console.log(arguments)
         db.collection("packages").update({
           name: packageName
         }, {
           $set: {
             dependencies: dependencies
           }
-        },  {w: 1}, function () {
-          updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+        }, {w: 1}, function (err) {
+          if (err) callback (err);
+          
+          if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, function (err) {
+            console.log(err);
+            callback(err);
+          });
+          else callback ();
         });
       },
       getPackageType: function (packageName, callback) {
@@ -166,14 +173,19 @@ module.exports = function (config, callback) {
           callback (null, doc.packageType || 'global');
         });
       },
-      setPackageType: function (packageName, packageType, callback) {
+      setPackageType: function (packageName, packageType, callback, silent) {
         db.collection("packages").update({
           name: packageName
         }, {
           $set: {
             packageType: packageType || 'global'
           }
-        },  {w: 1}, callback);
+        },  {w: 1}, function (err) {
+          if (err) return callback(err);
+          
+          if (silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+          else callback ();
+        });
       },
       getActivePackages: function (boxName, callback) {
         db.collection("boxes")
@@ -313,29 +325,36 @@ module.exports = function (config, callback) {
           callback(err, doc.files);
         });
       },
-      createAsset: function(packageName, assetPath, callback) {
+      createAsset: function(packageName, assetPath, callback, silent) {
         db.collection("packages").update({name: packageName}, {$addToSet: {"files": assetPath}},  {w: 1}, function (err) {
           if (err) return callback(err);
           
-          updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+          if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+          else callback ();
         });
       },
-      updateAsset: function(packageName, assetPath, bytes, callback) {      
+      updateAsset: function(packageName, assetPath, bytes, callback, silent) {      
         db.collection("package_assets.files").findOne({
           "metadata.package": packageName,
           "metadata.path": assetPath
         }, function (err, doc) {
+          if (err) return callback (err);
+          
           var grid = new Grid(db, "package_assets");
           
           function done(err) {
             if (err) return callback(err);
           
-            updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+            if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+            else callback();
           }
           
           if (doc) {
             grid.delete(doc._id, function (err) {
-              if (err) console.error(err);
+              if (err) {
+                return callback (err);
+              }
+              
               grid.put(bytes, {metadata: doc.metadata}, done);
             });
           } else {
@@ -415,16 +434,21 @@ module.exports = function (config, callback) {
           callback (null, doc.angularModules || []);
         });
       },
-      setAngularModules: function (packageName, angularModules, callback) {
+      setAngularModules: function (packageName, angularModules, callback, silent) {
         db.collection("packages").update({
           name: packageName
         }, {
           $set: {
             angularModules: angularModules
           }
-        },  {w: 1}, callback);
+        },  {w: 1}, function (err) {
+          if (err) return callback (err);
+          
+          if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+          else callback();
+        });
       },
-      setStyles: function (packageName, styles, callback) {
+      setStyles: function (packageName, styles, callback, silent) {
         db.collection("packages").update({
           name: packageName
         }, {
@@ -434,10 +458,11 @@ module.exports = function (config, callback) {
         },  {w: 1}, function (err) {
           if (err) return callback (err);
           
-          updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+          if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+          else callback();
         });
       },
-      setScripts: function (packageName, scripts, callback) {
+      setScripts: function (packageName, scripts, callback, silent) {
         db.collection("packages").update({
           name: packageName
         }, {
@@ -447,7 +472,8 @@ module.exports = function (config, callback) {
         },  {w: 1}, function (err) {
           if (err) return callback (err);
           
-          updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+          if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+          else callback();
         });
       },
       getAssetMetadata: function(packageName, assetPath, callback) {
@@ -496,72 +522,61 @@ module.exports = function (config, callback) {
         var zip = new ZipFile (zippedBuffer, AdmZipUtil.Constants.BUFFER);
         
         var packageName = zip.getEntry("packageName.txt").getData().toString(),
+            packageType = zip.getEntry("packageType.txt").getData().toString(),
             styles = JSON.parse(zip.getEntry("styles.json").getData().toString()),
             scripts = JSON.parse(zip.getEntry("scripts.json").getData().toString()),
             folders = JSON.parse(zip.getEntry("folders.json").getData().toString()),
+            dependencies = JSON.parse(zip.getEntry("dependencies.json").getData().toString()),
             angularModules = JSON.parse(zip.getEntry("angular-modules.json").getData().toString()),
             mergedMetadata = JSON.parse(zip.getEntry("metadata.json").getData().toString());
-            
-        self.createPackage(packageName, function (err) {
-          if (err) {
-            return importCallback (err);
-          } else {
-            async.eachSeries(folders, function (folder, folderCallback) {
-              self.createFolder(packageName, folder, folderCallback);
-            }, function (err) {
+        
+        async.series([function (callback) {
+          self.createPackage(packageName, callback);
+        }, function (callback) {
+          async.eachSeries(folders, function (folder, folderCallback) {
+            self.createFolder(packageName, folder, folderCallback);
+          }, callback);
+        }, function (callback) {
+          self.setStyles(packageName, styles, callback, true);
+        }, function (callback) {
+          self.setAngularModules(packageName, angularModules, callback, true);
+        }, function (callback) {
+          self.setScripts(packageName, scripts, callback, true);
+        }, function (callback) {
+          var entries = zip.entries;
+          
+          async.eachSeries(entries, function (entry, entryCallback) {
+            if (entry.entryName.indexOf('assets/') !== 0) return entryCallback();
+          
+            var entryBuffer = entry.getData(),
+                assetPath = entry.entryName.slice("assets/".length),
+                entryMetadata = mergedMetadata[assetPath];
+                
+            self.createAsset(packageName, assetPath, function (err) {
               if (err) {
-                return importCallback (err);
+                return entryCallback(err);
               } else {
-                self.setStyles(packageName, styles, function (err) {
+                self.updateAsset(packageName, assetPath, entryBuffer, function (err) {
                   if (err) {
-                    return importCallback (err);
+                    return entryCallback(err);
                   } else {
-                    self.setAngularModules(packageName, angularModules, function (err) {
-                      if (err) {
-                        return importCallback (err);
-                      } else {
-                        self.setScripts(packageName, scripts, function (err) {
-                          if (err) {
-                            return importCallback (err);
-                          } else {                      
-                            var entries = zip.entries;
-                            
-                            async.eachSeries(entries, function (entry, entryCallback) {
-                              if (entry.entryName.indexOf('assets/') !== 0) return entryCallback();
-                            
-                              var entryBuffer = entry.getData(),
-                                  assetPath = entry.entryName.slice("assets/".length),
-                                  entryMetadata = mergedMetadata[assetPath];
-                                  
-                              self.createAsset(packageName, assetPath, function (err) {
-                                if (err) {
-                                  return entryCallback(err);
-                                } else {
-                                  self.updateAsset(packageName, assetPath, entryBuffer, function (err) {
-                                    if (err) {
-                                      return entryCallback(err);
-                                    } else {
-                                      self.setAssetMetadata(packageName, assetPath, entryMetadata, entryCallback);
-                                    }
-                                  });
-                                }
-                              });
-                            }, function (err) {
-                              debugger;
-                              importCallback(err);
-                            });
-                          }
-                        });
-                      }
-                    });
+                    self.setAssetMetadata(packageName, assetPath, entryMetadata, entryCallback, true);
                   }
-                });
+                }, true);
               }
-            });
-          }
-        });
+            }, true);
+          }, function (err) {
+            callback(err);
+          });
+        }, function (callback) {
+          self.setPackageType(packageName, packageType, callback, true);
+        }, function (callback) {
+          self.setDependencies(packageName, dependencies, callback, true);
+        }, function (callback) {
+          updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+        }], importCallback);
       },
-      setAssetMetadata: function(packageName, assetPath, newMetadata, callback) {
+      setAssetMetadata: function(packageName, assetPath, newMetadata, callback, silent) {
         self.getAssetMetadata (packageName, assetPath, function (err, metadata) {
           if (err) return callback (err);
           
@@ -601,12 +616,11 @@ module.exports = function (config, callback) {
             
             db.collection("packages").update({
               name: packageName
-            }, packagesUpdate,  {w: 1}, function (err) {
-              debugger;
-            
+            }, packagesUpdate,  {w: 1}, function (err) {            
               if (err) return callback (err);
               
-              updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+              if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+              else callback();
             });
           });
         });
@@ -675,8 +689,6 @@ module.exports = function (config, callback) {
                 self.listFolders(packageName, function (err, folders) {
                   if (err) return callback(err);
                   
-                  debugger;
-                  
                   zip.addFile("folders.json", new Buffer(JSON.stringify(folders, undefined, 2)));
                   
                   callback();
@@ -686,6 +698,24 @@ module.exports = function (config, callback) {
                 zip.addFile("packageName.txt", new Buffer(packageName));
                 
                 callback();
+              },
+              function(callback){
+                self.getDependencies(packageName, function (err, dependencies) {
+                  if (err) return callback (err);
+                
+                  zip.addFile("dependencies.json", new Buffer(JSON.stringify(dependencies)));
+                
+                  callback();
+                });
+              },
+              function(callback){
+                self.getPackageType(packageName, function (err, packageType) {
+                  if (err) return callback (err);
+                  
+                  zip.addFile("packageType.txt", new Buffer(packageType));
+                  
+                  callback();
+                });
               }],
               function(err) {
                 callback(null, zip.toBuffer());

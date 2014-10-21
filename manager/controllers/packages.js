@@ -256,6 +256,7 @@ module.exports = function (api) {
           
           api.packages.importPackage(bytes, callback);
         }, function (err) {
+          if (err) console.log(err);
           res.status(err ? 418 : 200);
           res.end();        
         });
@@ -300,7 +301,6 @@ module.exports = function (api) {
     setDependencies: function (req, res) {
       api.packages.setDependencies(req.params.packageName, req.body, function (err) {
         if (err) {
-          console.error(err);
           res.status(418);
         } else {
           res.status(200);
