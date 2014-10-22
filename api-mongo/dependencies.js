@@ -10,8 +10,7 @@ module.exports = function (base, resolver, callback) {
   function (callback) {
     resolver(unresolved[0], function (err, deps2) {
       if (!deps2) deps2 = [];
-      
-      deps2.unshift(unresolved[0]);
+      deps2.unshift(unresolved[0]);      
       
       var inserted = 0;
       
