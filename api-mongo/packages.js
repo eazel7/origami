@@ -46,6 +46,9 @@ module.exports = function (config, callback) {
                 .findOne({
                   name: packageName
                 }, function (err, doc) {
+                  console.error("Skip missing package " + packageName);
+                  return callback();
+                
                   var paths = [];
                   if (doc.angularModules) {
                     for (var i = 0; i < doc.angularModules.length; i++) {
