@@ -620,6 +620,11 @@ module.exports = function (config, callback) {
               packagesUpdate["$pull"].styles = assetPath;
             }
             
+            if (Object.keys(packagesUpdate["$pull"]).length === 0) delete packagesUpdate["$pull"];
+            if (Object.keys(packagesUpdate["$addToSet"]).length === 0) delete packagesUpdate["$addToSet"];
+            
+            if (Object.keys(packagesUpdate).length === 0) return callback ();
+            
             db.collection("packages").update({
               name: packageName
             }, packagesUpdate,  {w: 1}, function (err) {            
