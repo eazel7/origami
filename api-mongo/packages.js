@@ -273,12 +273,13 @@ module.exports = function (config, callback) {
         });
       },
       createPackage: function(name, callback) {
+        debugger;
         db.collection("packages").count({
           name: name
         }, function (err, count) {
           if (err) return callback (err);
           
-          if (!count) {
+          if (count === 0) {
             db.collection("packages").insert({
               name: name,
               files: []
@@ -300,7 +301,7 @@ module.exports = function (config, callback) {
             
             db.collection("packages").remove({
               name: packageName
-            },  {w: 1}, function (err) {
+            },  {j: 1}, function (err) {
               if (err) return callback(err);
               
               db
@@ -310,7 +311,7 @@ module.exports = function (config, callback) {
                 $pull: {
                   "packages": packageName
                 }
-              },  {w: 1}, function (err) {
+              }, {j: 1}, function (err) {
                 if (err) return callback (err);
                   
                 updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
