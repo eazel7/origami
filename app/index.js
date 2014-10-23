@@ -397,7 +397,6 @@ module.exports = function (api) {
             if (err) return callback (err);
           
             for (var i = 0; i < assets.length; i++) {
-        console.log('/' + assets[i]);
               assetsMap['/' + assets[i]] = { path: assets[i], packageName: dep};
             }
             

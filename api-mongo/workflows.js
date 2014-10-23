@@ -3,8 +3,7 @@ module.exports = function (api, callback) {
       notRunning = {},
       noflo = require('noflo'),
       uuid = require('node-uuid');
-      
-      
+            
   api.eventBus.on('workflow-output', function (boxName, workflowId, output) {
     var w = running[workflowId] || notRunning[workflowId];
     if (w) {
@@ -15,7 +14,7 @@ module.exports = function (api, callback) {
   });
       
   function setApiInComponents(api) {
-    var defined = require('./package.json').noflo.components;
+    var defined = require('./component.json').noflo.components;
     for (var c in defined) {
       var component = require(defined[c]);
       component.api = api;
@@ -285,7 +284,11 @@ module.exports = function (api, callback) {
                   g.addInitial(params, g.nodes[i].id, 'in', {});
                 }
               }
+              
+              g.componentLoader = new (require("noflo/lib/ComponentLoader").ComponentLoader)(__dirname);
 
+              debugger;
+              
               noflo.createNetwork(g, function(n) {
                 n.activeConnections = [];
                 n.connect(function () {
@@ -299,26 +302,37 @@ module.exports = function (api, callback) {
                     
                     for (var k in n.processes[p].component.inPorts.ports){
                       var inPorts = n.processes[p].component.inPorts.ports[k];
+                      
+                      if (inPorts.isConnected()) {
+                        
+                        for (var s = 0; s < inPorts.sockets.length; s++) {
+                            
+                            if (inPorts.sockets[s].to.metadata && inPorts.sockets[s].to.metadata.id) {
+                          
+                            n.activeConnections.push(inPorts.sockets[s].to.metadata.id);
+                      
+                            api.eventBus.emit('workflow-connection-on', boxName, n.id, inPorts.sockets[s].to.metadata.id);
+                          }
+                        }
+                      }
+                      
                       inPorts.on('connect', function (event) {
+                        
+                        console.log(event);
+                        
                         if (event.to.metadata && event.to.metadata.id) {
                           n.activeConnections.push(event.to.metadata.id);
+                          
                           api.eventBus.emit('workflow-connection-on', boxName, n.id, event.to.metadata.id);
                           }
                       });
                       inPorts.on('disconnect', function (event) {
+                        
                         if (event.to.metadata && event.to.metadata.id) {
                           n.activeConnections.splice(n.activeConnections.indexOf(event.to.metadata.id), 1);
                           api.eventBus.emit('workflow-connection-off', boxName, n.id, event.to.metadata.id);
                         }
                       });
-                      if (inPorts.isConnected()) {
-                        for (var s = 0; s < inPorts.sockets.length; s++) {
-                          if (inPorts.sockets[s].to.metadata && inPorts.sockets[s].to.metadata.id) {
-                            n.activeConnections.push(inPorts.sockets[s].to.metadata.id);
-                            api.eventBus.emit('workflow-connection-on', boxName, n.id, inPorts.sockets[s].to.metadata.id);
-                          }
-                        }
-                      }
                     }
                   }
 
@@ -384,7 +398,7 @@ module.exports = function (api, callback) {
       });
     },
     listComponents: function (callback) {
-      var defined = require('./package.json').noflo.components,
+      var defined = require('./component.json').noflo.components,
           gallery = [];
       for (var c in defined) {
         gallery.push(require(defined[c] + '/component'));

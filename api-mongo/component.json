@@ -1,0 +1,32 @@
+{
+  "noflo": {
+    "components": {
+      "WorkflowStart": "./components/WorkflowStart",
+      "WorkflowEnd": "./components/WorkflowEnd",
+      "TriggerWorkflow": "./components/TriggerWorkflow",
+      "WaitAll": "./components/WaitAll",
+      "CreateObject": "./components/CreateObject",
+      "ApplyRegExp": "./components/ApplyRegExp",
+      "AppDbFind": "./components/AppDbFind",
+      "AppDbInsert": "./components/AppDbInsert",
+      "AppDbRemove": "./components/AppDbRemove",
+      "AppDbUpdate": "./components/AppDbUpdate",
+      "SetProperty": "./components/SetProperty",
+      "GetProperty": "./components/GetProperty",
+      "MongoDbFind": "./components/MongoDbFind",
+      "LogToConsole": "./components/LogToConsole",
+      "SplitArray": "./components/SplitArray",
+      "HTTPGet": "./components/HTTPGet",
+      "Queue": "./components/Queue",
+      "ParseJSON": "./components/ParseJSON",
+      "Delay": "./components/Delay",
+      "FilterByProperty": "./components/FilterByProperty",
+      "SliceArray": "./components/SliceArray",
+      "ListenOps": "./components/ListenOps",
+      "WaitWorkflow": "./components/WaitWorkflow",
+      "CreateString": "./components/CreateString",
+      "BroadcastDesktopNotification": "./components/BroadcastDesktopNotification",
+      "Compare": "./components/Compare"
+    }
+  }
+}
