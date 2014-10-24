@@ -79,8 +79,7 @@ module.exports = function (config, collections, views, eventBus, callback) {
             };
 
             if (!config.singleDbMode) {
-              var mongoPassword = fairlySimplePassword();
-              boxObj.accessPassword = mongoPassword;
+              boxObj.accessPassword = fairlySimplePassword();
             }
 
             var apiKey = fairlySimplePassword()
@@ -108,14 +107,7 @@ module.exports = function (config, collections, views, eventBus, callback) {
                     collections
                     .createCollection(boxName, "_graphs", function (err) {
                       collections
-                      .createServerCollection(boxName, "_workflows", function (err) {
-                        // Collection created
-                        views.saveView(boxName, "home", config.defaultHomeTemplate, function (err) {
-                          views.saveView(boxName, "left-sidebar", config.defaultSidebarTemplate, function () {
-                            callback(null, results);
-                          });
-                        });
-                      });
+                      .createServerCollection(boxName, "_workflows", callback);
                     });
                   });
                 });

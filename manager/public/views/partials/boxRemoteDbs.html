@@ -1,0 +1,19 @@
+<ul class="list-group"  ng-controller="BoxRemoteDbsCtrl">
+  <li ng-repeat="db in remoteDbs" class="list-group-item">
+    {{db.name}}
+    <a href="javascript:" ng-click="unsetRemote(db.name)" class="btn btn-default pull-right btn-xs btn-danger">
+      <span class="glyphicon glyphicon-fire"></span>
+    </a>
+  </li>
+  <li class="list-group-item">
+    <input type="text" class="form-control" style="width: 35%; display: inline-block; float: left; border-bottom-right-radius: 0;border-top-right-radius: 0;" placeholder="DB name (as a variable name)" ng-model="remote.name">
+    <span class="input-group" style="width: 65%">		
+      <input placeholder="MongoDB URL (mongodb://user:password@host:port/database format)" type="text" class="form-control" style="border-top-left-radius: 0; border-bottom-left-radius: 0;" ng-model="remote.url">
+      <span class="input-group-btn">
+        <a class="btn btn-default" href="javascript:" ng-click="setRemote()">
+          <span class="glyphicon glyphicon-plus"></span>
+        </a>
+      </span>
+    </span>
+  </li>
+</ul>

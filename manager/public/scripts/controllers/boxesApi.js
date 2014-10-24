@@ -70,6 +70,33 @@ angular.module('boxes3.manager')
       
       return defer.promise;
     },
+    listRemoteDbs: function (boxName) {
+      var defer = $q.defer();
+      
+      $http.get('/api/box/' + boxName + '/remoteDbs')
+           .success(defer.resolve)
+           .error(defer.reject);
+      
+      return defer.promise;
+    },
+    setRemoteDb: function (boxName, dbName, url) {
+      var defer = $q.defer();
+      
+      $http.post('/api/box/' + boxName + '/remoteDbs', { name: dbName, url: url })
+           .success(defer.resolve)
+           .error(defer.reject);
+      
+      return defer.promise;
+    },
+    unsetRemoteDb: function (boxName, dbName, url) {
+      var defer = $q.defer();
+      
+      $http.post('/api/box/' + boxName + '/remoteDbs/' + dbName)
+           .success(defer.resolve)
+           .error(defer.reject);
+      
+      return defer.promise;
+    },
     saveBoxInfo: function (name, info) {
       var defer = $q.defer();
       

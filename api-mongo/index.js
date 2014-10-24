@@ -66,6 +66,12 @@ module.exports = function (config, callback) {
           self.packages = packages;
           callback(err);
         });
+      },
+      function (callback) {
+        require('./remoteDbs')(config, self.connect, function (err, remoteDbs) {
+          self.remoteDbs = remoteDbs;
+          callback(err);
+        });
       }
     ], function () {
       require('./workflows')(self, function (err, workflows) {

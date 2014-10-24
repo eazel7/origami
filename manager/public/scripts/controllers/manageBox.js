@@ -135,4 +135,37 @@ $stateProvider.state('manageBox', {
       });
     }
   });
+})
+.controller("BoxRemoteDbsCtrl", function ($scope, BoxesApi, $stateParams) {
+    var boxName = $stateParams.boxName;
+    
+    function refreshDbs() {
+      BoxesApi.listRemoteDbs(boxName)
+      .then(function (dbs) {
+        $scope.remoteDbs = dbs;
+      });
+    }
+    
+    refreshDbs();
+    
+    $scope.remote = {
+      name: "",
+      url: ""
+    };
+    
+    $scope.setRemote = function () {
+      BoxesApi.setRemoteDb(boxName, $scope.remote.name, $scope.remote.url)
+      .then(refreshDbs)
+      .then(function () {
+        $scope.remote = {
+          name: "",
+          url: ""
+        };
+      })
+    };
+    
+    $scope.unsetRemote = function (remote) {
+      BoxesApi.unsetRemoteDb(boxName, remote.name)
+      .then(refreshDbs);
+    }
 });

@@ -331,6 +331,185 @@ module.exports = function (api) {
       });
     });
 
+    app.get('/api/dbs/:name/:collection/find', function (req, res) {
+      api.remoteDbs.getCollection (
+        boxName,
+        req.params.name,
+        req.params.collection,
+        function (err, collection){
+          if (err) {
+            console.log({ box: boxName, url: req.params.url, err: err});
+            res.status(418);
+            return res.end();
+          }
+
+          collection.find({})
+          .toArray(function (err, docs) {
+            if (err) {
+              console.error({ box: boxName, url: req.params.url, err: err});
+              res.status(418);
+              return res.end();
+            }
+
+            return res.json(docs);
+          });
+        });
+    });
+    
+    app.post('/api/dbs/:name/:collection/find', function (req, res) {
+      api.remoteDbs.getCollection (
+        boxName,
+        req.params.name,
+        req.params.collection,
+        function (err, collection){
+          if (err) {
+            console.log({ box: boxName, url: req.params.url, err: err});
+            res.status(418);
+            return res.end();
+          }
+
+          collection.find(req.body || {})
+          .toArray(function (err, docs) {
+            if (err) {
+              console.error({ box: boxName, url: req.params.url, err: err});
+              res.status(418);
+              return res.end();
+            }
+
+            return res.json(docs);
+          });
+        });
+    });
+    
+    app.post('/api/dbs/:name/:collection/count', function (req, res) {
+      api.remoteDbs.getCollection (
+        boxName,
+        req.params.name,
+        req.params.collection,
+        function (err, collection){
+          if (err) {
+            console.error({ box: boxName, url: req.params.url, err: err});
+            res.status(418);
+            return res.end();
+          }
+
+          collection.count(req.body || {}, function (err, docs) {
+            if (err) {
+              console.error({ box: boxName, url: req.params.url, err: err});
+              res.status(418);
+              return res.end();
+            }
+
+            return res.json(docs);
+          });
+        });
+    });
+    
+    app.post('/api/dbs/:name/:collection/findOne', function (req, res) {
+      api.remoteDbs.getCollection (
+        boxName,
+        req.params.name,
+        req.params.collection,
+        boxName,
+        req.params.collection,
+        function (err, collection){
+          if (err) {
+            console.error({ box: boxName, url: req.params.url, err: err});
+            res.status(418);
+            return res.end();
+          }
+
+          collection.findOne(req.body || {}, function (err, doc) {
+            if (err) {
+              console.error({ box: boxName, url: req.params.url, err: err});
+              res.status(418);
+              return res.end();
+            }
+
+            if (!doc) {
+              res.status(404);
+              return res.end();
+            }
+
+            return res.json(doc);
+          });
+        });
+    });
+
+    app.post('/api/dbs/:name/:collection/insert', function (req, res) {
+      api.remoteDbs.getCollection (
+        boxName,
+        req.params.name,
+        req.params.collection,
+        function (err, collection){
+          if (err) {
+            console.log({ box: boxName, url: req.params.url, err: err});
+            res.status(418);
+            return res.end();
+          }
+
+          collection.insert(req.body, { w: 1 }, function (err, newDoc) {
+            if (err) {
+              console.log({ box: boxName, url: req.params.url, err: err});
+              res.status(418);
+              return res.end();
+            }
+
+            return res.json(newDoc);
+          }, req.headers['box.browserkey']);
+        });
+    });
+    
+    app.post('/api/dbs/:name/:collection/update', function (req, res) {
+      api.remoteDbs.getCollection (
+        boxName,
+        req.params.name,
+        req.params.collection,
+        function (err, collection){
+          if (err) {
+            console.log({ box: boxName, url: req.params.url, err: err});
+            res.status(418);
+            return res.end();
+          }
+
+          collection.update(req.body.predicate, req.body.replacement, { w: 1, multi: true }, function (err, newDoc) {
+            if (err) {
+              console.log({ box: boxName, url: req.params.url, err: err});
+              res.status(418);
+              return res.end();
+            }
+
+            res.status(200);
+            return res.end();
+          }, req.headers['box.browserkey']);
+        });
+    });
+    
+    app.post('/api/dbs/:name/:collection/remove', function (req, res) {
+      api.remoteDbs.getCollection (
+        boxName,
+        req.params.name,
+        req.params.collection,
+        function (err, collection) {
+          if (err) {
+            console.error({ box: boxName, url: req.params.url, err: err});
+            res.status(418);
+            return res.end();
+          }
+
+          collection.remove(req.body, { w: 1 }, function (err) {
+            if (err) {
+              console.error({ box: boxName, url: req.params.url, err: err});
+              res.status(418);
+              return res.end();
+            }
+
+            res.status(200);
+            return res.end();
+          }, req.headers['box.browserkey']);
+      });
+    });
+
     app.route('/api/workflows')
     .get(function (req, res) {
       api.workflows.listRunningWorkflows(boxName, function (err, workflows){

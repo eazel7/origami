@@ -91,10 +91,32 @@ module.exports = function (api) {
       });
     },
     destroyCollection: function (req, res) {
-      console.log(req.params);
       api.collections.destroyCollection(req.params.boxName, req.params.collectionName, function (err) {
         res.status(err ? 418 : 200);
         res.end();
+      });
+    },
+    setRemoteDb: function (req, res) {
+      api.remoteDbs.setForBox(req.params.boxName, req.body.name, req.body.url, function (err) {
+        res.status(err ? 418 : 200);
+        res.end();
+      });
+    },
+    unsetRemoteDb: function (req, res) {
+      api.remoteDbs.setForBox(req.params.boxName, req.params.name, function (err) {
+        res.status(err ? 418 : 200);
+        res.end();
+      });
+    },
+    listRemoteDbs: function (req, res) {
+      api.remoteDbs.listForBox(req.params.boxName, function (err, dbs) {
+        if (err) {
+          console.log(err);
+          res.status(418);
+          return res.end();
+        }
+        
+        res.json(dbs);
       });
     }
   };

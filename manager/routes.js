@@ -120,6 +120,14 @@ module.exports = function(app, api) {
   .get(controllers.boxes.getActivePackagesWithDependencies);
 
   app
+  .route('/api/box/:boxName/remoteDbs')
+  .get(controllers.boxes.listRemoteDbs);
+
+  app
+  .route('/api/box/:boxName/remoteDbs')
+  .post(controllers.boxes.setRemoteDb);
+
+  app
   .route('/api/packages')
   .get(controllers.packages.listPackages);
 
