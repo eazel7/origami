@@ -27,6 +27,10 @@ module.exports = function (config, callback) {
         }, callback);
       },
       enableUser: function (userAlias, boxName, role, callback) {
+        if (!userAlias) throw new Error ("No user alias");
+        if (!boxName) throw new Error ("No box name");
+        if (!role) throw new Error ("No role");
+      
         db
         .collection('users')
         .findOne({
@@ -61,7 +65,8 @@ module.exports = function (config, callback) {
           .collection('users')
           .insert({
             alias: userAlias,
-            displayName: displayName
+            displayName: displayName,
+            roles: {}
           }, callback);
         });
       },

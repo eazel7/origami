@@ -31,12 +31,23 @@ module.exports = function (api) {
           client.validar(args, function(err, result) {
             if (err) return done (err);
             
-            console.log(result);
             if (result["return"] == 1) {
-              done(null, { alias: alias, displayName: alias })
+              api.users.getUser(alias, function (err, user) {
+                if (err) return done(err);
+                
+                if (!user) {
+                  return api.users.registerUser(alias, alias, function (err) {
+                    if (err) return done(err);
+                    
+                    api.users.getUser(alias, done);
+                  });
+                }
+                
+                done(null, user);
+              });
             }
             else {
-              done('Falló');
+              done('Usuario o contraseña no válidos');
             }
           });
         });
@@ -50,7 +61,6 @@ module.exports = function (api) {
       .route('/api/auth/buenosaires/login')
       .post(function (req, res, next) {
         passport.authenticate('ba', {}, function (err, user) {
-        console.log(err);
           if (err) {
             res.status(418);
             res.end();

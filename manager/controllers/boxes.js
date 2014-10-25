@@ -79,6 +79,8 @@ module.exports = function (api) {
       });
     },
     createBox: function (req, res) {
+      console.log(req.session.user);
+      
       api.boxes.createBox(req.params.boxName, req.session.user.alias, function (err) {
         res.status(200);
         res.end();

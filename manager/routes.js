@@ -105,7 +105,11 @@ module.exports = function(app, api) {
 
   app
   .route('/api/createBox/:boxName')
-  .post(controllers.boxes.createBox);
+  .post(function (req, res, next) {
+     console.log(req.session.user);
+  
+     return controllers.boxes.createBox.apply(this, arguments);
+   });
 
   app
   .route('/api/box/:boxName/users/:userAlias')

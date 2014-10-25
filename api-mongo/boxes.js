@@ -66,6 +66,9 @@ module.exports = function (config, collections, views, eventBus, callback) {
        * @api public
        */
       createBox: function (boxName, owner, callback) {
+        if (!boxName) throw new Error("No box name");
+        if (!owner) throw new Error("No owner");      
+      
         return getBox(boxName, function (err, box) {
           if (box) {
             callback(new Error('A box with that name already exists'))
@@ -75,7 +78,13 @@ module.exports = function (config, collections, views, eventBus, callback) {
             var boxObj = {
               name: boxName,
               owner: owner,
-              apiKey: apiKey
+              apiKey: apiKey,
+              angularModules: [],
+              styles: [],
+              collections: {},
+              manifest: "CACHE MANIFEST\n",
+              packages: [],
+              scripts: []
             };
 
             if (!config.singleDbMode) {

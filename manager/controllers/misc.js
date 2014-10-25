@@ -9,6 +9,7 @@ module.exports = function (api) {
       });
     },
     randomName: function (req, res) {
+      console.log(req.session);
       var randomName = require('origami-random-names')();
       return res.end(randomName);
     }
