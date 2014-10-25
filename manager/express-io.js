@@ -19,7 +19,6 @@ var expressSecret = 'thisIsAnObviousSecret',
  */
 module.exports = function(app, io) {
   var env = app.get('env');
-  app.use(express.static(path.join(config.root, 'public')));
   app.use(compression());
   app.use(favicon(path.join(config.root, 'public', 'favicon.ico')));
   app.use(express.static(path.join(config.root, 'public')));

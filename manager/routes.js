@@ -19,8 +19,14 @@ module.exports = function(app, api) {
     app.use('/views/partials', express.static(partialsPath));
   }
 
+  function loginRequired(req, res, next) {
+    if (!req.session.user) return res.redirect('/login?returnTo=' + encodeURIComponent(req.originalUrl));
+    
+    return next();
+  }
+  
   app.route('/')
-  .get(controllers.misc.index);
+  .get(loginRequired, controllers.misc.index);
   
   app
   .route('/api/data-transfer')
@@ -105,11 +111,7 @@ module.exports = function(app, api) {
 
   app
   .route('/api/createBox/:boxName')
-  .post(function (req, res, next) {
-     console.log(req.session.user);
-  
-     return controllers.boxes.createBox.apply(this, arguments);
-   });
+  .post(controllers.boxes.createBox);
 
   app
   .route('/api/box/:boxName/users/:userAlias')

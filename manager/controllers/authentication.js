@@ -93,6 +93,14 @@ module.exports = function (api) {
       .get(function (req, res) {
         res.render('login-chooser.html');
       });
+
+      app
+      .route('/logout')
+      .get(function (req, res) {
+        req.session.user = null;
+        req.logout();
+        res.redirect("/");
+      });
     }
   };
 };
