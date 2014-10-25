@@ -13,6 +13,9 @@
         "password": "P@ssw0rd!",
         "collection": "local-users"
       }
+    },
+    "origami-auth-buenosaires": {
+      "url": "http://10.10.1.50/webservice/validar.php?wsdl"
     }
   },
   "protocol": "spdy",

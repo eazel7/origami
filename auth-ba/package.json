@@ -1,0 +1,28 @@
+{
+  "name": "origami-auth-buenosaires",
+  "version": "0.1.0",
+  "description": "Origami user authentication with @buenosaires.gob.ar",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://git-asi.buenosaires.gob.ar/origami/auth-ba"
+  },
+  "keywords": [
+    "Origami",
+    "buenosaires.gob.ar",
+    "authentication"
+  ],
+  "author": "Diego Pérez",
+  "license": "BSD",
+  "dependencies": {
+    "mongodb": "~1.4.7",
+    "express": "~4.5.0",
+    "passport": "~0.2.0",
+    "passport-local": "~1.0.0",
+    "password-hash": "~1.2.2",
+    "soap": "~0.5.1"
+  }
+}
