@@ -16,8 +16,18 @@ module.exports = function (config, callback) {
 
         db
         .collection('users')
-        .find(query, {_id: 1, displayName: 1, alias: 1})
-        .toArray(callback);
+        .find(query, {_id: 1, displayName: 1, alias: 1, roles: 1})
+        .toArray(function (err, users) {
+          if (err) return callback (err);
+          
+          for (var i = 0; i < users.length; i++) {
+            users[i].role = users[i].roles[boxName];
+            
+            delete users[i].role;
+          }
+          
+          callback (null, users);
+        });
       },
       getUser: function (userAlias, callback) {
         db

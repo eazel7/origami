@@ -63,6 +63,9 @@ module.exports = function (api) {
     listBoxUsers: function (req, res) {
       var boxName = req.params.boxName;
       api.users.listBoxUsers(boxName, function (err, users) {
+        
+        console.log(arguments);
+        
         var boxUsers = {};
 
         for (var i = 0; i < users.length; i++) {
