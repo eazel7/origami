@@ -15,6 +15,16 @@ module.exports = function (api) {
         }
       });
     },
+    getMyRoles: function (req, res) {
+      api.users.getUser(req.session.user.alias, function (err, user) {
+        if (user) {
+          res.json(user.roles);
+        } else {
+          res.status(404);
+          res.end();
+        }
+      });
+    },
     setRole: function (req, res) {
       if (req.body && req.body.role) {
         api.users.enableUser(req.params.userAlias, req.params.boxName, req.body.role, function (err) {

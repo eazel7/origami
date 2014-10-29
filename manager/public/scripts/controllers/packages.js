@@ -32,10 +32,16 @@ angular.module("boxes3.manager")
         $q.all(proms).then(refreshPackages);
       };
       
+      $scope.validName = function (name) {
+        return $scope.packages.indexOf(name) === -1;
+      };
+      
       $scope.createNewPackage = function () {
         $scope.newPackage = {};
       };
       $scope.saveNewPackage = function () {
+        if(!$scope.validName($scope.newPackage.name)) return;
+        
         $http.post('/api/packages/' + $scope.newPackage.name + '/create',{})
         .success(function () {
           $scope.newPackage = undefined;
@@ -302,6 +308,10 @@ angular.module("boxes3.manager")
   
   $scope.isActive = function (p) {
     return $scope.activePackages.indexOf(p) !== -1;
+  };
+
+  $scope.isNotActive = function (p) {
+    return !$scope.isActive(p);
   };
   
   $scope.isDependency = function (p) {

@@ -1,13 +1,18 @@
 <ul class="list-group">
-  <a href="javascript:" class="list-group-item" ng-class="{'active': isActive(p)}" ng-repeat="p in packages | orderBy:packagePriority" ng-click="switchPackage(p)">
+  <a href="javascript:" class="list-group-item" ng-class="{'active': isActive(p)}" ng-repeat="p in packages|filter:isActive" ng-click="switchPackage(p)">
     {{p}}
     <span class="pull-right btn-group">
-      <span ng-if="isDependency(p)"><i class="glyphicon glyphicon-ok"></i></span>
       <span ng-if="isActive(p)">
         <button ng-disabled="packagePriority(p) === 1" ng-click="priorityUp(p, $event)" class="btn btn-xs btn-default"><i class="glyphicon glyphicon-chevron-up"></i></button>
         <button class="btn btn-default btn-xs" disabled>{{packagePriority(p)}}</button>
         <button ng-disabled="$last" ng-click="priorityDown(p, $event)" class="btn btn-xs btn-default"><i class="glyphicon glyphicon-chevron-down"></i></button>
       </span>
+    </span>
+  </a>
+  <a href="javascript:" class="list-group-item" ng-repeat="p in packages|filter:isNotActive" ng-click="switchPackage(p)">
+    {{p}}
+    <span class="pull-right btn-group">
+      <span ng-if="isDependency(p)"><i class="glyphicon glyphicon-ok"></i></span>
     </span>
   </a>
 </ul>

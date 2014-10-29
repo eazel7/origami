@@ -33,6 +33,10 @@ module.exports = function(app, api) {
   .post(controllers.dataTransfer.transfer);
   
   app
+  .route('/api/my-roles')
+  .get(controllers.users.getMyRoles);
+  
+  app
   .route('/api/box/:boxName/destroy-collection/:collectionName')
   .post(controllers.boxes.destroyCollection);
 

@@ -8,9 +8,12 @@ angular.module('boxes3.manager')
   $stateProvider.state('boxes', {
     url: '/boxes',
     templateUrl: 'views/partials/boxes.html',
-    controller: function ($scope, BoxesApi) {
+    controller: function ($scope, BoxesApi, UsersApi) {
       BoxesApi.getAllBoxes().then(function (boxes) {
         $scope.boxes = boxes;;
+      });
+      UsersApi.getMyRoles().then(function (roles) {
+        $scope.roles = roles;
       });
     }
   });

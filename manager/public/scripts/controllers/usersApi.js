@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('boxes3.manager')
+angular.module('boxes3.usersapi', [])
 .service("UsersApi", function ($http, $q) {
   return {
     getAllUsers: function () {
@@ -16,6 +16,15 @@ angular.module('boxes3.manager')
       var defer = $q.defer();
       
       $http.get('/api/users/' + alias)
+      .success(defer.resolve)
+      .error(defer.reject);
+      
+      return defer.promise;
+    },
+    getMyRoles: function () {
+      var defer = $q.defer();
+      
+      $http.get('/api/my-roles')
       .success(defer.resolve)
       .error(defer.reject);
       

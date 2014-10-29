@@ -1,22 +1,37 @@
-<div class="form-inline">
-  <ul class="nav nav-pills pull-right">
-    <li>
-      <a href="#/">Home</a>
-    </li>
-    <li>
-      <a href="#/about">About</a>
-    </li>
-    <li>
-      <a href="#/packages">Packages</a>
-    </li>
-    <li>
-      <a href="#/data-transfer">Data transfer</a>
-    </li>
-    <li>
-      <a href="#/boxes">Boxes</a>
-    </li>
-    <li>
-      <a href="/logout">Logout</a>
-    </li>
-  </ul>
+<div class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#/boxes">Origami</a>
+    </div>
+    
+    <ul class="nav navbar-nav navbar-left">
+      <li>
+        <a href="#/">Home</a>
+      </li>
+      <li>
+        <a href="#/about">About</a>
+      </li>
+      <li>
+        <a href="#/packages">Packages</a>
+      </li>
+      <li>
+        <a href="#/data-transfer">Data transfer</a>
+      </li>
+      <li>
+        <a href="#/boxes">Boxes</a>
+      </li>
+      <li>
+        <a href="#/server">Server</a>
+      </li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right" ng-if="identity">
+      <li class="navbar-text">
+        {{identity.displayName}}&nbsp;<span class="glyphicon glyphicon-user"></span>
+      </li>
+      <li>
+        <a class="text-danger" href="/logout">Logout <span class="glyphicon glyphicon-off"></span></a>
+      </li>
+    </ul>
+  </div>
 </div>
+

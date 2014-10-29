@@ -1,0 +1,63 @@
+
+  <h4 class="text-center">Server configuration</h4>
+  <div class="alert text-center alert-danger">
+    This page does nothing
+  </div>
+  
+
+<div ng-controller="Server">
+  
+  <tabset>
+    <tab heading="Authentication">
+      <div class="well">
+        <div>
+          <a style="width: 200px; margin-right: 1em" href="javascript:" class="btn btn-primary active">Active</a><label>@local</label>
+          <a class="btn btn-link pull-right" href="javascript:">manage @local users</a>
+        </div>
+        
+        <hr />
+        
+        <div><a style="width: 200px; margin-right: 1em" href="javascript:" class="btn btn-primary active">Active</a><label>@buenosaires.gob.ar</label></div>
+
+        <hr />
+    
+        <div class="form-group">
+          <label>Master user:</label>
+          <select ng-model="masterUser" ng-options="u.alias as u.displayName for u in users" class="form-control"></select>
+        </div>
+      
+      </div>
+    </tab>
+    <tab heading="Database">
+      <div class="well">
+        <div class="form-group">
+          <label>Main database:</label>
+          <input type="text" class="form-control" />
+        </div>
+      </div>
+    </tab>
+    <tab heading="Web" >
+      <div class="well">
+        <div class="form-group">
+          <label>URL prefix:</label>
+          <input type="text" class="form-control" />
+        </div>
+      </div>
+    </tab>
+    <tab heading="Import">
+      <div class="well">
+        <a href="javascript:" ng-click="importAllPackages()" class="form-group btn btn-block btn-default">Packages</a>
+        
+        <a href="javascript:" ng-click="restoreAllData()" class="form-group btn btn-block btn-default">Applications</a>
+      </div>
+    </tab>
+    <tab heading="Export">
+      <div class="well">
+        <a href="javascript:" ng-click="importAllPackages()" class="form-group btn btn-block btn-default">Packages</a>
+        
+        <a href="javascript:" ng-click="restoreAllData()" class="form-group btn btn-block btn-default">Applications</a>
+      </div>
+    </tab>
+  </tabset>
+  
+</div>

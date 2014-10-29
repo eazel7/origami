@@ -1,30 +1,33 @@
-<table class="table table-striped">
-  <tbody>
-    <tr ng-repeat="collection in collections">
-      <td>
-        <a ng-href="#/{{boxName}}/explore-data/{{collection}}">{{collection}}</a>
-      </td>
-      <td ng-controller="RemoveCollecitonCtrl">
-        <a ng-click="removeCollection()" class="pull-right btn-sm btn btn-danger">{{count}} <i class="glyphicon glyphicon-fire"></i></a>
-      </td>
-    </tr>
-    <tr ng-if="!collections.length">
-      <td>No collections</td>
-    </tr>
-  </tbody>
-  <tfoot>
-    <tr ng-controller="CreateCollectionCtrl">
-      <td colspan="2" style="padding-left: 0; padding-right: 0; padding-bottom: 0">
-        <div class="input-group" style="width: 100%">
-          <input placeholder="New collection name" ui-keypress="{'enter':'createCollection()'}" type="text" class="form-control" ng-model="collection.name" />
-          <span class="input-group-btn">
-            <a ng-click="createCollection()" class="btn btn-default" ng-disabled="!collection.name" href="javascript:">
-              <span class="glyphicon glyphicon-ok"></span>
-            </a>
-          </span>
-        </div>
-      </td>
-    </tr>
-  </tfoot>
-</table>
+<div class="panel panel-default">
 
+  <table class="table table-striped">
+    <tbody>
+      <tr ng-repeat="collection in collections">
+        <td>
+          <a ng-href="#/{{boxName}}/explore-data/{{collection}}">{{collection}}</a>
+        </td>
+        <td ng-controller="RemoveCollecitonCtrl">
+          <a ng-click="removeCollection()" class="pull-right btn-sm btn btn-danger">{{count}} <i class="glyphicon glyphicon-fire"></i></a>
+        </td>
+      </tr>
+      <tr ng-if="!collections.length">
+        <td>No collections</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr ng-controller="CreateCollectionCtrl">
+        <td colspan="2" style="padding-left: 0; padding-right: 0; padding-bottom: 0">
+          <div class="input-group" style="width: 100%">
+            <input placeholder="New collection name" ui-keypress="{'enter':'createCollection()'}" type="text" class="form-control" ng-model="collection.name" />
+            <span class="input-group-btn">
+              <a ng-click="createCollection()" class="btn btn-default" ng-disabled="!collection.name" href="javascript:">
+                <span class="glyphicon glyphicon-ok"></span>
+              </a>
+            </span>
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+</div>

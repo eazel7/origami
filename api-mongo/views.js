@@ -2,6 +2,7 @@ module.exports = function (config, connect, router, wrapper, callback) {
   function getViewsCollection(boxName, callback) {
     connect(function (err, db) {
       router.routeCollection(boxName, "_views", function (err, route) {
+        console.log(route);
         wrapper.wrap(db
                      .db(route.database)
                      .collection(route.collection), {

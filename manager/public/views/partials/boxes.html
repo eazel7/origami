@@ -1,10 +1,14 @@
-<div class="container" style="padding-top: 1em">
-  <div class="row">
-    <div class="col-md-12">
-      <ul class="list-group">
+
+    <h4 class="text-center">
+    {{boxes.length}} boxes
+    </h4>
+    <div class="well">
+    
+          <ul class="list-group">
         <a class="list-group-item" href="#/new-box">Create new</a>
-        <a ng-repeat="b in boxes" ng-href="#/manage-box/{{b}}" class="list-group-item">{{b}}</a>
+        <a ng-repeat="b in boxes" ng-href="#/manage-box/{{b}}" class="list-group-item">{{b}}
+        
+        <span class="pull-right glyphicon" ng-if="roles" ng-class="{'user': 'glyphicon-user', 'owner': 'glyphicon-dashboard', undefined: 'glyphicon glyphicon-ban-circle'}[roles[b]]"></span>
+        </a>
       </ul>
-    </div>
-  </div>
 </div>

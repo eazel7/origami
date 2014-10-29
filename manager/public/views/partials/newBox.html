@@ -1,47 +1,47 @@
-<div class="container" style="padding-top: 1em">
-    <page-title title="Create a new box"></page-title>
+<div class="well">
+  <page-title title="Create a new box"></page-title>
 
-    <style type="text/css">
-        input.ng-invalid.ng-dirty {
-            background-color: #FA787E;
-        }
-    </style>
+  <style type="text/css">
+      input.ng-invalid.ng-dirty {
+          background-color: #FA787E;
+      }
+  </style>
 
-    <div class="row" ng-show="error" ng-animate="{enter: 'enter-slide', leave: 'leave-slide'}">
-        <div class="col-md-12">
-        <div class="alert alert-warning">
-              <button type="button" class="close" ng-click="error = null" aria-hidden="true">&times;</button>
-            {{error}}</div>
-            </div>
-    </div>
-    
-    <form role="form" name="newBoxForm">
-        <div class="row">
+  <div class="row" ng-show="error" ng-animate="{enter: 'enter-slide', leave: 'leave-slide'}">
+      <div class="col-md-12">
+      <div class="alert alert-warning">
+            <button type="button" class="close" ng-click="error = null" aria-hidden="true">&times;</button>
+          {{error}}</div>
+          </div>
+  </div>
+  
+  <form role="form" name="newBoxForm">
+      <div class="row">
 
-            <div class="col-md-8">
-                <div class="form-group has-feedback" ng-class="{'has-error': boxNameTaken || !box.name, 'has-success': !boxNameTaken}">
-                    <label class="control-label">Box name</label>
-                    <input type="text" ng-model="box.name" class="form-control" placeholder="">
-                    <span class="glyphicon glyphicon-warning-sign form-control-feedback" ng-if="boxNameTaken"></span>
-                    <span class="glyphicon glyphicon-ok form-control-feedback" ng-if="box.name && !boxNameTaken"></span>
-                </div>
-            </div>
+          <div class="col-md-8">
+              <div class="form-group has-feedback" ng-class="{'has-error': boxNameTaken || !box.name, 'has-success': !boxNameTaken}">
+                  <label class="control-label">Box name</label>
+                  <input type="text" ng-model="box.name" class="form-control" placeholder="">
+                  <span class="glyphicon glyphicon-warning-sign form-control-feedback" ng-if="boxNameTaken"></span>
+                  <span class="glyphicon glyphicon-ok form-control-feedback" ng-if="box.name && !boxNameTaken"></span>
+              </div>
+          </div>
 
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label class="control-label">&nbsp;</label>
-                    <a class="btn-block btn btn-default" ng-click="newName()">
-                        <span class="glyphicon glyphicon-refresh"></span>&nbsp;New name</a>
-                </div>
-            </div>
-        </div>
+          <div class="col-md-4">
+              <div class="form-group">
+                  <label class="control-label">&nbsp;</label>
+                  <a class="btn-block btn btn-default" ng-click="newName()">
+                      <span class="glyphicon glyphicon-refresh"></span>&nbsp;New name</a>
+              </div>
+          </div>
+      </div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <a ng-click="createBox(box)" class="btn btn-lg btn-primary btn-block" ng-disabled="!box.name || boxNameTaken">
-                    <span class="glyphicon glyphicon-plus-sign"></span>&nbsp;Create</a>
-            </div>
-        </div>
+      <div class="row">
+          <div class="col-md-12">
+              <a ng-click="createBox(box)" class="btn btn-lg btn-primary btn-block" ng-disabled="!box.name || boxNameTaken">
+                  <span class="glyphicon glyphicon-plus-sign"></span>&nbsp;Create</a>
+          </div>
+      </div>
 
-    </form>
+  </form>
 </div>

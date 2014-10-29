@@ -1,4 +1,6 @@
-<table class="table">
+<div class="panel panel-default">
+
+<table class="panel table table-striped">
   <tbody>
     <tr ng-controller="BoxUserDetailsCtrl" ng-repeat="(alias, role) in boxUsers">
       <th>{{profile.displayName || alias}}</th><td>{{role}}</td>
@@ -21,3 +23,5 @@
     </tr>
   </tfoot>
 </table>
+
+</div>

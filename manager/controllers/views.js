@@ -5,7 +5,12 @@ module.exports = function (api) {
      * Expects :box as rotue parameter  
      */
     getViews: function (req, res) {
-      api.getViews(req.params.box, function (err, viewNames) {
+      api.views.listViews(req.params.boxName, function (err, viewNames) {
+        if (err) {
+          console.log(err);
+          res.status(418);
+          return res.end();
+        }
         res.json(viewNames);
       });
     }
