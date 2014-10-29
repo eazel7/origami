@@ -4,6 +4,9 @@
       <td>
         <a ng-href="#/{{boxName}}/explore-data/{{collection}}">{{collection}}</a>
       </td>
+      <td ng-controller="RemoveCollecitonCtrl">
+        <a ng-click="removeCollection()" class="pull-right btn-sm btn btn-danger">{{count}} <i class="glyphicon glyphicon-fire"></i></a>
+      </td>
     </tr>
     <tr ng-if="!collections.length">
       <td>No collections</td>

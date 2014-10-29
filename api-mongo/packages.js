@@ -151,7 +151,6 @@ module.exports = function (config, callback) {
         });
       },
       setDependencies: function (packageName, dependencies, callback, silent) {
-        console.log(arguments)
         db.collection("packages").update({
           name: packageName
         }, {

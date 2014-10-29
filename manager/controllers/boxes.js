@@ -63,9 +63,6 @@ module.exports = function (api) {
     listBoxUsers: function (req, res) {
       var boxName = req.params.boxName;
       api.users.listBoxUsers(boxName, function (err, users) {
-        
-        console.log(arguments);
-        
         var boxUsers = {};
 
         for (var i = 0; i < users.length; i++) {
@@ -82,8 +79,6 @@ module.exports = function (api) {
       });
     },
     createBox: function (req, res) {
-      console.log(req.session.user);
-      
       api.boxes.createBox(req.params.boxName, req.session.user.alias, function (err) {
         res.status(200);
         res.end();
@@ -116,7 +111,7 @@ module.exports = function (api) {
     listRemoteDbs: function (req, res) {
       api.remoteDbs.listForBox(req.params.boxName, function (err, dbs) {
         if (err) {
-          console.log(err);
+          console.error(err);
           res.status(418);
           return res.end();
         }

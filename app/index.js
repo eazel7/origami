@@ -460,6 +460,18 @@ module.exports = function (api) {
         });
     });
     
+    app.get('/api/users', function (req, res) {
+      api.users.listBoxUsers(boxName, function (err, users) {
+        for (var i = 0; i < users.length; i++) {
+          delete users[i]._id;
+          users[i].role = users[i].roles[boxName];
+          delete users[i].roles;
+        }
+
+        res.json(users);
+      });
+    });
+    
     app.post('/api/dbs/:name/:collection/update', function (req, res) {
       api.remoteDbs.getCollection (
         boxName,

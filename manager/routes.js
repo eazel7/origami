@@ -69,6 +69,7 @@ module.exports = function(app, api) {
       return res.end();
     });
   });
+  
   app
   .route('/api/box/:boxName/info')
   .get(controllers.boxes.getBoxInfo);

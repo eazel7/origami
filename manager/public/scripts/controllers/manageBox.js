@@ -16,7 +16,7 @@ angular.module('boxes3.manager')
     .then(function (count) {
       collection.count = count;
     });
-  }
+  };
 })
 .controller("BoxAdministratorsCtrl", function ($scope, $stateParams, UsersApi) {
   $scope.revoke = function (user) {
@@ -56,6 +56,21 @@ angular.module('boxes3.manager')
   });
   $scope.exploreData =  function (collection) {
     $state.go('^.exploreData', { boxName: $stateParams.boxName, collectionName: collection.name });
+  };
+})
+.controller("RemoveCollecitonCtrl", function ($scope, $state, $stateParams, CollectionApi) {
+  CollectionApi.count($stateParams.boxName, $scope.collection, {})
+  .then(function (count) {
+    $scope.count = count;
+  });
+  $scope.removeCollection = function () {
+    CollectionApi.remove($stateParams.boxName, $scope.collection, {})
+    .then(function () {
+      CollectionApi.count($stateParams.boxName, $scope.collection, {})
+      .then(function (count) {
+        $scope.count = count;
+      });
+    });
   };
 })
 .controller("BoxUsersCtrl", function ($scope, $stateParams, UsersApi) {

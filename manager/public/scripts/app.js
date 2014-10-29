@@ -51,7 +51,14 @@ angular.module('boxes3.manager', [
 .config(function ($stateProvider, $urlRouterProvider, $locationProvider) {
   $stateProvider.state('home', {
       url: '/',
-      templateUrl: 'views/partials/home.html'
+      templateUrl: 'views/partials/home.html',
+      controller: function ($scope, $window) {
+        $scope.clearTempData = function () {
+          for (var k in $window.localStorage) {
+            delete $window.localStorage[k];
+          }
+        }
+      }
   });
   $stateProvider.state('about', {
       url: '/about',
