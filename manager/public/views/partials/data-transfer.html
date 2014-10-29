@@ -1,79 +1,86 @@
-<h4 class="text-center">Data transfer</h4>
-
-<div class="alert text-center alert-danger">
-  This page does nothing
-</div>
+<page-title title="Data transfer"></page-title>
 
 <div class="well" ng-controller="DataTransfer">
   
   <div class="row">
-  <div class="col-xs-6">
+  <div class="col-sm-5">
   <div class="form-group" ng-class="{true: 'has-error'}[source === target || !source]">
     <label style="display: block" class="text-center control-label">From</label>
     <select ng-style="{true: alertBg, false: okBg}[source === target || !source]"  class="form-control" ng-model="source">
       <option value="" ng-show="!source">Select source box</option>
-      <option ng-style="{true: alertBg, false: okBg}[b === target]" ng-value="b" ng-repeat="b in boxes">{{b}}</option>
+      <option ng-controller="BoxStatusCtrl" ng-show="info && info.status" ng-style="{true: alertBg, false: okBg}[b === target]" ng-value="b" ng-repeat="b in boxes">{{b}}</option>
     </select>
   </div>
   </div>
-  <div class="col-xs-6">
+  <div class="col-sm-2 text-center form-group" style="margin-bottom: 15px; margin-top: 15px">
+    <a class="btn btn-block" ng-class="plan && 'btn-primary active' || (canTransfer() && 'btn-info' || 'btn-default')" ng-disabled="!canTransfer()" ng-click="togglePlan()" style="padding: 10px"><span class="glyphicon glyphicon-tasks"></span><br />
+    View plan</a>  
+  </div>
+  <div class="col-sm-5">
   
-  <div class="form-group" ng-class="{true: 'has-error'}[source === target || !target]">
-    <label class="control-label text-center" style="display: block">Target</label>
-    <select ng-style="{true: alertBg, false: okBg}[source === target || !target]"  class="form-control" ng-model="target">
-      <option value="" ng-show="!target">Select target box</option>
-      <option ng-repeat="b in boxes" ng-style="{true: alertBg, false: okBg}[b === source]" ng-value="b" >{{b}}</option>
-    </select>
-  </div>
-  </div>
-  </div>
-  <div class="text-center alert alert-info" ng-show="loading">
-    Loading...
-  </div>
+    <div class="form-group" ng-class="{true: 'has-error'}[source === target || !target]">
+      <label class="control-label text-center" style="display: block">Target</label>
+      <select ng-style="{true: alertBg, false: okBg}[source === target || !target]"  class="form-control" ng-model="target">
+        <option value="" ng-show="!target">Select target box</option>
+        <option ng-controller="BoxStatusCtrl" ng-show="info && info.status" ng-repeat="b in boxes" ng-style="{true: alertBg, false: okBg}[b === source]" ng-value="b" >{{b}}</option>
+      </select>
+    </div>
+    </div>
+    </div>
+    <div class="text-center alert alert-info" ng-show="loading">
+      Loading...
+    </div>
 
-  <div class="row">
-    <div class="col-md-12">
-      <tabset class="form-group" justified="true" ng-show="source">
-        <tab disabled="!source" heading="Collections ({{selectedCollections.length}} of {{collections.length}})">
-          <ul class="list-group">
-            <a ng-show="!loading && collections.length" ng-click="selectAllCollections()" class="btn btn-primary btn-block form-group">Select all</a>
-            <a ng-click="toggleCollectionSelected(c)" ng-repeat="c in collections" href="javascript:" class="list-group-item" ng-class="{'active ': isCollectionSelected(c), '': !isCollectionSelected(c)}">
-              {{c}}
-              <span ng-if="isCollectionSelected(c)" class="pull-right glyphicon glyphicon-ok"></span>
-            </a>
-            <li ng-show="loading" class="list-group-item list-group-item-warning text-center">Loading...</li>
-            <li ng-show="!loading && !collections.length" class="list-group-item list-group-item-info text-center">This box has no collections to copy</li>
-          </ul>
-        </tab>
-        <tab disabled="!source" heading="Views ({{selectedViews.length}} of {{views.length}})">
-          <ul class="list-group">
-            <a ng-show="!loading && views.length" ng-click="selectAllViews()" class="btn btn-primary btn-block form-group">Select all</a>
-            <a ng-click="toggleViewSelected(c)" ng-repeat="c in views" href="javascript:" class="list-group-item" ng-class="{'active ': isViewSelected(c), '': !isViewSelected(c)}">
-              {{c}}
-              <span ng-if="isViewSelected(c)" class="pull-right glyphicon glyphicon-ok"></span>
-            </a>
-            <li ng-show="loading" class="list-group-item list-group-item-warning text-center">Loading...</li>
-            <li ng-show="!loading && !views.length" class="list-group-item list-group-item-info text-center">This box has no views to copy</li>
-          </ul>
-        </tab>
-        <tab disabled="true" heading="Workflows">
-        </tab>
-        <tab heading="Configuration">
-          <ul class="list-group">
-            <a class="list-group-item active" href="javascript:">User list</a>
-            <a class="list-group-item active" href="javascript:">Package configuration</a>
-            <a class="list-group-item active" href="javascript:">Remote DBs configuration</a>
-          </ul>
-        </tab>
-      </tabset>
+  <div ng-hide="plan">
+    <div class="row">
+      <div class="col-md-12">
+        <tabset class="form-group" justified="true" ng-show="source">
+          <tab disabled="!source" heading="Collections ({{selectedCollections.length}} of {{collections.length}})">
+            <ul class="list-group">
+              <a ng-show="!loading && collections.length" ng-click="selectAllCollections()" class="btn btn-primary btn-block form-group">Select all</a>
+              <a ng-click="toggleCollectionSelected(c)" ng-repeat="c in collections" href="javascript:" class="list-group-item" ng-class="{'active ': isCollectionSelected(c), '': !isCollectionSelected(c)}">
+                {{c}}
+                <span ng-if="isCollectionSelected(c)" class="pull-right glyphicon glyphicon-ok"></span>
+              </a>
+              <li ng-show="!loading && !collections.length" class="list-group-item list-group-item-info text-center">This box has no collections to copy</li>
+            </ul>
+          </tab>
+          <tab disabled="!source" heading="Views ({{selectedViews.length}} of {{views.length}})">
+            <ul class="list-group">
+              <a ng-show="!loading && views.length" ng-click="selectAllViews()" class="btn btn-primary btn-block form-group">Select all</a>
+              <a ng-click="toggleViewSelected(c)" ng-repeat="c in views" href="javascript:" class="list-group-item" ng-class="{'active ': isViewSelected(c), '': !isViewSelected(c)}">
+                {{c}}
+                <span ng-if="isViewSelected(c)" class="pull-right glyphicon glyphicon-ok"></span>
+              </a>
+
+              <li ng-show="!loading && !views.length" class="list-group-item list-group-item-info text-center">This box has no views to copy</li>
+            </ul>
+          </tab>
+          <tab disabled="true" heading="Workflows">
+          </tab>
+          <tab heading="Configuration">
+            <ul class="list-group">
+              <a class="list-group-item" ng-class="configuration.copyUserList && 'active' || ''" ng-click="configuration.copyUserList = !configuration.copyUserList" href="javascript:">User list
+                <span ng-if="configuration.copyUserList" class="pull-right glyphicon glyphicon-ok"></span>
+              </a>
+              <a class="list-group-item" ng-class="configuration.copyPackages && 'active' || ''" ng-click="configuration.copyPackages = !configuration.copyPackages" href="javascript:">Package configuration
+                <span ng-if="configuration.copyPackages" class="pull-right glyphicon glyphicon-ok"></span></a>
+              <a class="list-group-item" ng-class="configuration.copyRemoteDbs && 'active' || ''" ng-click="configuration.copyRemoteDbs = !configuration.copyRemoteDbs" href="javascript:">Remote DBs configuration
+                <span ng-if="configuration.copyRemoteDbs" class="pull-right glyphicon glyphicon-ok"></span></a>
+            </ul>
+          </tab>
+        </tabset>
+      </div>
     </div>
   </div>
-
-
-
-  <div class="row">
-    <p class="text-center">
-      <button ng-disabled="!canTransfer" ng-click="transfer()" class="btn btn-lg btn-primary" type="button">Transfer data</button>
-    </p>
+  <ul ng-show="plan" class="list-group form-group">
+    <li class="list-group-item" ng-repeat="p in plan">
+      <strong class="pull-right">{{$index + 1}}</strong> {{p.message}}
+    </li>
+  </ul>
+  <div ng-show="plan" class=" row">
+  	<div class="form-group text-center col-sm-offset-5 col-sm-2" style="margin-bottom: 0px;">
+      <a class=" btn btn-primary btn-lg btn-block"><span class="glyphicon glyphicon-play"></span><br/>Start</a>
+    </div>
   </div>
 </div>

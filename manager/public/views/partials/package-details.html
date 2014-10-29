@@ -13,7 +13,7 @@
 </style>
 <page-title title="{{package}} assets"></page-title>
 
-<tabset style="margin-bottom: 1em">
+<tabset type="pills" justified="true">
   <tab heading="Assets">
       <div class="row well">
         <div class="col-md-6">
@@ -133,19 +133,17 @@
         <a style="width: 200px" ng-class="{'active': packageType == 'local'}" ng-click="changePackageType(package, 'local')" class="btn btn-default" href="javascript:">Local</a>
       </div>
     </div>
-    <div class="text-center">
-      <h4>Other actions</h4>
-      <div class="btn-group">
-        <a class="btn btn-danger" ng-click="removePackage()"><i class="glyphicon glyphicon-fire"></i>&nbsp;Delete package</a>
-        <a class="btn btn-success" ng-href="/api/packages/{{package}}/export" target="_blank"><i class="glyphicon glyphicon-export"></i>&nbsp;Export package</a>
-      </div>
+      <h4 class="text-center">Other actions</h4>
+    <div class="form-group">
+      <a class="btn btn-danger btn-block" ng-click="removePackage()"><i class="glyphicon glyphicon-fire"></i>&nbsp;Delete package</a>
+      <a class="btn btn-success btn-block" ng-href="/api/packages/{{package}}/export" target="_blank"><i class="glyphicon glyphicon-export"></i>&nbsp;Export package</a>
     </div>
     </div>
   </tab>
   <tab heading="Dependencies">
     <div class="well">
     <ul class="list-group">
-      <a class="list-group-item" href="javascript:" ng-click="switchDependency(i)" ng-class="{'active': dependsUpon(i)}" ng-repeat="i in otherPackages">
+      <a class="list-group-item" ng-if="i !== package" href="javascript:" ng-click="switchDependency(i)" ng-class="{'active': dependsUpon(i)}" ng-repeat="i in otherPackages">
         {{i}}<span class="pull-right"><i ng-show="dependsUpon(i)" class="glyphicon glyphicon-ok"></i></span>
       </a>
     </ul>

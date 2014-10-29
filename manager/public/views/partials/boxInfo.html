@@ -1,11 +1,7 @@
 <div class="form-group">
-    <label class="control-label">URL:</label>
-    <span class="input-group">
-      <input class="form-control" disabled ng-value="boxUrl(box)">
-      <span class="input-group-btn">
-        <a class="btn btn-default" ng-href="{{boxUrl(box)}}"><span class="glyphicon glyphicon-globe"></a>
-      </span>
-    </span>
+  <label class="control-label">Status:</label>
+  <a ng-click="info.status = !info.status; $emit('changes')" href="javascript:" ng-class="{true: 'btn btn-success active btn-block', false: 'btn btn-danger btn-block', undefined: 'btn btn-danger btn-block'}[info.status]" ng-model="info.active">{{ info.status && 'Active' || 'Inactive'}}</a>
+</a>
 </div>
 <div class="form-group">
   <label class="control-label">Description:</label>

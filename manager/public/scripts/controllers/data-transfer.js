@@ -2,83 +2,172 @@ angular.module("boxes3.manager")
 .config(function ($stateProvider) {
   $stateProvider.state('data-transfer', {
     url: '/data-transfer',
-    templateUrl: 'views/partials/data-transfer.html',
-    resolve: {
-    },
-    controller: function ($scope, BoxesApi, CollectionApi) {
-      BoxesApi.getAllBoxes().then(function (boxes) {
-        $scope.boxes = boxes;
-      });
-      
-      $scope.isCollectionSelected = function (c) {
-        return $scope.selectedCollections.indexOf(c) > -1;
-      };
-      
-      $scope.toggleCollectionSelected = function (c) {
-        if ($scope.isViewSelected(c)) $scope.selectedCollections.splice($scope.selectedCollections.indexOf(c), 1);
-        else $scope.selectedCollections.push(c);
-      };
-      
-      $scope.isViewSelected = function (v) {
-        return $scope.selectedViews.indexOf(v._id) > -1;
-      };
-      
-      $scope.toggleViewSelected = function (c) {
-        if ($scope.isViewSelected(c)) $scope.selectedViews.splice($scope.selectedViews.indexOf(c), 1);
-        else $scope.selectedViews.push(c);
-      };
-      
-      $scope.$watch("from", function (box) {
-        $scope.selectedCollections = [];
-        $scope.selectedViews = [];
-      
-        if (!box) { $scope.sourceCollections = []; return; };
-        
-        CollectionApi.getCollections(box).then(function (cols) {
-          $scope.sourceCollections = cols;
-        });
-        CollectionApi.find(box, "_views", {})
-        .then(function (views) {
-          $scope.sourceViews = views;
-        });
-      });
-      
-      $scope.$watch("target", function (box) {
-        if (!box) { $scope.sourceCollections = []; return; };
-        CollectionApi.getCollections(box).then(function (cols) {
-          $scope.targetCollections = cols;
-        });
-      });
-      
-      $scope.canTransfer = function () {
-        return $scope.from && $scope.target && $scope.from != $scope.target && $scope.selectedCollections.length > 0;
-      };
-      
-      $scope.transfer = function () {
-        CollectionApi.transfer($scope.from, $scope.target, $scope.selectedCollections)
-        .then(function () {      
-          $scope.busy = false;
-        }, function () {
-          $scope.busy = false;
-        });
-        
-        $scope.busy = true;
-      };
-    }
+    templateUrl: 'views/partials/data-transfer.html'
   });
 })
-.controller("DataTransferCollection", function ($scope, CollectionApi) {
-  $scope.$watch("from", function (b) {
-    if (!b) $scope.sourceCount = '?'
-    else CollectionApi.count(b, $scope.c, {}).then(function (c) {
-      $scope.sourceCount = c;
-    });
+.controller("DataTransfer", function ($scope, $q, CollectionApi, ViewsApi, BoxesApi) {
+  BoxesApi.getAllBoxes()
+  .then(function (boxes) {
+    $scope.boxes = boxes;
   });
-  $scope.$watch("target", function (b) {
-    if (!b) $scope.targetCount = '?'
-    else CollectionApi.count(b, $scope.c, {}).then(function (c) {
-      $scope.targetCount = c;
+
+  var initialConfig = {
+    collections: [],
+    selectedCollections: [],
+    views: [],
+    selectedViews: [],
+    workflows: [],
+    selectedWorkflows: [],
+    configuration: {
+      copyPackages: false,
+      copyRemoteDbs: false,
+      copyUserList: false
+    }
+  };
+  
+  angular.extend($scope, initialConfig);
+
+  var isCollectionSelected = $scope.isCollectionSelected = function(c) {
+    return $scope.selectedCollections.indexOf(c) > -1;
+  };
+  
+  $scope.toggleCollectionSelected = function (c) {
+    if (isCollectionSelected(c)) {
+      $scope.selectedCollections.splice($scope.selectedCollections.indexOf(c), 1);
+    } else {
+      $scope.selectedCollections.push(c);
+    }
+  }
+
+  var isViewSelected = $scope.isViewSelected = function(c) {
+    return $scope.selectedViews.indexOf(c) > -1;
+  };
+  
+  $scope.toggleViewSelected = function (c) {
+    if (isViewSelected(c)) {
+      $scope.selectedViews.splice($scope.selectedViews.indexOf(c), 1);
+    } else {
+      $scope.selectedViews.push(c);
+    }
+  };
+  
+  $scope.selectAllCollections = function () {
+    $scope.selectedCollections = angular.copy($scope.collections);
+  };
+  
+  $scope.selectAllViews = function () {
+    $scope.selectedViews = angular.copy($scope.views);
+  };
+      
+  var preparePlan = function() {
+    var actions = [];
+    var source = $scope.source, target = $scope.target, selectedCollections =  $scope.selectedCollections, selectedViews = $scope.selectedViews;
+    
+    angular.forEach(selectedCollections, function (c) {
+      actions.push({
+        'message': 'Find all documents in collection ' + c + ' from ',
+        'action': 'find-documents',
+        'collection': c,
+        'source': source,
+        'target': target
+      },{
+        'message': 'Insert or update each document from ' + source + ' ' + c + ' in target',
+        'action': 'upsert-collection',
+        'collection': c,
+        'source': source,
+        'target': target
+      },{
+        'message': 'Remove documents in ' + source + ' ' + c + ' which did\'t exist in ' + source,
+        'action': 'upsert-collection',
+        'collection': c,
+        'source': source,
+        'target': target
+      },{
+        'message': 'Empty collection ' + c + ' in target',
+        'action': 'empty-collection',
+        'collection': c,
+        'source': source,
+        'target': target
+      });
     });
+    
+    angular.forEach(selectedViews, function (v) {
+      actions.push({
+        'message': 'Insert or update the view ' + v + ' from ' + source + ' into ' + target,
+        'action': 'upsert-view',
+        'source': source,
+        'target': target
+      });
+    });
+    
+    if ($scope.configuration.copyUserList) {
+      actions.push({
+        'message': 'Copy user list from ' + source + ' to ' + target,
+        'action': 'copy-users',
+        'source': source,
+        'target': target
+      });
+    }
+    if ($scope.configuration.copyRemoteDbs) {
+      actions.push({
+        'message': 'Copy remote DBs from ' + source + ' to ' + target,
+        'action': 'copy-remote-dbs',
+        'source': source,
+        'target': target
+      });
+    }
+    
+    if ($scope.configuration.copyPackages) {
+      actions.push({
+        'message': 'Copy packages from ' + source + ' to ' + target,
+        'action': 'copy-packages',
+        'source': source,
+        'target': target
+      });
+    }
+    
+    return actions;
+  };
+  
+  $scope.canTransfer = function () {
+    return ($scope.source && $scope.target && $scope.source !== $scope.target && ($scope.selectedCollections.length || $scope.selectedViews.length || $scope.configuration.copyUserList || $scope.configuration.copyPackages || $scope.configuration.copyRemoteDbs));
+  };
+  
+  $scope.togglePlan = function () {
+    if ($scope.plan) {
+      $scope.plan = undefined;
+    } else {
+      $scope.plan = preparePlan();
+    }
+  };
+  
+  $scope.$watch("source", function (s) {
+    angular.extend($scope, angular.copy(initialConfig));
+    if (s) {
+      loading: true
+      
+      $q.all([
+        CollectionApi
+        .getCollections(s)
+        .then(function (collections) {
+          var available = [];
+          for (var i = collections.length - 1; i >= 0; i--) {
+            if (collections[i][0] !== '_') {
+              // this is a system collection
+              available.push(collections[i])
+            }
+          }
+          $scope.collections = available;
+        }),
+        ViewsApi
+        .listViews(s)
+        .then(function (views) {
+          $scope.views = views;
+        })
+      ])
+      .then(function () {
+        $scope.loading = false;
+      });
+    }
   });
 });
-

@@ -10,22 +10,15 @@
   <tabset>
     <tab heading="Authentication">
       <div class="well">
-        <div>
+        <div class="form-group">
           <a style="width: 200px; margin-right: 1em" href="javascript:" class="btn btn-primary active">Active</a><label>@local</label>
-          <a class="btn btn-link pull-right" href="javascript:">manage @local users</a>
+          <a class="btn btn-link pull-right btn-lg" href="javascript:">manage @local users</a>
         </div>
-        
-        <hr />
-        
-        <div><a style="width: 200px; margin-right: 1em" href="javascript:" class="btn btn-primary active">Active</a><label>@buenosaires.gob.ar</label></div>
-
-        <hr />
-    
+        <div class="form-group"><a style="width: 200px; margin-right: 1em" href="javascript:" class="btn btn-primary active">Active</a><label>@buenosaires.gob.ar</label></div>
         <div class="form-group">
           <label>Master user:</label>
           <select ng-model="masterUser" ng-options="u.alias as u.displayName for u in users" class="form-control"></select>
         </div>
-      
       </div>
     </tab>
     <tab heading="Database">

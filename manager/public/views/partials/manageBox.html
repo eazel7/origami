@@ -1,11 +1,9 @@
-<style>
 
-.nav.nav-pills li {
-  cursor: pointer;
-}
-</style>
 
-<page-title title="Manage {{box.name}}"></page-title>
+<h4>
+  <a ng-href="{{boxUrl(box)}}"><span class="glyphicon glyphicon-link"></span> {{boxName}}</a>
+</h4>
+<page-title title="Manage {{boxName}}"></page-title>
 
 <tabset justified="true" type="pills">
   <tab heading="General">
@@ -13,6 +11,9 @@
   </tab>
   <tab heading="Data" ng-controller="BoxCollectionsCtrl">
     <div class="well" ng-include src="'/views/partials/boxCollections.html'"></div>
+  </tab>
+  <tab heading="Permission groups">
+    <div class="well" ng-include src="'/views/partials/boxPermissions.html'"></div>
   </tab>
   <tab heading="Users" ng-controller="BoxUsersCtrl">
     <div class="well" ng-include src="'/views/partials/boxUsers.html'"></div>

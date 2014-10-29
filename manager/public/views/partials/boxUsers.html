@@ -3,7 +3,22 @@
 <table class="panel table table-striped">
   <tbody>
     <tr ng-controller="BoxUserDetailsCtrl" ng-repeat="(alias, role) in boxUsers">
-      <th>{{profile.displayName || alias}}</th><td>{{role}}</td>
+      <th>
+      <a href="javascript:" class="btn btn-link">
+      {{profile.displayName || alias}}</a></th>
+      <td class="text-center">
+        <span class="input-group">
+          <select class="form-control"  style="display: inline-block; width: 100px; float: right">
+            <option ng-selected="role === 'owner'" value="owner">Owner</option>
+            <option value="admin">Admin</option>
+            <option value="dev">Dev</option>
+            <option ng-selected="role === 'user'" value="user">User</option>
+          </select>
+          <span class="input-group-btn">
+            <a class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span></a>
+          </span>
+        </span>
+      </td>
     </tr>
   </tbody>
   <tfoot ng-controller="SearchUserCtrl">

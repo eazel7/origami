@@ -267,6 +267,9 @@ module.exports = function(app, api) {
       if (!box) {
         // no box, not this handler
         return next();
+      } else if (!box.info || !box.info.status) {
+        res.status(503);
+        return res.redirect('/#/box-inactive/' + encodeURIComponent(boxName));
       } else {
         controllers.authentication.isAllowed(req, function (err, isAllowed) {
           if (isAllowed) {
