@@ -6,6 +6,8 @@ module.exports = function (config, callback) {
       async = require('async');
 
   connect(config.mongo, function (err, db) {
+    if (err) return callback(err);
+  
     var self = {
       config: config,
       connect: function (callback) {

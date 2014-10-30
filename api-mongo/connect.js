@@ -7,7 +7,7 @@ module.exports = function (options, callback) {
       client = new MongoClient(server, {});
   
   client.open(function (err, client) {
-    if (err) throw new Error(err);
+    if (err) return callback(err);
     
     if (options.username && options.password) {
       var db = client

@@ -25,6 +25,16 @@ module.exports = function (api) {
         }
       });
     },
+    getMyBoxes: function (req, res) {
+      api.users.getAllowedBoxes(req.session.user.alias, function (err, boxes) {
+        if (boxes) {
+          res.json(boxes);
+        } else {
+          res.status(404);
+          res.end();
+        }
+      });
+    },
     setRole: function (req, res) {
       if (req.body && req.body.role) {
         api.users.enableUser(req.params.userAlias, req.params.boxName, req.body.role, function (err) {

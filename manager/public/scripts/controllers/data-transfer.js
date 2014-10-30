@@ -6,7 +6,7 @@ angular.module("boxes3.manager")
   });
 })
 .controller("DataTransfer", function ($scope, $q, CollectionApi, ViewsApi, BoxesApi) {
-  BoxesApi.getAllBoxes()
+  BoxesApi.getMyBoxes()
   .then(function (boxes) {
     $scope.boxes = boxes;
   });

@@ -568,6 +568,11 @@ module.exports = function (api) {
       });
     }
     
+    app.get('/api/ping', function (req, res) {
+      res.status(200);
+      res.end();
+    });
+    
     app.get('/', function (req, res, next) {
       return findAsset('/index.html', res, next);
     });

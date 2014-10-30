@@ -15,8 +15,18 @@ module.exports = function (api) {
     },
     createPackage: function (req, res) {
       api.packages.createPackage(req.params.packageName, function (err) {
-        res.status(200);
-        res.end();
+        if (err) {
+          console.error(err);
+          res.status(418);
+          return res.end();
+        }
+        
+        api.packages.setPackageOwner(req.params.packageName, req.session.user.alias, function (err) {
+          if (err) console.log(err);
+
+          res.status(err ? 418 : 200);
+          res.end();
+        });
       });
     },
     removeFolder: function (req, res) {
@@ -276,6 +286,30 @@ module.exports = function (api) {
     },
     setPackageType: function (req, res) {
       api.packages.setPackageType(req.params.packageName, req.body.type, function (err) {
+        if (err) {
+          console.error(err);
+          res.status(418);
+        } else {
+          res.status(200);
+        }
+        
+        res.end();
+      });
+    },
+    getPackageOwner: function (req, res) {
+      api.packages.getPackageOwner(req.params.packageName, function (err, owner) {
+        if (err) {
+          console.error(err);
+          res.status(418);
+          return res.end();
+        }
+        res.json({
+          owner: owner
+        });
+      });
+    },
+    setPackageOwner: function (req, res) {
+      api.packages.setPackageOwner(req.params.packageName, req.body.owner, function (err) {
         if (err) {
           console.error(err);
           res.status(418);

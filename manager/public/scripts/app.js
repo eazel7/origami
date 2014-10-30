@@ -1,6 +1,7 @@
 'use strict';
 
 angular.module('boxes3.manager', [
+  'nvd3',
   'ngCookies',
   'ngResource',
   'ngSanitize',

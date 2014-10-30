@@ -12,6 +12,15 @@ angular.module('boxes3.manager')
 
       return defer.promise;
     },
+    getMyBoxes: function () {
+      var defer = $q.defer();
+
+      $http.get('/api/my-boxes')
+           .success(defer.resolve)
+           .error(defer.reject);
+
+      return defer.promise;
+    },
     randomName: function () {
       var defer = $q.defer();
 

@@ -30,59 +30,62 @@ module.exports = function(app, io) {
   var appCookieParser = cookieParser(expressSecret);
   app.use(appCookieParser) // required before session.
   
-  var appSessionStore = new MongoStore(config.mongoSessions);
-  app.use(session({
-    secret: expressSecret,
-    store: appSessionStore,
-    cookie: {maxAge: 3600000*24*14}
-  }));
-  app.use(bodyParser());
-
-  app.use(methodOverride());
-
-  // Error handler - has to be last
-  if ('development' === app.get('env')) {
-    app.use(errorHandler());
-  }
-  
-  function onAuthorizeSuccess(data, accept){
-    // The accept-callback still allows us to decide whether to
-    // accept the connection or not.
-    accept(null, true);
-
-    // OR
-
-    // If you use socket.io@1.X the callback looks different
-    accept();
-  }
-
-  function onAuthorizeFail(data, message, error, accept){
-    if(error)
-      throw new Error(message);
-
-    // We use this callback to log all of our failed connections.
-    accept(null, false);
-
-    // OR
-
-    // If you use socket.io@1.X the callback looks different
-    // If you don't want to accept the connection
-    if(error)
-      accept(new Error(message));
-    // this error will be sent to the user as a special error-package
-    // see: http://socket.io/docs/client-api/#socket > error-object
-  }
-  
   require('origami-api-mongo')(config, function (err, api) {
     if (err) {
-      app.use(function (req, res) {
-        res.status(500);
-        res.send('General application error: \n' + err)
-        return res.end();
-      });
+      app.use(express.static(path.join(config.root, 'dbOffline'))
+//      function (req, res, ) {
+//        res.status(500);
+//        res.send('General application error: \n' + err)
+//        return res.end();
+//      });
+      );
 
       return;
     }
+    
+    var appSessionStore = new MongoStore(config.mongoSessions);
+    app.use(session({
+      secret: expressSecret,
+      store: appSessionStore,
+      cookie: {maxAge: 3600000*24*14}
+    }));
+    app.use(bodyParser());
+
+    app.use(methodOverride());
+
+    // Error handler - has to be last
+    if ('development' === app.get('env')) {
+      app.use(errorHandler());
+    }
+    
+    function onAuthorizeSuccess(data, accept){
+      // The accept-callback still allows us to decide whether to
+      // accept the connection or not.
+      accept(null, true);
+
+      // OR
+
+      // If you use socket.io@1.X the callback looks different
+      accept();
+    }
+
+    function onAuthorizeFail(data, message, error, accept){
+      if(error)
+        throw new Error(message);
+
+      // We use this callback to log all of our failed connections.
+      accept(null, false);
+
+      // OR
+
+      // If you use socket.io@1.X the callback looks different
+      // If you don't want to accept the connection
+      if(error)
+        accept(new Error(message));
+      // this error will be sent to the user as a special error-package
+      // see: http://socket.io/docs/client-api/#socket > error-object
+    }
+    
     require('./routes')(app, api);
 
     var passportSocketIo = require("./socketioauth");

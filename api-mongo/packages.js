@@ -177,6 +177,35 @@ module.exports = function (config, callback) {
           callback (null, doc.packageType || 'global');
         });
       },
+      getActivePackages: function (boxName, callback) {
+        db.collection("boxes")
+        .findOne({
+          name: boxName
+        }, function (err, doc) {
+          if (err) return callback(err);
+          
+          return callback (null, doc.packages || []);
+        });
+      },
+      getPackageOwner: function (packageName, callback) {
+        db.collection("packages").findOne({
+          name: packageName
+        }, { owner: 1 }, function (err, doc){ 
+          if (err) return callback (err);
+          if (!doc) return callback ('No pacakge');
+          
+          callback (null, doc.owner);
+        });
+      },
+      setPackageOwner: function (packageName, alias, callback) {
+        db.collection("packages").update({
+          name: packageName
+        }, {
+          $set: {
+            owner: alias
+          }
+        },  callback);
+      },
       setPackageType: function (packageName, packageType, callback, silent) {
         db.collection("packages").update({
           name: packageName

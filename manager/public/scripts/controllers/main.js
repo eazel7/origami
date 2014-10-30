@@ -9,7 +9,7 @@ angular.module('boxes3.manager')
     url: '/boxes',
     templateUrl: 'views/partials/boxes.html',
     controller: function ($scope, BoxesApi, UsersApi) {
-      BoxesApi.getAllBoxes().then(function (boxes) {
+      BoxesApi.getMyBoxes().then(function (boxes) {
         $scope.boxes = boxes;;
       });
       UsersApi.getMyRoles().then(function (roles) {

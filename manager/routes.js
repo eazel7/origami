@@ -37,6 +37,10 @@ module.exports = function(app, api) {
   .get(controllers.users.getMyRoles);
   
   app
+  .route('/api/my-boxes')
+  .get(controllers.users.getMyBoxes);
+  
+  app
   .route('/api/box/:boxName/destroy-collection/:collectionName')
   .post(controllers.boxes.destroyCollection);
 
@@ -145,6 +149,10 @@ module.exports = function(app, api) {
   app
   .route('/api/packages/:packageName/create')
   .post(controllers.packages.createPackage);
+
+  app
+  .route('/api/packages/:packageName/owner')
+  .get(controllers.packages.getPackageOwner);
 
   app
   .route('/api/packages/:packageName/delete')
