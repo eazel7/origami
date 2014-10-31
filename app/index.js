@@ -573,6 +573,30 @@ module.exports = function (api) {
       res.end();
     });
     
+    app.post('/api/error', function (req, res) {
+      api.collections.getCollection (boxName, "_errors", function (err, collection) {
+        if (err) {
+          console.error(err);
+          res.status(418);
+          return res.end();
+        }
+        
+        var error = req.body;
+        error.user = req.session.user.alias;
+        error.box = boxName;
+        
+        collection.insert(req.body, function (err) {
+          if (err) {
+            console.error(err);
+            res.status(418);
+            return res.end();
+          }
+          res.status(200);
+          res.end();
+        });
+      });
+    });
+    
     app.get('/', function (req, res, next) {
       return findAsset('/index.html', res, next);
     });

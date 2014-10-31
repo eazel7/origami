@@ -1,12 +1,12 @@
 'use strict';
 
 angular.module('boxes3.manager')
-.controller("BoxUsageCtrl", function ($scope, $http) {
+.controller("BoxUsageCtrl", function ($scope, $http, $stateParams) {
   $scope.options = {
     chart: {
       type: 'lineChart',
       height: 300,
-      width: 700,
+      width: 1040,
       margin : {
         top: 20,
         right: 20,
@@ -34,20 +34,39 @@ angular.module('boxes3.manager')
   
   $scope.data = [{
     values: [],
-    key: "Operations"
+    key: "Operations",
+    color: "#0f0"
+  },{
+    values: [],
+    key: "Errors",
+    color: "#f00"
   }];
   
   var oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
   oneWeekAgo.setHours(0,0,0,0);
     
-  var boxName = "sudden-service";
+  var boxName = $stateParams.boxName;
   $http.post("/api/box/" + encodeURIComponent(boxName) + "/stats/usage", {
     from: oneWeekAgo,
     to: new Date().valueOf()
   })
   .success(function (data) {
     var values = $scope.data[0].values;
+    
+    for (var i = 0; i < data.length; i++) {
+      values.push({
+        x: data[i].date,
+        y: new Date(data[i].value)
+      });
+    }
+  });
+  $http.post("/api/box/" + encodeURIComponent(boxName) + "/stats/errors", {
+    from: oneWeekAgo,
+    to: new Date().valueOf()
+  })
+  .success(function (data) {
+    var values = $scope.data[1].values;
     
     for (var i = 0; i < data.length; i++) {
       values.push({

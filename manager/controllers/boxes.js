@@ -130,6 +130,18 @@ module.exports = function (api) {
         
         res.json(stats);
       });
+    },
+    getErrorStatistics: function (req, res) {
+      var from = req.body.from, to = req.body.to;
+      api.stats.getBoxErrors(req.params.boxName, from, to, function (err, stats) {
+        if (err) {
+          console.error(err);
+          res.status(418);
+          return res.end();
+        }
+        
+        res.json(stats);
+      });
     }
   };
 };

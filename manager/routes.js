@@ -135,6 +135,10 @@ module.exports = function(app, api) {
   .post(controllers.boxes.getUsageStatistics);
 
   app
+  .route('/api/box/:boxName/stats/errors')
+  .post(controllers.boxes.getErrorStatistics);
+
+  app
   .route('/api/box/:boxName/packagesWithDeps')
   .get(controllers.boxes.getActivePackagesWithDependencies);
 
