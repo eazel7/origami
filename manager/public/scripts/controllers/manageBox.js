@@ -1,133 +1,61 @@
 'use strict';
 
 angular.module('boxes3.manager')
-.controller("BoxUsageCtrl", function ($scope) {
-    var anio = (new Date().getFullYear());
-    
-    function valoresRandomObras() {
-        var vals = [], max = 40;
-        
-        for (var i = 0; i < 12; i++) {
-            vals.push({
-                x: new Date(2014, i, 1, 0, 0, 0),
-                y: Number(Number(Math.random() * max).toFixed(3))
-            });
+.controller("BoxUsageCtrl", function ($scope, $http) {
+  $scope.options = {
+    chart: {
+      type: 'lineChart',
+      height: 300,
+      width: 700,
+      margin : {
+        top: 20,
+        right: 20,
+        bottom: 40,
+        left: 55
+      },
+      x: function(d){ 
+        return d.x; 
+      },
+      y: function(d){ 
+        return d.y; 
+      },
+      xAxis: {
+        tickFormat: function (d) {
+          return d3.time.format('%d/%m/%Y')(new Date(d));
         }
-        
-        return vals;
+      },
+      yAxis: {
+        tickFormat: function(d){
+          return String(Number(d.toFixed(0)));
+        }
+      }
     }
+  };
+  
+  $scope.data = [{
+    values: [],
+    key: "Operations"
+  }];
+  
+  var oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  oneWeekAgo.setHours(0,0,0,0);
     
-    function valoresRandomDisponible() {
-        var vals = [], disponible = 200, gastado = 0;
-        
-        for (var i = 0; i < 9; i++) {
-            var gastoMes = Number(Number(disponible / 12 * (Math.random() * 1.7)).toFixed(2));
-            gastado = gastado + gastoMes;
-            
-            vals.push({
-                x: new Date(2014, i, 1, 0, 0, 0),
-                y: Number(Number(disponible - gastado).toFixed(3))
-            });
-        }
-        
-        return vals;
+  var boxName = "sudden-service";
+  $http.post("/api/box/" + encodeURIComponent(boxName) + "/stats/usage", {
+    from: oneWeekAgo,
+    to: new Date().valueOf()
+  })
+  .success(function (data) {
+    var values = $scope.data[0].values;
+    
+    for (var i = 0; i < data.length; i++) {
+      values.push({
+        x: data[i].date,
+        y: new Date(data[i].value)
+      });
     }
-    
-    var valsDisponible = valoresRandomDisponible();
-    
-    function valoresRandomProyectado() {
-        var vals = [], disponible = valsDisponible[valsDisponible.length - 1].y, gastado = 0;
-        
-        vals.push({
-            x: new Date(2014, 8, 1, 0, 0, 0),
-            y: disponible
-        });
-        
-        for (var i = 9; i < 12; i++) {
-            var gastoMes = Number(Number(disponible / 3 * (Math.random() * 1.7)).toFixed(2));
-            gastado = gastado + gastoMes;
-            
-            vals.push({
-                x: new Date(2014, i, 1, 0, 0, 0),
-                y: Number(Number(disponible - gastado).toFixed(3))
-            });
-        }
-        
-        return vals;
-    }
-    
-    var valsProyectado = valoresRandomProyectado();
-    
-    $scope.options = {
-        chart: {
-            type: 'lineChart',
-            height: 300,
-            margin : {
-                top: 20,
-                right: 20,
-                bottom: 40,
-                left: 55
-            },
-            x: function(d){ return d.x; },
-            y: function(d){ return d.y; },
-            useInteractiveGuideline: true,
-            xAxis: {
-                axisLabel: 'Fecha',
-                tickFormat: function (d) {
-                    return ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][new Date(d).getMonth()];
-                }
-            },
-            yAxis: {
-                axisLabel: 'Gasto',
-                tickFormat: function(d){
-                    // return d3.format('.02f')(d);
-                    return "M $ " + d;
-                },
-                axisLabelDistance: 30
-            },
-            callback: function(chart){
-            }
-        },
-        // title: {
-        //     enable: true,
-        //     text: 'Presupuesto ' + anio
-        // },
-        subtitle: {
-            enable: false,
-            text: '',
-            css: {
-                'text-align': 'center',
-                'margin': '10px 13px 0px 7px'
-            }
-        },
-        caption: {
-            enable: false,
-            html: '',
-            css: {
-                'text-align': 'justify',
-                'margin': '10px 13px 0px 7px'
-            }
-        }
-    };
-    
-    $scope.data = [{
-        values: valoresRandomObras(),
-        key: "Obra 1"
-    },{
-        values: valoresRandomObras(),
-        key: "Obra 2"
-    },{
-        values: valoresRandomObras(),
-        key: "Obra 3"
-    },{
-        values: valsDisponible,
-        area: true,
-        key: "Disponible"
-    },{
-        values: valsProyectado,
-        area: false,
-        key: "Proyectado"
-    }];
+  });
 })
 .controller("CreateCollectionCtrl", function ($scope, CollectionApi) {
   $scope.createCollection = function () {

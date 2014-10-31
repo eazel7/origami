@@ -74,6 +74,12 @@ module.exports = function (config, callback) {
           self.remoteDbs = remoteDbs;
           callback(err);
         });
+      },
+      function (callback) {
+        require('./stats')(self.connect, self.router, self.syncWrapper, function (err, stats) {
+          self.stats = stats;
+          callback(err);
+        });
       }
     ], function () {
       require('./workflows')(self, function (err, workflows) {

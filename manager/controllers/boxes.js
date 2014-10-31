@@ -118,6 +118,18 @@ module.exports = function (api) {
         
         res.json(dbs);
       });
+    },
+    getUsageStatistics: function (req, res) {
+      var from = req.body.from, to = req.body.to, collection = req.body.collection;
+      api.stats.getBoxUsage(req.params.boxName, from, to, collection, function (err, stats) {
+        if (err) {
+          console.error(err);
+          res.status(418);
+          return res.end();
+        }
+        
+        res.json(stats);
+      });
     }
   };
 };
