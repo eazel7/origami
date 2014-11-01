@@ -21,6 +21,30 @@ module.exports = function(app, io) {
   var env = app.get('env');
   app.use(compression());
   app.use(favicon(path.join(config.root, 'public', 'favicon.ico')));
+  
+  
+  var mmm = require('mmmagic');
+  var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
+
+  app.use(function (req, res, next) {
+    var orig = res.send;
+    
+    res.send = function (body) {
+      var self = this, args = arguments;
+      
+      magic.detect(new Buffer(body), function(err, result) {
+          if (!res.get('Content-Type')) {
+            res.set('Content-Type', result);
+          } 
+          
+          console.log(res.get('Content-Type'));
+          
+          orig.apply(self, args);
+      });
+    };
+    next();
+  });
+  
   app.use(express.static(path.join(config.root, 'public')));
   app.set('views', path.join(config.root, 'public', 'views'));
   app.engine('html', require('ejs').renderFile);
@@ -31,6 +55,7 @@ module.exports = function(app, io) {
   app.use(appCookieParser) // required before session.
   
   require('origami-api-mongo')(config, function (err, api) {
+    
     if (err) {
       app.use(express.static(path.join(config.root, 'dbOffline'))
 //      function (req, res, ) {
