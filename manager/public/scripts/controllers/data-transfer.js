@@ -108,6 +108,15 @@ angular.module("boxes3.manager")
         'target': target
       });
     }
+    
+    if ($scope.configuration.copyPermissionGroups) {
+      actions.push({
+        'message': 'Copy permission groups from ' + source + ' to ' + target,
+        'action': 'copy-permission-groups',
+        'source': source,
+        'target': target
+      });
+    }
     if ($scope.configuration.copyRemoteDbs) {
       actions.push({
         'message': 'Copy remote DBs from ' + source + ' to ' + target,
@@ -130,7 +139,7 @@ angular.module("boxes3.manager")
   };
   
   $scope.canTransfer = function () {
-    return ($scope.source && $scope.target && $scope.source !== $scope.target && ($scope.selectedCollections.length || $scope.selectedViews.length || $scope.configuration.copyUserList || $scope.configuration.copyPackages || $scope.configuration.copyRemoteDbs));
+    return ($scope.source && $scope.target && $scope.source !== $scope.target && ($scope.selectedCollections.length || $scope.selectedViews.length || $scope.configuration.copyUserList || $scope.configuration.copyPackages || $scope.configuration.copyRemoteDbs || $scope.configuration.copyPermissionGroups));
   };
   
   $scope.togglePlan = function () {

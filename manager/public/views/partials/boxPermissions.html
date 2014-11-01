@@ -10,35 +10,11 @@
     </tbody>
   </table>
 </div>
-<!--<div class="panel panel-default">-->
-<!--  <div class="panel-heading">Owners</div>-->
-<!--  <div class="panel-body">-->
-<!--    -->
-<!--  </div>-->
-<!--</div>-->
-<!--<div class="panel panel-default">-->
-<!--  <div class="panel-heading">Administrators</div>-->
-<!--  <div class="panel-body">-->
-<!--    -->
-<!--  </div>-->
-<!--</div>-->
-<!--<div class="panel panel-default">-->
-<!--  <div class="panel-heading">Developes</div>-->
-<!--  <div class="panel-body">-->
-<!--    -->
-<!--  </div>-->
-<!--</div>-->
-<!--<div class="panel panel-default">-->
-<!--  <div class="panel-heading">Users</div>-->
-<!--  <div class="panel-body">-->
-<!--    -->
-<!--  </div>-->
-<!--</div>-->
 <div class="form-group">
   <span class="input-group">
-    <input placholder="Add a new permission group" type="text" class="form-control" />
+    <input placholder="Add a new permission group" type="text" class="form-control" ng-model="newGroup.name" />
     <span class="input-group-btn">
-      <a class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></a>
+      <a ng-click="addPermission()" ng-disabled="!newGroup.name" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></a>
     </span>
   </span>
 </div>

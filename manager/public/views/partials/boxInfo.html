@@ -4,6 +4,13 @@
 </a>
 </div>
 <div class="form-group">
+  <label class="control-label">Visibility:</label>
+  <div class="btn-group btn-group-justified">
+    <a ng-click="info.public = true; $emit('changes')" href="javascript:" ng-class="{true: 'btn btn-default active', false: 'btn btn-default', undefined: 'btn btn-default'}[info.status]">For users only</a>
+  </div>
+</a>
+</div>
+<div class="form-group">
   <label class="control-label">Description:</label>
   <textarea ng-change="$emit('changes')" class="form-control" style="resize: none" ng-model="info.description" rows="4"></textarea>
 </div>

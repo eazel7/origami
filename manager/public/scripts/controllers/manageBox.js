@@ -13,6 +13,7 @@ angular.module('boxes3.manager')
         bottom: 40,
         left: 55
       },
+      useInteractiveGuideline: true,
       x: function(d){ 
         return d.x; 
       },
@@ -26,17 +27,18 @@ angular.module('boxes3.manager')
       },
       yAxis: {
         tickFormat: function(d){
-          return String(Number(d.toFixed(0)));
+          return Number(d).toFixed(0);
         }
       }
     }
   };
   
-  $scope.data = [{
+  $scope.operations = [{
     values: [],
     key: "Operations",
     color: "#0f0"
-  },{
+  }];
+  $scope.errors = [{
     values: [],
     key: "Errors",
     color: "#f00"
@@ -52,7 +54,7 @@ angular.module('boxes3.manager')
     to: new Date().valueOf()
   })
   .success(function (data) {
-    var values = $scope.data[0].values;
+    var values = $scope.operations[0].values;
     
     for (var i = 0; i < data.length; i++) {
       values.push({
@@ -66,7 +68,7 @@ angular.module('boxes3.manager')
     to: new Date().valueOf()
   })
   .success(function (data) {
-    var values = $scope.data[1].values;
+    var values = $scope.errors[0].values;
     
     for (var i = 0; i < data.length; i++) {
       values.push({
@@ -131,6 +133,9 @@ angular.module('boxes3.manager')
   });
   $scope.exploreData =  function (collection) {
     $state.go('^.exploreData', { boxName: $stateParams.boxName, collectionName: collection.name });
+  };
+  $scope.isSystem = function (c) {
+    return c[0] !== '_';
   };
 })
 .controller("RemoveCollecitonCtrl", function ($scope, $state, $stateParams, CollectionApi) {
@@ -225,6 +230,9 @@ $stateProvider.state('manageBox', {
       });
     }
   });
+})
+.controller("BoxGroupPermissions", function ($scope, $stateParams) {
+
 })
 .controller("BoxRemoteDbsCtrl", function ($scope, BoxesApi, $stateParams) {
     var boxName = $stateParams.boxName;

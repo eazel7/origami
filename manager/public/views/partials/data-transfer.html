@@ -63,6 +63,9 @@
               <a class="list-group-item" ng-class="configuration.copyUserList && 'active' || ''" ng-click="configuration.copyUserList = !configuration.copyUserList" href="javascript:">User list
                 <span ng-if="configuration.copyUserList" class="pull-right glyphicon glyphicon-ok"></span>
               </a>
+              <a class="list-group-item" ng-class="configuration.copyPermissionGroups && 'active' || ''" ng-click="configuration.copyPermissionGroups = !configuration.copyPermissionGroups" href="javascript:">Permission groups
+                <span ng-if="configuration.permissionGroups" class="pull-right glyphicon glyphicon-ok"></span>
+              </a>
               <a class="list-group-item" ng-class="configuration.copyPackages && 'active' || ''" ng-click="configuration.copyPackages = !configuration.copyPackages" href="javascript:">Package configuration
                 <span ng-if="configuration.copyPackages" class="pull-right glyphicon glyphicon-ok"></span></a>
               <a class="list-group-item" ng-class="configuration.copyRemoteDbs && 'active' || ''" ng-click="configuration.copyRemoteDbs = !configuration.copyRemoteDbs" href="javascript:">Remote DBs configuration

@@ -25,6 +25,26 @@ module.exports = function(app, api) {
     return next();
   }
   
+  app.use('/:boxName/', function (req, res, next) {
+    var boxName = req.params.boxName;
+
+    api.boxes.getBox(boxName, function (err, box) {
+      if (!box) {
+        // no box, not this handler
+        return next();
+      } else if (!box.info && box.info.status === false) {
+        res.status(503);
+        return res.redirect('/#/box-inactive/' + encodeURIComponent(boxName));
+      } else if (box & box.info && box.info.public) {
+        return boxCtrl(boxName, function (err, app) {
+          app(req, res, next);
+        });
+      } else {
+        next();
+      }
+    });
+  });
+  
   app.route('/')
   .get(loginRequired, controllers.misc.index);
   
@@ -77,6 +97,10 @@ module.exports = function(app, api) {
       return res.end();
     });
   });
+
+//  app
+//  .route('/api/box/:boxName/manage/collections')
+//  .get(controllers.boxes.getBoxInfo);
   
   app
   .route('/api/box/:boxName/info')
@@ -251,6 +275,22 @@ module.exports = function(app, api) {
   app
   .route('/api/packages/:packageName/remove-asset/:filename*')
   .post(controllers.packages.removeAsset);
+  
+  
+  app.use('/api/box-api/:boxName', function (req, res, next) {
+    var boxApi = require('origami-app/boxApiHandlers')(req.params.boxName, api);
+    
+    var apiApp = express();
+    apiApp.get('/collections', boxApi.getCollections);
+    apiApp.post('/collection/:collection/find', boxApi.findInCollection);
+    apiApp.post('/collection/:collection/count', boxApi.countInCollection);
+    apiApp.post('/collection/:collection/findOne', boxApi.findOneInCollection);
+    apiApp.post('/collection/:collection/insert', boxApi.insertInCollection);
+    apiApp.post('/collection/:collection/update', boxApi.updateInCollection);
+    apiApp.post('/collection/:collection/remove', boxApi.removeInCollection);
+    
+    return apiApp(req, res, next);
+  });  
 
   // All undefined api routes should return a 404
   app.route('/api/*')
@@ -275,7 +315,7 @@ module.exports = function(app, api) {
       }
     });
   });
-
+  
   app.use('/:boxName/', function (req, res, next) {
     var boxName = req.params.boxName;
 

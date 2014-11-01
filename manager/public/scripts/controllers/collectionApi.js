@@ -26,7 +26,7 @@ angular.module('boxes3.manager')
     getCollections: function (boxName) {
       var defer = $q.defer();
       
-      $http.get('/' + boxName + '/api/collections')
+      $http.get('/api/box-api/' + boxName + '/collections')
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -35,7 +35,7 @@ angular.module('boxes3.manager')
     destroyCollection: function (boxName, collectionName) {
       var defer = $q.defer();
       
-      $http.post('/api/box/' + boxName + '/destroy-collection/' + collectionName, {})
+      $http.post('/api/box-api/' + boxName + '/destroy-collection/' + collectionName, {})
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -44,7 +44,7 @@ angular.module('boxes3.manager')
     remove: function (boxName, collectionName, object) {
       var defer = $q.defer();
       
-      $http.post('/' + boxName + '/api/collection/' + collectionName + '/remove', object)
+      $http.post('/api/box-api/' + boxName + '/collection/' + collectionName + '/remove', object)
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -53,7 +53,7 @@ angular.module('boxes3.manager')
     insert: function (boxName, collectionName, object) {
       var defer = $q.defer();
       
-      $http.post('/' + boxName + '/api/collection/' + collectionName + '/insert', object)
+      $http.post('/api/box-api/' + boxName + '/collection/' + collectionName + '/insert', object)
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -62,7 +62,7 @@ angular.module('boxes3.manager')
     update: function (boxName, collectionName, predicate, object) {
       var defer = $q.defer();
       
-      $http.post('/' + boxName + '/api/collection/' + collectionName + '/update', {
+      $http.post('/api/box-api/' + boxName + '/collection/' + collectionName + '/update', {
         predicate: predicate,
         object: object
       })
@@ -74,7 +74,7 @@ angular.module('boxes3.manager')
     count: function (boxName, collectionName, filter) {
       var defer = $q.defer();
       
-      $http.post('/' + boxName + '/api/collection/' + collectionName + '/count', filter)
+      $http.post('/api/box-api/' + boxName + '/collection/' + collectionName + '/count', filter)
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -83,7 +83,7 @@ angular.module('boxes3.manager')
     find: function (boxName, collectionName, filter) {
       var defer = $q.defer();
       
-      $http.post('/' + boxName + '/api/collection/' + collectionName + '/find', filter)
+      $http.post('/api/box-api/' + boxName + '/collection/' + collectionName + '/find', filter)
       .success(defer.resolve)
       .error(defer.reject);
       

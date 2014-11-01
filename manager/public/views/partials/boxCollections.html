@@ -1,8 +1,7 @@
 <div class="panel panel-default">
-
   <table class="table table-striped">
     <tbody>
-      <tr ng-repeat="collection in collections">
+      <tr ng-repeat="collection in collections|filter:isSystem:false">
         <td>
           <a class="btn btn-link" ng-href="#/{{boxName}}/explore-data/{{collection}}">{{collection}}</a>
         </td>

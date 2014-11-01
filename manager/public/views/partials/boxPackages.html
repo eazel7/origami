@@ -1,5 +1,5 @@
 <ul class="list-group">
-  <a href="javascript:" class="list-group-item" ng-class="{'active': isActive(p)}" ng-repeat="p in packages|filter:isActive" ng-click="switchPackage(p)">
+  <a href="javascript:" class="list-group-item" ng-class="{'active': isActive(p)}" ng-repeat="p in packages|filter:isActive|orderBy:packagePriority" ng-click="switchPackage(p)">
     {{p}}
     <span class="pull-right btn-group">
       <span ng-if="isActive(p)">
@@ -9,7 +9,7 @@
       </span>
     </span>
   </a>
-  <a href="javascript:" class="list-group-item" ng-repeat="p in packages|filter:isNotActive" ng-click="switchPackage(p)">
+  <a href="javascript:" class="list-group-item" ng-repeat="p in packages|filter:isNotActive|orderBy:isDependency:true|orderBy:String track by p" ng-click="switchPackage(p)">
     {{p}}
     <span class="pull-right btn-group">
       <span ng-if="isDependency(p)"><i class="glyphicon glyphicon-ok"></i></span>
