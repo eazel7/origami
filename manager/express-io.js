@@ -46,6 +46,27 @@ module.exports = function(app, io) {
     next();
   });
   
+  app.use(function (req, res, next) {
+    var orig = res.end;
+    
+    res.end = function (body) {
+      var self = this, args = arguments;
+      
+      if (body && !res.get('Content-Type')) {
+        magic.detect(new Buffer(body), function(err, result) {
+            res.set('Content-Type', result);
+            
+            console.log(res.get('Content-Type'));
+            
+            orig.apply(self, args);
+        });
+      } else {
+        orig.apply(this, arguments);
+      }
+    };
+    next();
+  });
+  
   app.use(express.static(path.join(config.root, 'public')));
   app.set('views', path.join(config.root, 'public', 'views'));
   app.engine('html', require('ejs').renderFile);

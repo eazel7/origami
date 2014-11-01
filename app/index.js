@@ -30,6 +30,26 @@ module.exports = function (api) {
       };
       next();
     });
+    app.use(function (req, res, next) {
+      var orig = res.end;
+      
+      res.end = function (body) {
+        var self = this, args = arguments;
+        
+        if (body && !res.get('Content-Type')) {
+          magic.detect(new Buffer(body), function(err, result) {
+              res.set('Content-Type', result);
+              
+              console.log(res.get('Content-Type'));
+              
+              orig.apply(self, args);
+          });
+        } else {
+          orig.apply(this, arguments);
+        }
+      };
+      next();
+    });
 
     app.get('/scripts/info.js', function (req, res) {
       var script = 'angular.module(\'box-info\', [])\n' +
