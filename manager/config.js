@@ -18,6 +18,8 @@ if (process.env.OPENSHIFT_APPNAME) {
   extend(config.mongoSessions, newMongo);
   config.protocol = 'http';
   config.prefix = 'https://' + process.env.OPENSHIFT_APPNAME + '.rhcloud.com/';
+  config.ip = process.env.OPENSHIFT_NODEJS_IP;
+  config.port = process.env.OPENSHIFT_NODEJS_PORT;
 }
 
 module.exports = config;
