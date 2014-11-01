@@ -92,11 +92,13 @@ module.exports = function(app, io) {
     
     var appSessionStore = new MongoStore(config.mongoSessions);
     app.use(session({
+      resave: true,
+      saveUninitialized: true,
       secret: expressSecret,
       store: appSessionStore,
       cookie: {maxAge: 3600000*24*14}
     }));
-    app.use(bodyParser());
+    app.use(bodyParser.json());
 
     app.use(methodOverride());
 

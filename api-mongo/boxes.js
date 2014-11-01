@@ -1,3 +1,5 @@
+var Grid = require('mongodb').Grid, ObjectID = require('mongodb').ObjectID;
+
 /**
  * # boxes.js
  *
@@ -185,6 +187,34 @@ module.exports = function (config, collections, views, eventBus, callback) {
             "info": info
           }
         }, callback);
+      },
+      uploadFile: function (boxName, buffer, callback) {
+        var grid = new Grid(db, boxName + "-_uploads");
+          
+        grid.put(buffer, {}, callback);
+      },
+      deleteFile: function (boxName, id, callback) {
+        var grid = new Grid(db, boxName + "-_uploads");
+          
+        grid.delete(new ObjectID(id), {}, callback);
+      },
+      listFiles: function (boxName, callback) {
+        db
+        .collection(boxName + "-_uploads.files")
+        .find({}, {_id: 1})
+        .toArray(function (err, docs) {
+          if (err) return callback (err);
+          var ids = [];
+          
+          for (var i = 0; i < docs.length; i++) ids.push(docs[i]._id.toString());
+          
+          callback(null, ids);
+        });
+      },
+      serveFile: function (boxName, id, callback) {
+        var grid = new Grid(db, boxName + "-_uploads");
+        
+        grid.get(new ObjectID(id), callback);
       }
     });
   });

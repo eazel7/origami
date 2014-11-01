@@ -1,11 +1,13 @@
 var manifestDate = String(Date.now()),
-    allAssets = require('./allAssets');
+    allAssets = require('./allAssets'),
+    formidable = require('formidable');
 
 module.exports = function (api) {
   return function (boxName, callback) {
     var boxApi = require('./boxApiHandlers')(boxName, api),
         express = require('express'),
-        app = express();
+        app = express(),
+        fs = require('fs');
         
     var mmm = require('mmmagic');
     var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
@@ -329,6 +331,98 @@ module.exports = function (api) {
         app.use(express.static(__dirname + '/public'));
         
         return callback(null, app);
+      });
+    });
+    
+    app.get('/api/download/:id', function (req, res) {
+      api.boxes.serveFile(boxName, req.params.id, function (err, buffer) {
+        if (err) {
+          console.error(err);
+          res.status(418);
+          return res.end();
+        }
+        
+        if (!buffer) {
+          res.status(404);
+          return res.end();
+        } else {
+          res.setHeader('Cache-Control', 'public, max-age=345600'); // 4 days
+          res.setHeader('Expires', new Date(Date.now() + 345600000).toUTCString());
+
+          res.status(200);
+          return res.end(buffer);
+        }
+      });
+    });
+    app.delete('/api/download/:id', function (req, res) {
+      api.boxes.deleteFile(boxName, req.params.id, function (err) {
+        if (err) {
+          console.error(err);
+          res.status(418);
+          return res.end();
+        }
+        
+        res.status(200);
+        return res.end(buffer);
+      });
+    });
+    app.get('/api/download', function (req, res) {
+      api.boxes.listFiles(boxName, function (err, uploads) {
+        if (err) {
+          console.error(err);
+          res.status(418);
+          return res.end();
+        }
+        
+        res.json(uploads);
+      });
+    });
+    
+    app.use('/api/upload', function (req, res) {
+      var form = new formidable.IncomingForm();
+      var uploads = [];
+      
+      form.parse(req, function (err, fields, files) {
+        async.eachSeries(Object.keys(files), function (fileEntry, callback) {
+          var file = files[fileEntry],
+              filename = req.params.path + (req.params[0] ? req.params[0] : ''),
+              bytes = fs.readFileSync(file.path);
+
+            api.boxes.uploadFile(boxName, bytes, function (err, res) {
+              if (err) return callback (err);
+              
+              uploads.push(res._id.toString());
+              
+              callback(null);
+            });
+        }, function (err) {
+          if (err) {
+            console.error(err);
+            res.status(418);
+            return res.end();
+          }
+            
+          async.eachSeries(Object.keys(fields), function (fileEntry, callback) {
+            var filename = fileEntry,
+                bytes = new Buffer(fields[fileEntry]);
+
+            api.boxes.uploadFile(boxName, bytes, function (err, res) {
+              if (err) return callback (err);
+              
+              uploads.push(res._id.toString());
+              
+              callback(null);
+            });
+          }, function (err) {
+            if (err) {
+              console.error(err);
+              res.status(418);
+              return res.end();
+            }
+          
+            res.json(uploads);
+          });
+        });
       });
     });
   };
