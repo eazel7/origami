@@ -10,7 +10,7 @@ function override (dst, src) {
 
 if (process.env.OPENSHIFT_APP_NAME) {
   var newMongo = {
-    database: process.env.OPENSHIFT_APPNAME,
+    database: process.env.OPENSHIFT_APP_NAME,
     host: process.env.OPENSHIFT_MONGODB_DB_HOST,
     port: process.env.OPENSHIFT_MONGODB_DB_PORT,
     username: process.env.OPENSHIFT_MONGODB_DB_USERNAME,
@@ -21,7 +21,7 @@ if (process.env.OPENSHIFT_APP_NAME) {
   override(config.mongo, newMongo); 
   override(config.mongoSessions, newMongo);
   config.protocol = 'http';
-  config.prefix = 'https://' + process.env.OPENSHIFT_APPNAME + '.rhcloud.com/';
+  config.prefix = 'https://' + process.env.OPENSHIFT_APP_NAME + '.rhcloud.com/';
   config.ip = process.env.OPENSHIFT_NODEJS_IP;
   config.port = process.env.OPENSHIFT_NODEJS_PORT;
 }
