@@ -2,9 +2,13 @@ var config = require('./config-default');
 
 config.root = __dirname;
 
-if (process.env.OPENSHIFT_APPNAME) {
-  var extend = require('util')._extend;
+override(dst, src) {
+  for (var k in src) {
+    dst[k] = src[k];
+  }
+}
 
+if (process.env.OPENSHIFT_APP_NAME) {
   var newMongo = {
     database: process.env.OPENSHIFT_APPNAME,
     host: process.env.OPENSHIFT_MONGODB_DB_HOST,
@@ -13,9 +17,9 @@ if (process.env.OPENSHIFT_APPNAME) {
     password: process.env.OPENSHIFT_MONGODB_DB_PASSWORD
   };
 
-  extend(config.auth['origami-auth-local'].mongo, newMongo);
-  extend(config.mongo, newMongo); 
-  extend(config.mongoSessions, newMongo);
+  override(config.auth['origami-auth-local'].mongo, newMongo);
+  override(config.mongo, newMongo); 
+  override(config.mongoSessions, newMongo);
   config.protocol = 'http';
   config.prefix = 'https://' + process.env.OPENSHIFT_APPNAME + '.rhcloud.com/';
   config.ip = process.env.OPENSHIFT_NODEJS_IP;
