@@ -2,7 +2,7 @@ var config = require('./config-default');
 
 config.root = __dirname;
 
-override(dst, src) {
+function override (dst, src) {
   for (var k in src) {
     dst[k] = src[k];
   }
