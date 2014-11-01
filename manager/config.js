@@ -25,7 +25,7 @@ if (process.env.OPENSHIFT_APP_NAME) {
   delete config.mongoSessions.database;
   
   config.protocol = 'http';
-  config.prefix = 'https://' + process.env.OPENSHIFT_APP_NAME + '.rhcloud.com/';
+  config.prefix = 'https://' + process.env.OPENSHIFT_APP_DNS + '/';
   config.ip = process.env.OPENSHIFT_NODEJS_IP;
   config.port = process.env.OPENSHIFT_NODEJS_PORT;
 }
