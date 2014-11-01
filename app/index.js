@@ -6,6 +6,30 @@ module.exports = function (api) {
     var boxApi = require('./boxApiHandlers')(boxName, api),
         express = require('express'),
         app = express();
+        
+    var mmm = require('mmmagic');
+    var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
+
+    app.use(function (req, res, next) {
+      var orig = res.send;
+      
+      res.send = function (body) {
+        var self = this, args = arguments;
+        
+        if (!res.get('Content-Type')) {
+          magic.detect(new Buffer(body), function(err, result) {
+              res.set('Content-Type', result);
+              
+              console.log(res.get('Content-Type'));
+              
+              orig.apply(self, args);
+          });
+        } else {
+          orig.apply(this, arguments);
+        }
+      };
+      next();
+    });
 
     app.get('/scripts/info.js', function (req, res) {
       var script = 'angular.module(\'box-info\', [])\n' +
@@ -23,6 +47,7 @@ module.exports = function (api) {
         }
         
         res.setHeader('Content-Type', 'text/cache-manifest');
+        
         res.send(doc.manifest);
         res.end();
       });

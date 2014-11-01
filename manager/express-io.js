@@ -22,7 +22,6 @@ module.exports = function(app, io) {
   app.use(compression());
   app.use(favicon(path.join(config.root, 'public', 'favicon.ico')));
   
-  
   var mmm = require('mmmagic');
   var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
 
@@ -32,15 +31,17 @@ module.exports = function(app, io) {
     res.send = function (body) {
       var self = this, args = arguments;
       
-      magic.detect(new Buffer(body), function(err, result) {
-          if (!res.get('Content-Type')) {
+      if (!res.get('Content-Type')) {
+        magic.detect(new Buffer(body), function(err, result) {
             res.set('Content-Type', result);
-          } 
-          
-          console.log(res.get('Content-Type'));
-          
-          orig.apply(self, args);
-      });
+            
+            console.log(res.get('Content-Type'));
+            
+            orig.apply(self, args);
+        });
+      } else {
+        orig.apply(this, arguments);
+      }
     };
     next();
   });
