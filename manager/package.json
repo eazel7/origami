@@ -39,6 +39,10 @@
     "socket.io": "^1.0.6",
     "spdy": "~1.27.0",
     "static-favicon": "~2.0.0-alpha",
-    "xtend": "~2.0.3"
+    "xtend": "~2.0.3",
+    "origami-app": "*",
+    "origami-random-names": "*",
+    "origami-api-mongo": "*",
+    "origami-auth-local": "*"
   }
 }
