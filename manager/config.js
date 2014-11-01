@@ -20,6 +20,10 @@ if (process.env.OPENSHIFT_APP_NAME) {
   override(config.auth['origami-auth-local'].mongo, newMongo);
   override(config.mongo, newMongo); 
   override(config.mongoSessions, newMongo);
+  
+  config.mongoSessions.db = config.mongoSessions.database;
+  delete config.mongoSessions.database;
+  
   config.protocol = 'http';
   config.prefix = 'https://' + process.env.OPENSHIFT_APP_NAME + '.rhcloud.com/';
   config.ip = process.env.OPENSHIFT_NODEJS_IP;
