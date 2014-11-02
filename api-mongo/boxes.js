@@ -49,8 +49,8 @@ module.exports = function (config, collections, views, eventBus, callback) {
         name: name
       }, callback);
     };
-
-    callback(err, {
+    
+    var self = {
       /**
        * # Saves a new box into the database and returns the box document.
        *
@@ -215,7 +215,67 @@ module.exports = function (config, collections, views, eventBus, callback) {
         var grid = new Grid(db, boxName + "-_uploads");
         
         grid.get(new ObjectID(id), callback);
+      },
+      export: function (boxName, callback) {
+        // collections
+        // packages
+        // uploads
+        console.log('here');
+        
+        var AdmZip = require('adm-zip');
+
+        var zip = new AdmZip();
+        async
+        .series([function (callback) {
+          self.listFiles(boxName, function (err, files) {
+            if (err) return callback (err);
+          
+            async
+            .each(files, function (file, fileCallback) {
+              self.serveFile(boxName, file, function (err, buffer) {
+                if (err) return fileCallback(err);
+                
+                zip.addFile("uploads/" + file, buffer);
+                
+                fileCallback();
+              });
+            }, callback);
+          });
+        },function (callback) {
+          collections.getCollections(boxName, function (err, collectionNames) {
+            if (err) return callback (err);
+          
+            async
+            .eachSeries(collectionNames, function (collectionName, collectionCallback) {
+              collections.getCollection(boxName, collectionName, function (err, collection) {
+                if (err) return collectionCallback (err);
+                
+                collection.find({}, function (err, docs) {
+                  if (err) return collectionCallback(err);
+                  
+                  zip.addFile("collections/" + collectionName + ".json", new Buffer(JSON.stringify(docs, undefined, 2)));
+                  
+                  collectionCallback();
+                });
+              });
+            }, callback);
+          });
+        }, function (callback) {
+          self.getBox(boxName, function (err, box) {
+            if (err) return callback (err);
+            
+            zip.addFile("box.json", new Buffer(JSON.stringify({info: box.info, packages: box.packages}, undefined, 2)));
+            
+            callback();
+          });
+        }], function (err) {
+          if (err) return callback (err);
+          
+          callback(null, zip.toBuffer());
+        });
       }
-    });
+    };
+
+    callback(err, self);
   });
 }

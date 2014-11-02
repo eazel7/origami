@@ -20,6 +20,17 @@ var expressSecret = 'thisIsAnObviousSecret',
 module.exports = function(app, io) {
   var env = app.get('env');
   app.use(compression());
+  
+  if (config.forwardProto) {
+    app.use(function (req, res, next) {
+      if (req.headers['x-forwarded-proto'] == 'http') { 
+          res.redirect('https://' + req.headers.host + req.path);
+      } else {
+          return next();
+      }
+    });
+  }
+  
   app.use(favicon(path.join(config.root, 'public', 'favicon.ico')));
   
   var mmm = require('mmmagic');

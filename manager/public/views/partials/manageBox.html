@@ -1,5 +1,3 @@
-
-
 <h4>
   <a ng-href="{{boxUrl(box)}}"><span class="glyphicon glyphicon-link"></span> {{boxName}}</a>
 </h4>
@@ -26,5 +24,8 @@
   </tab>
   <tab heading="Usage">
     <div class="well" ng-controller="BoxUsageCtrl" ng-include src="'/views/partials/boxUsage.html'"></div>
+  </tab>
+  <tab heading="Migration">
+    <div class="well" ng-include src="'/views/partials/boxMigration.html'"></div>
   </tab>
 </tabset>

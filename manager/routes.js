@@ -97,10 +97,6 @@ module.exports = function(app, api) {
       return res.end();
     });
   });
-
-//  app
-//  .route('/api/box/:boxName/manage/collections')
-//  .get(controllers.boxes.getBoxInfo);
   
   app
   .route('/api/box/:boxName/info')
@@ -109,6 +105,10 @@ module.exports = function(app, api) {
   app
   .route('/api/box/:boxName/access')
   .get(controllers.boxes.getBoxAccess);
+
+  app
+  .route('/api/box/:boxName/export')
+  .get(controllers.boxes.exportBox);
 
   app
   .route('/api/box/:boxName/createCollection')

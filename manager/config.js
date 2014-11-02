@@ -28,6 +28,7 @@ if (process.env.OPENSHIFT_APP_NAME) {
   config.prefix = 'https://' + process.env.OPENSHIFT_APP_DNS + '/';
   config.ip = process.env.OPENSHIFT_NODEJS_IP;
   config.port = process.env.OPENSHIFT_NODEJS_PORT;
+  config.forwardProto = true;
 }
 
 module.exports = config;

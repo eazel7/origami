@@ -142,6 +142,21 @@ module.exports = function (api) {
         
         res.json(stats);
       });
+    },
+    exportBox: function (req, res) {
+      api.boxes.export(req.params.boxName, function (err, buffer) {
+        if (err) {
+          console.error(err);
+          
+          res.status(418);
+          return res.end();
+        }
+
+        res.set('Content-Type', 'application/zip, application/octet-stream');
+        res.set('Content-Disposition', 'attachment; filename=' + req.params.boxName + '.box');
+        res.send(buffer);
+        res.end();
+      });
     }
   };
 };
