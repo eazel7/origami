@@ -51,6 +51,9 @@ module.exports = function (config, connect, collectionWrapper, router, callback)
        * @api public
        */
       getCollection: function (boxName, collectionName, callback) {
+        if (!boxName) callback(new Error("No box name"));
+        if (!collectionName) callback(new Error("No collection name"));
+        
         router.routeCollection(boxName, collectionName, function (err, route) {
           collectionWrapper.wrap(db
             .db(route.database)
@@ -108,6 +111,9 @@ module.exports = function (config, connect, collectionWrapper, router, callback)
        * @api public
        */
       createCollection: function (boxName, collectionName, callback) {
+        if (!boxName) callback(new Error("No box name"));
+        if (!collectionName) callback(new Error("No collection name"));
+        
         db
         .collection("boxes")
         .findOne({

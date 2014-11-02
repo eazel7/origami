@@ -1,6 +1,25 @@
 'use strict';
 
 angular.module('boxes3.manager')
+.controller("MigrationCtrl", function ($scope, $upload, $stateParams, $location) {
+  $scope.import = function($files) {
+    if ($files.length > 1) return;
+    
+    for (var i = 0; i < $files.length; i++) {
+      var file = $files[i];
+      var path = file.name;
+      
+      $scope.upload = $upload.upload({
+        url: 'api/box/' + encodeURIComponent($stateParams.boxName) + '/import',
+        method: 'POST',
+        data: {},
+        file: file
+      }).then(function () {
+        $location.reload();
+      });
+    }
+  };
+})
 .controller("BoxUsageCtrl", function ($scope, $http, $stateParams) {
   $scope.options = {
     chart: {

@@ -111,6 +111,10 @@ module.exports = function(app, api) {
   .get(controllers.boxes.exportBox);
 
   app
+  .route('/api/box/:boxName/import')
+  .post(controllers.boxes.importBox);
+
+  app
   .route('/api/box/:boxName/createCollection')
   .post(controllers.boxes.createCollection);
 

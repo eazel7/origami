@@ -1,3 +1,21 @@
+
+    <style>
+      .about-file-drop {
+        border-style: dashed;
+        border-color: #blue;
+      }
+      
+      .upload-icon {
+        display: none;
+      }
+      .file-drop-items > .about-file-drop > .upload-icon {
+        display: inline-block;
+      }
+    </style>
+
 <div class="btn-group btn-group-justified">
-  <a ng-href="/api/boxes/{{boxName}}/export" class="btn btn-default"><i class="glyphicon glyphicon-export"></i> Export</a>
+  <a ng-href="/api/box/{{boxName}}/export" class="btn btn-default"><i class="glyphicon glyphicon-export"></i> Export</a>
+  <a class="form-group btn-block btn btn-default file-drop-items"  ng-file-drop="import($files)" ng-file-drag-over-class="about-file-drop" ng-click="triggerImport()">
+    <i class="glyphicon glyphicon-import"></i>&nbsp;Import
+  </a>
 </div>
