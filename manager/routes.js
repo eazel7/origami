@@ -32,10 +32,10 @@ module.exports = function(app, api) {
       if (!box) {
         // no box, not this handler
         return next();
-      } else if (!box.info && box.info.status === false) {
+      } else if (!box.info || box.info.status !== true) {
         res.status(503);
         return res.redirect('/#/box-inactive/' + encodeURIComponent(boxName));
-      } else if (box & box.info && box.info.public) {
+      } else if (box.info && box.info.public === true) {
         return boxCtrl(boxName, function (err, app) {
           app(req, res, next);
         });

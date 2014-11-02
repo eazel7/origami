@@ -86,7 +86,11 @@ module.exports = function (config, collections, views, eventBus, callback) {
               collections: {},
               manifest: "CACHE MANIFEST\n",
               packages: [],
-              scripts: []
+              scripts: [],
+              info: {
+                status: false,
+                description: ''
+              }
             };
 
             if (!config.singleDbMode) {
