@@ -1,3 +1,5 @@
+var formidable = require('formidable'), fs = require('fs');
+
 module.exports = function (api) {
   return {
     listBoxes: function (req, res) {
@@ -156,6 +158,32 @@ module.exports = function (api) {
         res.set('Content-Disposition', 'attachment; filename=' + req.params.boxName + '.box');
         res.send(buffer);
         res.end();
+      });
+    },
+    importBox: function (req, res) {
+      var form = new formidable.IncomingForm();
+      
+      form.parse(req, function (err, fields, files) {
+        if (Object.keys(files).length !== 1) {
+          console.error(new Error("Only one file expected"));
+          
+          res.status(418);
+          return res.end();
+        }
+        
+        var file = files[Object.keys(files)[0]];
+        var bytes = fs.readFileSync(file.path);
+          
+        api.boxes.import(req.params.boxName, bytes, function (err) {
+          if (err) {
+            console.error(err);
+            res.status(418);
+            return res.end();
+          }
+          
+          res.status(200);
+          return res.end();
+        });
       });
     }
   };

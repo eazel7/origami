@@ -1,5 +1,3 @@
-var Grid = require('mongodb').Grid, ObjectID = require('mongodb').ObjectID;
-
 /**
  * # boxes.js
  *
@@ -30,6 +28,8 @@ var Grid = require('mongodb').Grid, ObjectID = require('mongodb').ObjectID;
  * @param {Object} configuration
  * @param {Function} callback gets two parameters (err, api).
  */
+var Grid = require('mongodb').Grid, ObjectID = require('mongodb').ObjectID;
+
 module.exports = function (config, collections, views, eventBus, callback) {
   function fairlySimplePassword() {
     var a = Date.now(), b = a / 10000, c = (a - (Math.floor(b) * 10000)).toString();
@@ -220,7 +220,6 @@ module.exports = function (config, collections, views, eventBus, callback) {
         // collections
         // packages
         // uploads
-        console.log('here');
         
         var AdmZip = require('adm-zip');
 
@@ -273,6 +272,66 @@ module.exports = function (config, collections, views, eventBus, callback) {
           
           callback(null, zip.toBuffer());
         });
+      },
+      import: function (boxName, bytes, callback) {
+        var ZipFile = require("adm-zip/zipFile"),
+            AdmZipUtil = require("adm-zip/util");
+        
+        var zip = new ZipFile (bytes, AdmZipUtil.Constants.BUFFER);
+        
+        var box = JSON.parse(zip.getEntry("box.json").getData().toString());
+        
+        var entries = zip.entries;
+        
+        async.series([
+          function (callback) {
+            db
+            .collection('boxes')
+            .update({
+              name: boxName
+            }, {
+            $set: {
+              info: box.info,
+              packages: box.packages
+            }
+          }, function (err) {
+            if (err) return callback(err);
+            
+            eventBus.emit('box-packages-updated', boxName);
+            
+            callback();
+          });
+         }, function (callback) {
+           async.eachSeries(entries, function (entry, entryCallback) {
+             if (entry.entryName.indexOf('uploads/') === 0) {
+               var entryBuffer = entry.getData(),
+                 uploadId = new ObjectID(entry.entryName.slice("uploads/".length)),
+                 grid = new Grid(db, boxName + "-_uploads");
+                 
+                 grid.put(entryBuffer, {_id: uploadId}, entryCallback);
+              } else if (entry.entryName.indexOf('collections/') === 0) {
+                var collectionName = entry.entryName.slice("collections/".length, entry.entryName.lastIndexOf('.json')),
+                  data = JSON.parse(zip.getEntry(entry.entryName).getData().toString());
+                    
+                async.series([function (callback) {
+                  collections.createCollection(boxName, collectionName, callback);
+                }, function (callback) {
+                  collections.getCollection(boxName, collectionName, function (err, collection) {
+                    if (err) return callback (err);
+                    
+                    collection.remove({}, function (err) {
+                      if (err) return callback(err);
+                      
+                      async.eachSeries(data, function (obj, callback) {
+                        collection.insert(obj, callback);
+                      }, callback);
+                    });
+                  });
+                }], entryCallback);
+              } else return entryCallback();
+            }, callback);
+         }
+        ], callback);
       }
     };
 

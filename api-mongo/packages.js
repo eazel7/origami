@@ -1,4 +1,4 @@
-module.exports = function (config, callback) {
+module.exports = function (config, eventBus, callback) {
   var Grid = require('mongodb').Grid,
       async = require('async'),
       path = require('path');
@@ -20,7 +20,6 @@ module.exports = function (config, callback) {
   
   require('./connect')(config.mongo, function (err, db) {
     function updateBoxesManifest(boxDependencyResolver, callback) {
-
         db.collection("boxes")
         .find({})
         .toArray(function (err, affectedBoxes) {
@@ -763,6 +762,12 @@ module.exports = function (config, callback) {
         });
       }
     };
+    
+    eventBus.on('box-packages-updated', function () {
+      updateBoxesManifest(self.getActivePackagesWithDependencies, function (err) {
+        if (err) console.error(err);
+      });
+    });
     
     callback(err, self);
   });
