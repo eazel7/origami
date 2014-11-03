@@ -56,6 +56,10 @@ angular.module('boxes3.manager')
     values: [],
     key: "Operations",
     color: "#0f0"
+  },{
+    values: [],
+    key: "Folds",
+    color: "#00f"
   }];
   $scope.errors = [{
     values: [],
@@ -68,12 +72,34 @@ angular.module('boxes3.manager')
   oneWeekAgo.setHours(0,0,0,0);
     
   var boxName = $stateParams.boxName;
-  $http.post("/api/box/" + encodeURIComponent(boxName) + "/stats/usage", {
+  $http.post("/api/box/" + encodeURIComponent(boxName) + "/stats/usage", JSON.stringify({
     from: oneWeekAgo,
-    to: new Date().valueOf()
-  })
+    to: new Date().valueOf(),
+    collection: {
+      $nin: ['_graphs', '_views']
+    }
+  }))
   .success(function (data) {
     var values = $scope.operations[0].values;
+    
+    for (var i = 0; i < data.length; i++) {
+      values.push({
+        x: data[i].date,
+        y: new Date(data[i].value)
+      });
+    }
+  });
+  $http.post("/api/box/" + encodeURIComponent(boxName) + "/stats/usage", JSON.stringify({
+    from: oneWeekAgo,
+    to: new Date().valueOf(),
+    collection: {
+      $in: ['_graphs', '_views']
+    }
+  }), {
+    
+  })
+  .success(function (data) {
+    var values = $scope.operations[1].values;
     
     for (var i = 0; i < data.length; i++) {
       values.push({

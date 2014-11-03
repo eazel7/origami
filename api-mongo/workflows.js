@@ -287,8 +287,6 @@ module.exports = function (api, callback) {
               
               g.componentLoader = new (require("noflo/lib/ComponentLoader").ComponentLoader)(__dirname);
 
-              debugger;
-              
               noflo.createNetwork(g, function(n) {
                 n.activeConnections = [];
                 n.connect(function () {
