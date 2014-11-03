@@ -261,7 +261,7 @@ module.exports = function (api) {
             });
           } else if (metadata.use == 'script') {
             res.set({
-              'Content-Type': 'application/javascript'
+              'Content-Type': 'application/javascript;charset=utf-8'
             });
           }
                 
