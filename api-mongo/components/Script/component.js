@@ -14,7 +14,8 @@ module.exports = {
         "use": "configuration",
         "name": "Script",
         "type": "data",
-        "id": "script"
+        "id": "script",
+        "script": true
     }],
     "outputConnectors": [{
       "name": "Output",

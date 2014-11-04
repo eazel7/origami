@@ -117,7 +117,7 @@ module.exports = function(app, io) {
     function onAuthorizeSuccess(data, accept){
       // The accept-callback still allows us to decide whether to
       // accept the connection or not.
-      accept(null, true);
+//      accept(null, true);
 
       // OR
 
@@ -126,11 +126,11 @@ module.exports = function(app, io) {
     }
 
     function onAuthorizeFail(data, message, error, accept){
-      if(error)
-        throw new Error(message);
+//      if(error)
+//        throw new Error(message);
 
       // We use this callback to log all of our failed connections.
-      accept(null, false);
+//      accept(null, false);
 
       // OR
 
@@ -160,10 +160,20 @@ module.exports = function(app, io) {
       .emit('sync-lastDate', op.date);
     });
     
-    api.eventBus.on('desktop-notification', function (boxName, message) {
+    api.eventBus.on('desktop-notification-box', function (boxName, message) {
       io
       .of('/' + boxName)
       .emit('desktop-notification', message);
+    });
+    
+    api.eventBus.on('desktop-notification-user', function (boxName, user, message) {
+      var ns = io.of('/' + boxName);
+      for (var socket in ns.sockets) {
+        if (ns.sockets[socket].client.request.user.alias === user) {
+//          debugger;
+          ns.sockets[socket].emit('desktop-notification', message);
+        }
+      }
     });
     
     api.eventBus.on('workflow-started', function (boxName, workflowId) {

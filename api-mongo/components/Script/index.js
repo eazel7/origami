@@ -64,6 +64,63 @@ module.exports = {
                       });
                       
                       return defer.promise;
+                    },
+                    findOne: function (predicate) {
+                      var defer = Q.defer();
+                      
+                      component.api.collections.getCollection(component.boxName, collectionName, function (err, collection) {
+                        if (err) {
+                          console.error(err);
+                          return defer.reject(err);
+                        }
+                        
+                        collection
+                        .findOne(predicate, function (err, doc) {
+                          if (err) return defer.reject(err);
+                          
+                          defer.resolve(doc);
+                        });
+                      });
+                      
+                      return defer.promise;
+                    },
+                    insert: function (object) {
+                      var defer = Q.defer();
+                      
+                      component.api.collections.getCollection(component.boxName, collectionName, function (err, collection) {
+                        if (err) {
+                          console.error(err);
+                          return defer.reject(err);
+                        }
+                        
+                        collection
+                        .insert(object, function (err, doc) {
+                          if (err) return defer.reject(err);
+                          
+                          defer.resolve(doc);
+                        });
+                      });
+                      
+                      return defer.promise;
+                    },
+                    update: function (predicate, replacement) {
+                      var defer = Q.defer();
+                      
+                      component.api.collections.getCollection(component.boxName, collectionName, function (err, collection) {
+                        if (err) {
+                          console.error(err);
+                          return defer.reject(err);
+                        }
+                        
+                        collection
+                        .update(predicate, replacement, function (err) {
+                          if (err) return defer.reject(err);
+                          
+                          defer.resolve();
+                        });
+                      });
+                      
+                      return defer.promise;
                     }
                   }
                 }
@@ -76,10 +133,15 @@ module.exports = {
                 component.error.success.send(data);
                 component.error.success.disconnect();
               },
+              notifyUser: function (alias, message) {
+                component.api.eventBus.emit('desktop-notification-user', component.boxName, alias, message);
+              },
               console: {
                 log: function () {
-                  console.log('from component!');
-                  console.log.apply(this, arguments);
+                  component.api.eventBus.emit('workflow-output', component.boxName, component.workflowId, {
+                    date: new Date().valueOf(),
+                    string: JSON.stringify(arguments)
+                  });
                 }
               } 
             }, 'component.vm');
