@@ -5,7 +5,7 @@ angular.module("boxes3.manager")
     templateUrl: 'views/partials/packages.html',
     resolve: {
     },
-    controller: function ($scope, $http, $upload, $q) {
+    controller: function ($scope, $http, $upload, $q) {    
       function refreshPackages() {
         $http.get('/api/packages')
         .success(function (data) {
@@ -109,7 +109,28 @@ angular.module("boxes3.manager")
     resolve: {
     },
     controller: function ($scope, $http, $stateParams, $upload, $location, $q) {
+      $scope.createAsset = function () {
+        var path = Array.prototype.constructor.apply(this, arguments).join('/');
+        
+        var defer = $q.defer();
+      
+        $http.post("/api/packages/" + encodeURIComponent($stateParams.packageName) + "/new-blank-asset/" + encodeURIComponent(path), {})
+        .success(function () {
+          $scope.showCreateNewFile = false;
+          
+          defer.resolve();
+        })
+        .error(defer.reject)
+        .then(refreshAssets);
+        
+        return defer.promise;
+      };
+      
       $scope.package = $stateParams.packageName;
+      
+      $scope.createNewFile = function () {
+        $scope.showCreateNew = true;
+      };
       
       function refreshOtherPackages() {
         return $http.get('/api/packages')

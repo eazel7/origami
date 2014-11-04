@@ -92,7 +92,7 @@ module.exports = function (boxName, api) {
           return res.end();
         }
 
-        collection.remove(req.body, function (err) {
+        collection.remove(req.body || {}, function (err) {
           if (err) {
             console.log({ box: boxName, url: req.params.url, err: err});
             res.status(418);
@@ -115,7 +115,7 @@ module.exports = function (boxName, api) {
             return res.end();
           }
 
-          collection.insert(req.body, function (err, newDoc) {
+          collection.insert(req.body || {}, function (err, newDoc) {
             if (err) {
               console.log({ box: boxName, url: req.params.url, err: err});
               res.status(418);
@@ -137,7 +137,7 @@ module.exports = function (boxName, api) {
             return res.end();
           }
 
-          collection.update(req.body.predicate, req.body.replacement, function (err, newDoc) {
+          collection.update((req.body || {}).predicate || {}, (req.body||{}).replacement || {}, function (err, newDoc) {
             if (err) {
               console.log({ box: boxName, url: req.params.url, err: err});
               res.status(418);
@@ -161,7 +161,7 @@ module.exports = function (boxName, api) {
             return res.end();
           }
 
-          collection.find({})
+          collection.find(req.body || {})
           .toArray(function (err, docs) {
             if (err) {
               console.error({ box: boxName, url: req.params.url, err: err});
@@ -238,7 +238,7 @@ module.exports = function (boxName, api) {
             return res.end();
           }
 
-          collection.update(req.body.predicate, req.body.replacement, { w: 1, multi: true }, function (err, newDoc) {
+          collection.update((req.body || {}).predicate || {}, (req.body||{}).replacement || {}, { w: 1, multi: true }, function (err, newDoc) {
             if (err) {
               console.log({ box: boxName, url: req.params.url, err: err});
               res.status(418);

@@ -197,6 +197,9 @@ module.exports = function(app, api) {
   app.route('/api/packages/:packageName/assets')
   .get(controllers.packages.listAssets);
 
+  app.route('/api/packages/:packageName/new-blank-asset/:path*')
+  .post(controllers.packages.newBlankAsset);
+
   app.route('/api/packages/:packageName/folders')
   .get(controllers.packages.listFolders);
 

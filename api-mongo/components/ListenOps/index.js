@@ -7,6 +7,7 @@ exports.getComponent = function (metadata) {
   
   var attached = 0,
       opEmitter = function (op) {
+        console.log(op);
         if (op.box == c.boxName && c.outPorts.out.isAttached() && c.outPorts.out.connect()) {
           c.outPorts.out.send(op);
         }
@@ -18,15 +19,11 @@ exports.getComponent = function (metadata) {
 
     attached++;
         
-    var d = c.outPorts.out.connect();
-    
-    if (d) {    
-      console.log('workflow-connection-on', metadata.boxName, metadata.workflowId, event.to.metadata.id);
-      exports.api.eventBus.emit('workflow-connection-on', metadata.boxName, metadata.workflowId, event.to.metadata.id);
-    }
+    c.outPorts.out.connect();
   });
   c.outPorts.out.on('detach', function () {
     attached--;
+
     if (attached == 0) {
       exports.api.eventBus.removeListener('op', opEmitter);
       c.outPorts.out.disconnect();

@@ -46,8 +46,6 @@ module.exports = function(app, io) {
         magic.detect(new Buffer(body), function(err, result) {
             res.set('Content-Type', result);
             
-            console.log(res.get('Content-Type'));
-            
             orig.apply(self, args);
         });
       } else {
@@ -66,8 +64,6 @@ module.exports = function(app, io) {
       if (body && !res.get('Content-Type')) {
         magic.detect(new Buffer(body), function(err, result) {
             res.set('Content-Type', result);
-            
-            console.log(res.get('Content-Type'));
             
             orig.apply(self, args);
         });
@@ -188,16 +184,16 @@ module.exports = function(app, io) {
       .emit('workflow-output', workflowId, output);
     });
     
-    api.eventBus.on('workflow-connection-on', function (boxName, workflowId, connectionId) {
+    api.eventBus.on('workflow-connection-on', function (boxName, workflowId, data) {
       io
       .of('/' + boxName)
-      .emit('workflow-connection-on', workflowId, connectionId);
+      .emit('workflow-connection-on', workflowId, data);
     });
     
-    api.eventBus.on('workflow-connection-off', function (boxName, workflowId, connectionId) {
+    api.eventBus.on('workflow-connection-off', function (boxName, workflowId, data) {
       io
       .of('/' + boxName)
-      .emit('workflow-connection-off', workflowId, connectionId);
+      .emit('workflow-connection-off', workflowId, data);
     });
   });
 };

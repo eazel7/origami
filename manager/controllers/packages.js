@@ -1,6 +1,7 @@
 module.exports = function (api) {
   var fs = require('fs'),
-      formidable = require('formidable');
+      formidable = require('formidable'),
+      resErrHelper = require('./resErrHelper');
   
   return {
     listPackages: function (req, res) {
@@ -335,12 +336,28 @@ module.exports = function (api) {
     setDependencies: function (req, res) {
       api.packages.setDependencies(req.params.packageName, req.body, function (err) {
         if (err) {
+          console.error(err);
           res.status(418);
         } else {
           res.status(200);
         }
         res.end();
       });
+    },
+    newBlankAsset: function (req, res) {
+      var path = req.params.path;
+      if (req.params[0]) path = path + req.params[0];
+      
+      if (!path) {
+        return resErrHelper(res, new Error('no file name given'));
+      }
+      
+      api.packages.createAsset(req.params.packageName, path, function (err) {
+        if (err) return resErrHelper(res, err);
+        
+        res.status(200);
+        res.end();
+      }, true); // 4th param = true, to make it silent, as it doesn't change anything about the asset or package itself
     }
   };
 }

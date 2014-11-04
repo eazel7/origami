@@ -45,6 +45,9 @@ module.exports = function (api, callback) {
               "tgt": {
                 "port": node.inputConnectors[j].id,
                 "process": nodeId
+              },
+              "metadata": {
+//                id: node.inputConnectors[j].
               }
             });
           }
@@ -68,8 +71,11 @@ module.exports = function (api, callback) {
         inPortId = inNode.inputConnectors[connector.dest.connectorIndex].id;
 
         if (!outNode.disabled || !inNode.disabled) {
+//          console.log(connector);
           graph.connections.push({
-            "metadata": connector.metadata,
+            "metadata": {
+              id: connector.id
+            },
             "src": {
               "process": outNodeId,
               "port": outPortId
@@ -111,7 +117,7 @@ module.exports = function (api, callback) {
         });
       });
     },
-    setWorkflowResult: function (boxName, workflowId, err, result, callback) {
+    setWorkflowResult: function (boxName, workflowId, graphId, err, result, callback) {
       api.collections.getCollection(boxName, '_workflowResults', function (err, collection) {
         if (err) return callback(err);
         
@@ -243,6 +249,7 @@ module.exports = function (api, callback) {
         return function () {
           if (!running[id]) return;
           
+          console.log(running[id]);
           notRunning[id] = running[id];
           notRunning[id].endDate = new Date();
           
@@ -251,7 +258,7 @@ module.exports = function (api, callback) {
               if (err) return console.error(err);
               
               if (!result) {
-                self.setWorkflowResult(id, null, null, function (err) {
+                self.setWorkflowResult(boxName, id, graphId, null, null, function (err) {
                   if (err) console.error(err);
                 });
               }
@@ -289,58 +296,52 @@ module.exports = function (api, callback) {
 
               noflo.createNetwork(g, function(n) {
                 n.activeConnections = [];
+                
+                n.on('connect', function (event) {
+                  var socket = event.socket;
+                  
+                  if (!socket.from) return;
+                    var id = socket.from.process.id + ':' + socket.from.port + '/' + socket.to.process.id + ':' + socket.to.port;
+                    
+                    if (n.activeConnections.indexOf(id) === -1) {
+                      n.activeConnections.push(id);
+                      api.eventBus.emit('workflow-connection-on', boxName, workflowId, id);
+                    }
+                });
+                n.on('disconnect', function (event) {
+                  var socket = event.socket;
+                  
+                  if (socket.from && socket.from.process && socket.from.process.id && socket.to && socket.to.process && socket.to.process.id) {
+                    var id = socket.from.process.id + ':' + socket.from.port + '/' + socket.to.process.id + ':' + socket.to.port;
+                    
+                    if (n.activeConnections.indexOf(id) !== -1) {
+                      n.activeConnections.splice(n.activeConnections.indexOf(id), -1);
+                      api.eventBus.emit('workflow-connection-off', boxName, workflowId, id);
+                    }
+                  }
+                });
+                
                 n.connect(function () {
                   n.id = workflowId;
                   n.graphId = graphId;
                   n.startDate = new Date();
-                  for (var p in n.processes) {
-                    n.processes[p].component.api = api;
-                    n.processes[p].component.workflowId = n.id;
-                    n.processes[p].component.boxName = boxName;
-                    
-                    for (var k in n.processes[p].component.inPorts.ports){
-                      var inPorts = n.processes[p].component.inPorts.ports[k];
-                      
-                      if (inPorts.isConnected()) {
-                        
-                        for (var s = 0; s < inPorts.sockets.length; s++) {
-                            
-                            if (inPorts.sockets[s].to.metadata && inPorts.sockets[s].to.metadata.id) {
-                          
-                            n.activeConnections.push(inPorts.sockets[s].to.metadata.id);
-                      
-                            api.eventBus.emit('workflow-connection-on', boxName, n.id, inPorts.sockets[s].to.metadata.id);
-                          }
-                        }
-                      }
-                      
-                      inPorts.on('connect', function (event) {
-                        
-                        console.log(event);
-                        
-                        if (event.to.metadata && event.to.metadata.id) {
-                          n.activeConnections.push(event.to.metadata.id);
-                          
-                          api.eventBus.emit('workflow-connection-on', boxName, n.id, event.to.metadata.id);
-                          }
-                      });
-                      inPorts.on('disconnect', function (event) {
-                        
-                        if (event.to.metadata && event.to.metadata.id) {
-                          n.activeConnections.splice(n.activeConnections.indexOf(event.to.metadata.id), 1);
-                          api.eventBus.emit('workflow-connection-off', boxName, n.id, event.to.metadata.id);
-                        }
-                      });
-                    }
-                  }
 
                   n.boxName = boxName;
                   
                   running[n.id] = n;
-                  n.on('end', getWorkflowEnd(n.id, doc.name));
+                  n.on('end', function () {
+                    console.log('workflow end');
+                    getWorkflowEnd(n.id, doc.name)
+                  });
+                  
+                  for (var c in n.processes) {
+                    n.processes[c].component.api = api;
+                    n.processes[c].component.workflowId = workflowId;
+                    n.processes[c].component.graphId = graphId;
+                    n.processes[c].component.boxName = boxName;
+                  }
                   
                   n.start();
-                  
                   api.eventBus.emit('workflow-started', boxName, n.id);
 
                   callback(null, n.id);
@@ -362,6 +363,7 @@ module.exports = function (api, callback) {
       
       delete running[workflowId];
 
+      console.log(notRunning[workflowId].output);
       api.eventBus.emit('workflow-finished', boxName, workflowId);
 
       callback();

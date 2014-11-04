@@ -15,7 +15,7 @@ exports.getComponent = function () {
   });
     
   c.inPorts.success.on('data', function (data) {
-    c.api.workflows.setWorkflowResult(c.boxName, c.workflowId, null, data, function (err) {
+    c.api.workflows.setWorkflowResult(c.boxName, c.workflowId, c.graphId, null, data, function (err) {
       c.api.workflows.stopWorkflow(c.workflowId, function (err) {
         if (err) console.error(err);
       });
@@ -23,7 +23,7 @@ exports.getComponent = function () {
   });
     
   c.inPorts.error.on('data', function (data) {
-    c.api.workflows.setWorkflowResult(c.boxName, c.workflowId, data, null, function (err) {
+    c.api.workflows.setWorkflowResult(c.boxName, c.workflowId, c.graphId, data, null, function (err) {
       c.api.workflows.stopWorkflow(c.workflowId, function (err) {
         if (err) console.error(err);
       });

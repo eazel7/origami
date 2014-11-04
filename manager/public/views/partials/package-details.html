@@ -19,6 +19,18 @@
         <div class="col-md-6">
           <ul class="list-group file-drop-items">
             <li style="border: 2px #ddd dashed" class="list-group-item" ng-file-drop="onFileSelect($files)" ng-file-drag-over-class="about-file-drop"><i class="pull-right upload-icon glyphicon glyphicon-upload"></i>Drop a file</li>
+            <a ng-show="!folderSelected && !showCreateNewFile" href="javascript:" ng-click="showCreateNewFile = true; newFileName = ''" class="list-group-item list-group-item-info"><span class="pull-right"><i class="glyphicon glyphicon-plus-sign"></i></span>Crate new file</a>
+            
+            <li ng-show="showCreateNewFile && !folderSelected" class="list-group-item list-group-item-info">
+              <span class="input-group">
+                <input ng-focus="showCreateNewFile" type="text" class="form-control" ng-model="newFileName" />
+                <span class="input-group-btn">
+                  <a href="javascript:" class="btn btn-default" ng-disabled="!newFileName" ng-click="createAsset(newFileName); newFileName = ''; showCreateNewFile =false"><i class="glyphicon glyphicon-plus"></i></a>
+                  <a href="javascript:" ng-click="showCreateNewFile = false; " class="btn btn-default" ><i class="glyphicon glyphicon-remove
+"></i></a>
+                </span>
+              </span>
+            </li>
             
             <a ng-repeat="a in assets|filter:inFolder(null)" class="list-group-item" ng-class="{'active': selected == a}"
    ng-click="selectAsset(a)" href="javascript:">{{a}}</a>
@@ -26,9 +38,25 @@
             <a href="javascript:" ng-class="{'active': folderSelected == f}" style="border: 2px #ddd dashed" class="list-group-item" ng-repeat-start="f in folders" ng-file-drop="onFileSelect($files, f)" ng-file-drag-over-class="about-file-drop" ng-click="selectFolder(f)">
               <span class="glyphicon glyphicon-folder-open"></span>&nbsp;&nbsp;{{f}}
             </a>
-            <span ng-repeat-end ng-if="folderSelected == f">
+            <span ng-if="folderSelected == f">
               <a href="javascript:" ng-class="{'active': selected === a}" ng-click="selectAsset(a)" class="list-group-item" ng-repeat="a in assets|filter:inFolder(folderSelected)">{{a}}</a>
             </span>
+            <a ng-click="showCreateNewFile = true; newFileName = ''" ng-show="!showCreateNewFile && folderSelected === f" href="javascript:" class="list-group-item list-group-item-info">
+            <span class="pull-right"><i class="glyphicon glyphicon-plus-sign"></i></span>
+            Create new file</a>
+            
+            
+            <li ng-repeat-end ng-show="showCreateNewFile && folderSelected == f" class="list-group-item list-group-item-info">
+              <span class="input-group">
+                <input ng-focus="$parent.showCreateNewFile" type="text" class="form-control" ng-model="newFileName" />
+                <span class="input-group-btn">
+                  <a ng-disabled="!newFileName" href="javascript:" class="btn btn-default" ng-disabled="!newFileName" ng-click="createAsset(f, newFileName); showCreateNewFile = false;"><i class="glyphicon glyphicon-plus"></i></a>
+                  <a href="javascript:" ng-click="showCreateNewFile = false" class="btn btn-default" ><i class="glyphicon glyphicon-remove
+"></i></a>
+                </span>
+              </span>
+            </li>
+   
             
             <span ng-controller="CreateFolderCtrl">
               <a href="javascript:" ng-if="!showCreate" class="list-group-item text-center" ng-click="$parent.showCreate = true">
@@ -39,6 +67,7 @@
                   <input type="text" class="form-control" ng-model="folderName" placeholder="Folder name" />
                   <span class="input-group-btn">
                     <a ng-click="createFolder(folderName)" href="javascript:" ng-disabled="!folderName" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i></a>
+                    <a ng-click="$parent.showCreate = false" href="javascript:" class="btn btn-default"><i class="glyphicon glyphicon-remove"></i></a>
                   </span>
                 </span>
               </li>
@@ -47,7 +76,7 @@
         </div>
         
         <div class="col-md-6 text-center" ng-if="folderSelected">
-          <a class="btn btn-danger" href="javascript:" ng-click="deleteFolder(folderSelected)"><i class="glyphicon glyphicon-fire"></i>&nbsp;&nbsp;Delete folder</a>
+          <a class="btn btn-danger" href="javascript:" ng-click="deleteFolder(folderSelected); $parent.folderSelected = null"><i class="glyphicon glyphicon-fire"></i>&nbsp;&nbsp;Delete folder</a>
         </div>
         
         <div class="col-md-6" ng-if="selected">

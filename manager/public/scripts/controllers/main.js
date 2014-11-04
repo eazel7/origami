@@ -17,4 +17,13 @@ angular.module('boxes3.manager')
       });
     }
   });
+  $stateProvider.state('devs', {
+    url: '/devs',
+    templateUrl: 'views/partials/devs.html',
+    controller: function ($scope, $window) {
+      $scope.clearStorage = function () {
+      
+      };
+    }
+  });
 });
