@@ -1,4 +1,4 @@
-var request = require('request');
+var request = require('request'), Q = require('q');
 
 module.exports = {
   getComponent: function () {
@@ -41,9 +41,48 @@ module.exports = {
         
           if (component.outPorts.success.isAttached() && component.outPorts.success.connect()) {
             var vm = require('vm');
-            vm.runInNewContext(component.script, { input: data }, 'component.vm');
-            component.outPorts.success.send(data);
-            component.outPorts.success.disconnect();
+            vm.runInNewContext(component.script, { 
+              input: data,
+              db: {
+                getCollection: function (collectionName) {
+                  return {
+                    find: function (predicate) {
+                      var defer = Q.defer();
+                      
+                      component.api.collections.getCollection(component.boxName, collectionName, function (err, collection) {
+                        if (err) {
+                          console.error(err);
+                          return defer.reject(err);
+                        }
+                        
+                        collection
+                        .find(predicate, function (err, docs) {
+                          if (err) return defer.reject(err);
+                          
+                          defer.resolve(docs);
+                        });
+                      });
+                      
+                      return defer.promise;
+                    }
+                  }
+                }
+              },
+              success: function (data) {
+                component.outPorts.success.send(data);
+                component.outPorts.success.disconnect();
+              },
+              error: function (err) {
+                component.error.success.send(data);
+                component.error.success.disconnect();
+              },
+              console: {
+                log: function () {
+                  console.log('from component!');
+                  console.log.apply(this, arguments);
+                }
+              } 
+            }, 'component.vm');
           }
         })(this);
       };
