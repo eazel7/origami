@@ -26,7 +26,8 @@
       "WaitWorkflow": "./components/WaitWorkflow",
       "CreateString": "./components/CreateString",
       "BroadcastDesktopNotification": "./components/BroadcastDesktopNotification",
-      "Compare": "./components/Compare"
+      "Compare": "./components/Compare",
+      "Script": "./components/Script"
     }
   }
 }
