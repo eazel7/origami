@@ -136,6 +136,7 @@ module.exports = {
               notifyUser: function (alias, message) {
                 component.api.eventBus.emit('desktop-notification-user', component.boxName, alias, message);
               },
+              JSON: JSON,
               console: {
                 log: function () {
                   component.api.eventBus.emit('workflow-output', component.boxName, component.workflowId, {
