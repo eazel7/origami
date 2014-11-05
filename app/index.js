@@ -204,6 +204,9 @@ module.exports = function (api) {
         return res.json(active);
       });
     });
+    
+    app.post('/api/schedules/:id/start', boxApi.startSchedule);
+    app.post('/api/schedules/:id/stop', boxApi.stopSchedule);
 
     app.post('/api/dbs/:name/:collection/find', boxApi.findInRemoteDb);
     app.post('/api/dbs/:name/:collection/count', boxApi.countInRemoteDb);

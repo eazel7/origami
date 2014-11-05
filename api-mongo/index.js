@@ -80,6 +80,12 @@ module.exports = function (config, callback) {
           self.stats = stats;
           callback(err);
         });
+      },
+      function (callback) {
+        require('./schedules')(self, function (err, schedules) {
+          self.schedules = schedules;
+          callback(err);
+        });
       }
     ], function () {
       require('./workflows')(self, function (err, workflows) {

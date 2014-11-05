@@ -324,6 +324,30 @@ module.exports = function (boxName, api) {
           });
         });
       });
+    },
+    startSchedule: function (req, res) {
+      api.schedules.startSchedule(boxName, req.params.id, function (err) {
+        if (err) {
+          console.log(err);
+          res.status(418);
+        } else {
+          res.status(200);
+        }
+        
+        res.end();
+      });
+    },
+    stopSchedule: function (req, res) {
+      api.schedules.stopSchedule(boxName, req.params.id, function (err) {
+        if (err) {
+          console.log(err);
+          res.status(418);
+        } else {
+          res.status(200);
+        }
+        
+        res.end();
+      });
     }
   };
 };

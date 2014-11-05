@@ -205,5 +205,9 @@ module.exports = function(app, io) {
       .of('/' + boxName)
       .emit('workflow-connection-off', workflowId, data);
     });
+    
+    api.schedules.ensureSchedules(function (err) {
+      if (err) console.log(err);
+    });
   });
 };

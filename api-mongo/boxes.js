@@ -75,7 +75,7 @@ module.exports = function (config, collections, views, eventBus, callback) {
           if (box) {
             callback(new Error('A box with that name already exists'))
           } else if (err) {
-            callback(err);
+            return callback(err);
           } else {
             var boxObj = {
               name: boxName,
@@ -109,6 +109,8 @@ module.exports = function (config, collections, views, eventBus, callback) {
 
               require('./users')(config, function (err, usersApi) {
                 usersApi.enableUser(owner, boxName, 'owner', function (err) {
+                  if (err) return callback (err);
+                  
                   if (!config.singleDbMode) {
                     db
                     .db(boxName)
@@ -119,10 +121,19 @@ module.exports = function (config, collections, views, eventBus, callback) {
 
                   collections
                   .createCollection(boxName, "_views", function (err) {
+                    if (err) return callback (err);
+                    
                     collections
                     .createCollection(boxName, "_graphs", function (err) {
+                      if (err) return callback (err);
+                    
                       collections
-                      .createServerCollection(boxName, "_workflows", callback);
+                      .createServerCollection(boxName, "_workflows", function (err) {
+                        if (err) return callback (err);
+                    
+                        collections
+                        .createServerCollection(boxName, "_workflows", callback);
+                      });
                     });
                   });
                 });
@@ -149,6 +160,16 @@ module.exports = function (config, collections, views, eventBus, callback) {
         return db
         .collection('boxes')
         .find({})
+        .toArray(callback);
+      },
+      listActiveBoxes: function (callback) {
+        return db
+        .collection('boxes')
+        .find({
+          info: {
+            status: true
+          }
+        })
         .toArray(callback);
       },
       /**
@@ -190,7 +211,13 @@ module.exports = function (config, collections, views, eventBus, callback) {
           $set: {
             "info": info
           }
-        }, callback);
+        }, function (err) {
+          if (err) return callback(err, info);
+          
+          eventBus.emit('box-info-changed', boxName);
+          
+          callback(err, info);
+        });
       },
       uploadFile: function (boxName, buffer, callback) {
         var grid = new Grid(db, boxName + "-_uploads");
