@@ -41,7 +41,7 @@ if (config.protocol == 'spdy') {
 var io = require('socket.io')(server);
 
 require('./express-io')(app, io);
-
+  
 server.listen(config.port, config.ip, function () {
   console.log('Express server listening on %s://%s:%d, in %s mode', config.protocol == 'spdy' ? 'https' : 'http', config.ip, config.port, app.get('env'));
 });

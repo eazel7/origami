@@ -116,4 +116,9 @@ angular.module('boxes3.manager')
       return defer.promise;
     }
   };
+})
+.controller("BoxPermissionsCtrl", function ($scope, $stateParams) {
+  var boxName = $stateParams.boxName;
+
+  
 });

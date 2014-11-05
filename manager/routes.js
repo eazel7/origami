@@ -123,6 +123,38 @@ module.exports = function(app, api) {
   .get(controllers.packages.listActivePackages);
 
   app
+  .route('/api/box/:boxName/permissionGroups')
+  .get(controllers.permissions.listPermissionGroups);
+
+  app
+  .route('/api/box/:boxName/permissionGroups')
+  .post(controllers.permissions.createPermissionGroup);
+
+  app
+  .route('/api/box/:boxName/permissionGroup/:groupId')
+  .get(controllers.permissions.describePermissionGroup);
+
+  app
+  .route('/api/box/:boxName/permissionGroup/:groupId')
+  .put(controllers.permissions.modifyPermissionGroup);
+
+  app
+  .route('/api/box/:boxName/permissionGroup/:groupId')
+  .delete(controllers.permissions.deletePermissionGroup);
+
+  app
+  .route('/api/box/:boxName/permissionGroup/:groupId/users')
+  .get(controllers.permissions.listUsersInGroup);
+
+  app
+  .route('/api/box/:boxName/permissionGroup/:groupId/users/:alias')
+  .post(controllers.permissions.addUserToGroup);
+
+  app
+  .route('/api/box/:boxName/permissionGroup/:groupId/users/:alias')
+  .delete(controllers.permissions.removeUserFromGroup);
+
+  app
   .route('/api/box/:boxName/packages/resort')
   .post(controllers.packages.resortPackages);
 
@@ -145,6 +177,10 @@ module.exports = function(app, api) {
   app
   .route('/api/box/:boxName/views')
   .get(controllers.views.getViews);
+
+  app
+  .route('/api/box/:boxName/graphs')
+  .get(controllers.workflows.listGraphs);
 
   app
   .route('/api/createBox/:boxName')

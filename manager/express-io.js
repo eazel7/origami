@@ -3,13 +3,11 @@
 var expressSecret = 'thisIsAnObviousSecret',
     express = require('express'),
     favicon = require('static-favicon'),
-    morgan = require('morgan'),
     compression = require('compression'),
     bodyParser = require('body-parser'),
     methodOverride = require('method-override'),
     cookieParser = require('cookie-parser'),
     session = require('express-session'),
-    errorHandler = require('errorhandler'),
     path = require('path'),
     config = require('./config'),
     MongoStore = require('connect-mongo')(session);
@@ -78,7 +76,6 @@ module.exports = function(app, io) {
   app.set('views', path.join(config.root, 'public', 'views'));
   app.engine('html', require('ejs').renderFile);
   app.set('view engine', 'html');
-  app.use(morgan('dev'));
   
   var appCookieParser = cookieParser(expressSecret);
   app.use(appCookieParser) // required before session.
@@ -86,13 +83,7 @@ module.exports = function(app, io) {
   require('origami-api-mongo')(config, function (err, api) {
     
     if (err) {
-      app.use(express.static(path.join(config.root, 'dbOffline'))
-//      function (req, res, ) {
-//        res.status(500);
-//        res.send('General application error: \n' + err)
-//        return res.end();
-//      });
-      );
+      app.use(express.static(path.join(config.root, 'dbOffline')));
 
       return;
     }
@@ -108,39 +99,31 @@ module.exports = function(app, io) {
     app.use(bodyParser.json());
 
     app.use(methodOverride());
-
-    // Error handler - has to be last
-    if ('development' === app.get('env')) {
-      app.use(errorHandler());
-    }
     
     function onAuthorizeSuccess(data, accept){
-      // The accept-callback still allows us to decide whether to
-      // accept the connection or not.
-//      accept(null, true);
-
-      // OR
-
-      // If you use socket.io@1.X the callback looks different
       accept();
     }
 
     function onAuthorizeFail(data, message, error, accept){
-//      if(error)
-//        throw new Error(message);
-
-      // We use this callback to log all of our failed connections.
-//      accept(null, false);
-
-      // OR
-
-      // If you use socket.io@1.X the callback looks different
-      // If you don't want to accept the connection
       if(error)
         accept(new Error(message));
-      // this error will be sent to the user as a special error-package
-      // see: http://socket.io/docs/client-api/#socket > error-object
     }
+    
+    function userSocketDisconnected(alias) {
+      return function () {
+        console.log('user socket disconnected', alias);
+        api.eventBus.emit('user-socket-disconnected', alias);
+      };
+    }
+    
+    io.on('connection', function (socket) {
+      var alias = socket.client.request.user.alias;
+      
+      console.log('user socket connected', alias);
+      api.eventBus.emit('user-socket-connected', alias);
+    
+      socket.on('disconnect', userSocketDisconnected(alias));
+    });
     
     require('./routes')(app, api);
 
@@ -170,7 +153,6 @@ module.exports = function(app, io) {
       var ns = io.of('/' + boxName);
       for (var socket in ns.sockets) {
         if (ns.sockets[socket].client.request.user.alias === user) {
-//          debugger;
           ns.sockets[socket].emit('desktop-notification', message);
         }
       }

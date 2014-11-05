@@ -82,6 +82,12 @@ module.exports = function (config, callback) {
         });
       },
       function (callback) {
+        require('./permissions')(self, function (err, permissions) {
+          self.permissions = permissions;
+          callback(err);
+        });
+      },
+      function (callback) {
         require('./schedules')(self, function (err, schedules) {
           self.schedules = schedules;
           callback(err);

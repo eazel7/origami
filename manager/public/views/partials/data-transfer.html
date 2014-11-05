@@ -56,7 +56,16 @@
               <li ng-show="!loading && !views.length" class="list-group-item list-group-item-info text-center">This box has no views to copy</li>
             </ul>
           </tab>
-          <tab disabled="true" heading="Workflows">
+          <tab heading="Workflows ({{selectedWorkflows.length}} of {{workflows.length}})">
+            <ul class="list-group">
+              <a ng-show="!loading && workflows.length" ng-click="selectAllWorkflows()" class="btn btn-primary btn-block form-group">Select all</a>
+              <a ng-click="toggleWorkflowSelected(c)" ng-repeat="c in workflows" href="javascript:" class="list-group-item" ng-class="{'active ': isWorkflowSelected(c), '': !isWorkflowSelected(c)}">
+                {{c.name}}
+                <span ng-if="isWorkflowSelected(c)" class="pull-right glyphicon glyphicon-ok"></span>
+              </a>
+
+              <li ng-show="!loading && !workflows.length" class="list-group-item list-group-item-info text-center">This box has no workflows to copy</li>
+            </ul> 
           </tab>
           <tab heading="Configuration">
             <ul class="list-group">

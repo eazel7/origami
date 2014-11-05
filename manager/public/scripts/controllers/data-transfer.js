@@ -5,7 +5,7 @@ angular.module("boxes3.manager")
     templateUrl: 'views/partials/data-transfer.html'
   });
 })
-.controller("DataTransfer", function ($scope, $q, CollectionApi, ViewsApi, BoxesApi) {
+.controller("DataTransfer", function ($scope, $q, CollectionApi, ViewsApi, BoxesApi, WorkflowsApi) {
   BoxesApi.getMyBoxes()
   .then(function (boxes) {
     $scope.boxes = boxes;
@@ -50,6 +50,18 @@ angular.module("boxes3.manager")
       $scope.selectedViews.push(c);
     }
   };
+
+  var isWorkflowSelected = $scope.isWorkflowSelected = function(c) {
+    return $scope.selectedWorkflows.indexOf(c._id) > -1;
+  };
+  
+  $scope.toggleWorkflowSelected = function (c) {
+    if (isWorkflowSelected(c)) {
+      $scope.selectedWorkflows.splice($scope.selectedWorkflows.indexOf(c._id), 1);
+    } else {
+      $scope.selectedWorkflows.push(c._id);
+    }
+  };
   
   $scope.selectAllCollections = function () {
     $scope.selectedCollections = angular.copy($scope.collections);
@@ -57,6 +69,12 @@ angular.module("boxes3.manager")
   
   $scope.selectAllViews = function () {
     $scope.selectedViews = angular.copy($scope.views);
+  };
+  
+  $scope.selectAllWorkflows = function () {
+    angular.forEach($scope.workflows, function (w){
+      if (!isWorkflowSelected(w)) toggleWorkflowSelected(w);
+    });
   };
       
   var preparePlan = function() {
@@ -139,7 +157,7 @@ angular.module("boxes3.manager")
   };
   
   $scope.canTransfer = function () {
-    return ($scope.source && $scope.target && $scope.source !== $scope.target && ($scope.selectedCollections.length || $scope.selectedViews.length || $scope.configuration.copyUserList || $scope.configuration.copyPackages || $scope.configuration.copyRemoteDbs || $scope.configuration.copyPermissionGroups));
+    return ($scope.source && $scope.target && $scope.source !== $scope.target && ($scope.selectedCollections.length || $scope.selectedViews.length || $scope.selectedWorkflows.length || $scope.configuration.copyUserList || $scope.configuration.copyPackages || $scope.configuration.copyRemoteDbs || $scope.configuration.copyPermissionGroups));
   };
   
   $scope.togglePlan = function () {
@@ -172,6 +190,11 @@ angular.module("boxes3.manager")
         .listViews(s)
         .then(function (views) {
           $scope.views = views;
+        }),
+        WorkflowsApi
+        .listGraphs(s)
+        .then(function (workflows) {
+          $scope.workflows = workflows;
         })
       ])
       .then(function () {

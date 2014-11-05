@@ -1,8 +1,14 @@
 module.exports = function(api) {
   return {
     listGraphs: function (req, res) {
-      api.workflows.listGrahps(function (err, graphs) {
-        res.json(graphs);
+      api.workflows.listGraphs(req.params.boxName, function (err, graphs) {
+        if (err) {
+          console.error(err);
+          res.status(418);
+          return res.end();
+        }
+
+        return res.json(graphs);
       })
     },
     removeGraph: function (req, res) {
@@ -43,18 +49,21 @@ module.exports = function(api) {
         }
 
         return res.json({
-          _id: workflowId;
+          _id: workflowId
         });
       });
     },
     listWorkflows: function (req, res) {
       api.workflows.listWorkflows(req.params.boxName, req.body, function (err, graphId) {
         if (err) {
+          console.error(err);
           res.status(418);
+          return res.end();
+        }
 
-          req.body._id = graphId;
-          return res.json(req.body);
-      })
+        req.body._id = graphId;
+        return res.json(req.body);
+      });
     }
   };
 }

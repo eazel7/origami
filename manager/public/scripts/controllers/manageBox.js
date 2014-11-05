@@ -276,9 +276,6 @@ $stateProvider.state('manageBox', {
     }
   });
 })
-.controller("BoxGroupPermissions", function ($scope, $stateParams) {
-
-})
 .controller("BoxRemoteDbsCtrl", function ($scope, BoxesApi, $stateParams) {
     var boxName = $stateParams.boxName;
     
@@ -311,4 +308,89 @@ $stateProvider.state('manageBox', {
       BoxesApi.unsetRemoteDb(boxName, remote.name)
       .then(refreshDbs);
     }
+})
+.controller("BoxPermissionsCtrl", function ($scope, $stateParams, PermissionsApi, CollectionApi, WorkflowsApi) {
+  var boxName = $stateParams.boxName;
+  
+  function refresh() {
+    PermissionsApi
+    .listPermissionGroups(boxName)
+    .then(function (groups) {
+      $scope.groups = groups;
+    });
+  }
+  refresh();
+  
+  $scope.createPermissionsGroup = function () {
+    if (!$scope.newGroup && $scope.newGroup.name) return;
+    
+    PermissionsApi
+    .createPermissionGroup(boxName, $scope.newGroup.name)
+    .then(function () {
+      $scope.newGroup = {};
+    })
+    .then(refresh);
+  };
+  
+  WorkflowsApi
+  .listGraphs(boxName)
+  .then(function (graphs) {
+    $scope.workflows = graphs;
+  });
+  
+  CollectionApi
+  .getCollections(boxName)
+  .then(function (collections) {
+    $scope.collections = collections;
+  });
+  
+  $scope.edit = function (pg) {
+    $scope.editing = angular.copy(pg);
+    
+    if (!$scope.editing.permissions) $scope.editing.permissions = {};
+    
+    if (!$scope.editing.permissions.collections) $scope.editing.permissions.collections = {};
+    
+    angular.forEach($scope.collections, function (c) {
+      if (!$scope.editing.permissions.collections[c]) $scope.editing.permissions.collections[c] = {};
+    });
+    
+    if (!$scope.editing.permissions.graphs) $scope.editing.permissions.graphs = {};
+    
+    angular.forEach($scope.workflows, function (g) {
+      if (!$scope.editing.permissions.graphs[g._id]) $scope.editing.permissions.graphs[g._id] = {};
+    });
+    
+    if (!$scope.editing.permissions.groups) $scope.editing.permissions.groups = {};
+    
+    angular.forEach($scope.groups, function (g) {
+      if (!$scope.editing.permissions.groups[g._id] && g._id !== $scope.editing._id) $scope.editing.permissions.groups[g._id] = {};
+    });
+    
+    if (!$scope.editing.permissions.system) $scope.editing.permissions.system = {};
+  };
+  
+  $scope.saveGroup = function () {
+    if (!$scope.editing) return;
+    
+    PermissionsApi.modifyPermissionGroup(boxName, $scope.editing._id, $scope.editing.permissions)
+    .then(function () {
+      $scope.editing = null;
+    })
+    .then(refresh);
+  };
+  
+  $scope.deleteGroup = function () {
+    if (!$scope.editing) return;
+    
+    PermissionsApi.deletePermissionGroup(boxName, $scope.editing._id)
+    .then(function () {
+      $scope.editing = null;
+    })
+    .then(refresh);
+  };
+  
+  $scope.notSystemCollection = function (c) {
+    return c && c[0] !== '_';
+  };
 });

@@ -370,6 +370,8 @@ module.exports = function (api, callback) {
     },
     listGraphs: function (boxName, callback) {
       api.collections.getCollection(boxName, "_graphs", function (err, collection) {
+        if (err) return callback(err);
+        
         collection.find({}, callback);
       });
     },

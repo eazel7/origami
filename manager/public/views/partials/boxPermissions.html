@@ -1,20 +1,253 @@
 <div class="panel panel-default">
   <table class="table">
-    <thead><tr><th>Group</th><th>Permissions</th></tr></thead>
+    <thead>
+      <tr>
+        <th>Group</th>
+        <th>Permissions</th>
+      </tr>
+    </thead>
     <tbody>
-      <tr class="bg-primary"><th class="bg-primary">Owners</th><td class="bg-primary">Same as administrators, but can delete the box as well</td></tr>
-      <tr class="bg-success"><th>Administrators</th><td>Same as developers, plus they can activate and deactivate the box, and modify the permissions, except those of whom are box owners</td></tr>
-      <tr class="bg-info"><th>Developers</th><td>Can modify, create and remove views and workflows</td></tr>
-      <tr><th>Users</th><td>View, insert, update and remove data from synced collections, except <em>views</em> and <em>workflows</em></td></tr>
-      <tr ng-repeat="pg in groups"><th>{{pg.name}}</th></tr>
+      <tr class="bg-success">
+        <th class="bg-primary">Owners</th>
+        <td class="bg-primary">Same as administrators, but can delete the box as well</td>
+      </tr>
+      <tr class="bg-success">
+        <th>Administrators</th>
+        <td>Same as developers, plus they can activate and deactivate the box, and modify the permissions, except those of whom are box owners</td>
+      </tr>
+      <tr class="bg-success">
+        <th>Developers</th>
+        <td>Can modify, create and remove views, graphs and schedules. Also developers can start, inspect and stop workflows and schedules.</td>
+      </tr>
+      <tr class="bg-info">
+        <th>Users</th>
+        <td>Perform search, inserts, updates and removals from collections according to the permission groups they belong. By default they can't start or stop workflows, neither modify graphs, schedules or views.</td>
+      </tr>
+      <tr ng-repeat="pg in groups track by pg._id">
+        <th colspan="2"><a href="javascript:" ng-click="edit(pg)"><i class="glyphicon glyphicon-edit"></i>&nbsp;{{pg.name}}</a></th>
+      </tr>
+      <tr>
+        <td colspan="2">
+            <span class="input-group" style="width: 100%">
+              <input placeholder="Add a new permission group" type="text" class="form-control" ng-model="$parent.newGroup.name" />
+              <span class="input-group-btn">
+                <a ng-click="createPermissionsGroup()" ng-disabled="!newGroup.name" class="btn btn-default">
+                  <i class="glyphicon glyphicon-plus"></i>
+                </a>
+              </span>
+            </span>
+        </td>
+      </tr>
     </tbody>
   </table>
 </div>
-<div class="form-group">
-  <span class="input-group">
-    <input placholder="Add a new permission group" type="text" class="form-control" ng-model="newGroup.name" />
-    <span class="input-group-btn">
-      <a ng-click="addPermission()" ng-disabled="!newGroup.name" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></a>
-    </span>
-  </span>
+<div ng-if="editing">
+  <h4 class="text-center">Editing group: {{editing.name}}</h4>
+  <div class="panel panel-default">
+    <table class="table">
+      <tbody>
+        <tr>
+          <th class="text-center" colspan="2">Collections</th>
+        </tr>
+        <tr ng-repeat="c in collections|filter:notSystemCollection">
+          <th>{{c}}</th>
+          <td><span class="btn-group">
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections[c].find = !editing.permissions.collections[c].find"
+              ng-class="{'active': editing.permissions.collections[c].find}"
+            ><i class="glyphicon glyphicon-eye-open"></i> Find</a>
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections[c].remove = !editing.permissions.collections[c].remove"
+              ng-class="{'active': editing.permissions.collections[c].remove}"
+            ><i class="glyphicon glyphicon-remove"></i> Remove</a>
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections[c].insert = !editing.permissions.collections[c].insert"
+              ng-class="{'active': editing.permissions.collections[c].insert}"
+              ><i class="glyphicon glyphicon-plus"></i> Insert</a>
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections[c].update = !editing.permissions.collections[c].update"
+              ng-class="{'active': editing.permissions.collections[c].update}"
+              ><i class="glyphicon glyphicon-edit"></i> Update</a>
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections[c].sync = !editing.permissions.collections[c].sync"
+              ng-class="{'active': editing.permissions.collections[c].sync}"
+            ><i class="glyphicon glyphicon-refresh"></i> Sync</a>
+          </span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel panel-default">
+    <table class="table">
+      <tbody>
+        <tr>
+          <th class="text-center" colspan="2">System operations</th>
+        </tr>
+        <tr>
+          <th>Graphs</th>
+          <td>
+            <span class="btn-group">
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections._graphs.find = !editing.permissions.collections._graphs.find"
+              ng-class="{'active': editing.permissions.collections._graphs.find}"
+            ><i class="glyphicon glyphicon-eye-open"></i> Find</a>
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections._graphs.remove = !editing.permissions.collections._graphs.remove"
+              ng-class="{'active': editing.permissions.collections._graphs.remove}"
+            ><i class="glyphicon glyphicon-remove"></i> Remove</a>
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections._graphs.insert = !editing.permissions.collections._graphs.insert"
+              ng-class="{'active': editing.permissions.collections._graphs.insert}"
+              ><i class="glyphicon glyphicon-plus"></i> Insert</a>
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections._graphs.update = !editing.permissions.collections._graphs.update"
+              ng-class="{'active': editing.permissions.collections._graphs.update}"
+              ><i class="glyphicon glyphicon-edit"></i> Update</a>
+            </span>
+            <span class="btn-group">
+              <a class="btn btn-default"
+              ng-click="editing.permissions.system.stopAnyWorkflow = !editing.permissions.system.stopAnyWorkflow"
+              ng-class="{'active': editing.permissions.system.stopAnyWorkflow}"
+              ><i class="glyphicon glyphicon-stop"></i> Stop any</a>
+              <a class="btn btn-default"
+              ng-click="editing.permissions.system.startAnyWorkflow = !editing.permissions.system.startAnyWorkflow"
+              ng-class="{'active': editing.permissions.system.startAnyWorkflow}"
+              ><i class="glyphicon glyphicon-play"></i> Start any</a>
+            </span>
+          </span></td>
+        </tr>
+        <tr>
+          <th>Schedules</th>
+          <td>
+            <span class="btn-group">
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections._schedules.find = !editing.permissions.collections._schedules.find"
+              ng-class="{'active': editing.permissions.collections._schedules.find}"
+            ><i class="glyphicon glyphicon-eye-open"></i> Find</a>
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections._schedules.remove = !editing.permissions.collections._schedules.remove"
+              ng-class="{'active': editing.permissions.collections._schedules.remove}"
+            ><i class="glyphicon glyphicon-remove"></i> Remove</a>
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections._schedules.insert = !editing.permissions.collections._schedules.insert"
+              ng-class="{'active': editing.permissions.collections._schedules.insert}"
+              ><i class="glyphicon glyphicon-plus"></i> Insert</a>
+            <a class="btn btn-default"
+              ng-click="editing.permissions.collections._schedules.update = !editing.permissions.collections._schedules.update"
+              ng-class="{'active': editing.permissions.collections._schedules.update}"
+              ><i class="glyphicon glyphicon-edit"></i> Update</a>
+            </span>
+            <span class="btn-group">
+              <a class="btn btn-default"
+              ng-click="editing.permissions.system.stopAnySchedule = !editing.permissions.system.stopAnySchedule"
+              ng-class="{'active': editing.permissions.system.stopAnySchedule}"
+              ><i class="glyphicon glyphicon-stop"></i> Stop any</a>
+              <a class="btn btn-default"
+              ng-click="editing.permissions.system.startAnySchedule = !editing.permissions.system.startAnySchedule"
+              ng-class="{'active': editing.permissions.system.startAnySchedule}"
+              ><i class="glyphicon glyphicon-play"></i> Start any</a>
+            </span>
+          </span></td>
+        </tr>
+        <tr>
+          <th>Views</th>
+          <td>
+            <span class="btn-group">
+              <a class="btn btn-default"
+                ng-click="editing.permissions.collections._views.find = !editing.permissions.collections._views.find"
+                ng-class="{'active': editing.permissions.collections._views.find}"
+              ><i class="glyphicon glyphicon-eye-open"></i> Find</a>
+              <a class="btn btn-default"
+                ng-click="editing.permissions.collections._views.remove = !editing.permissions.collections._views.remove"
+                ng-class="{'active': editing.permissions.collections._views.remove}"
+              ><i class="glyphicon glyphicon-remove"></i> Remove</a>
+              <a class="btn btn-default"
+                ng-click="editing.permissions.collections._views.insert = !editing.permissions.collections._views.insert"
+                ng-class="{'active': editing.permissions.collections._views.insert}"
+                ><i class="glyphicon glyphicon-plus"></i> Insert</a>
+              <a class="btn btn-default"
+                ng-click="editing.permissions.collections._views.update = !editing.permissions.collections._views.update"
+                ng-class="{'active': editing.permissions.collections._views.update}"
+                ><i class="glyphicon glyphicon-edit"></i> Update</a>
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel panel-default">
+    <table class="table">
+      <tbody>
+        <tr>
+          <th class="text-center" colspan="2">File upload</th>
+        </tr>
+        <tr>
+          <th colspan="2">
+            <span class="btn-group">
+              <a class="btn btn-default"><i class="glyphicon glyphicon-upload"></i> Allow file upload</a>
+              <a class="btn btn-default"><i class="glyphicon glyphicon-fire"></i> Allow deleting uploads</a>
+            </span>
+          </th>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel panel-default">
+    <table class="table">
+      <tbody>
+        <tr>
+          <th class="text-center" colspan="2">Permission groups</th>
+        </tr>
+        <tr ng-repeat="cpg in groups" ng-if="cpg._id !== editing._id">
+          <th>{{cpg.name}}</th>
+          <td>
+            <span class="btn-group">
+              <a class="btn btn-default"
+                 ng-click="editing.permissions.groups[cpg._id].manageUsers = !editing.permissions.groups[cpg._id].manageUsers"
+                 ng-class="{'active': editing.permissions.groups[cpg._id].manageUsers}"
+              >
+                <i class="glyphicon glyphicon-user"></i> Manage users in this group
+              </a>
+              <a class="btn btn-default"
+                 ng-click="editing.permissions.groups[cpg._id].inheritPermissions = !editing.permissions.groups[cpg._id].inheritPermissions"
+                 ng-class="{'active': editing.permissions.groups[cpg._id].inheritPermissions}"
+              >
+                <i class="glyphicon glyphicon-ok-sign"></i> Inherit this group permissions
+              </a>
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel panel-default">
+    <table class="table">
+      <tbody>
+        <tr>
+          <th class="text-center" colspan="2">Workflows</th>
+        </tr>
+        <tr ng-repeat="w in workflows">
+          <th>{{w.name}}</th>
+          <td><span class="btn-group">
+            <a class="btn btn-default"
+               ng-click="editing.permissions.graphs[w._id].stopInstances = !editing.permissions.graphs[w._id].stopInstances"
+               ng-class="{'active': editing.permissions.graphs[w._id].stopInstances}"
+            >
+              <i class="glyphicon glyphicon-stop"></i> Stop running instances
+            </a>
+            <a class="btn btn-default"
+               ng-click="editing.permissions.graphs[w._id].startInstances = !editing.permissions.graphs[w._id].startInstances"
+               ng-class="{'active': editing.permissions.graphs[w._id].startInstances}"
+            >
+              <i class="glyphicon glyphicon-play"></i> Start new instances
+            </a>
+          </span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="form-group btn-group btn-group-justified">
+    <a ng-click="deleteGroup()" class="btn btn-danger"><i class="glyphicon glyphicon-fire"></i> Delete group</a>
+    <a ng-click="saveGroup()" class="btn btn-success"><i class="glyphicon glyphicon-save"></i> Save changes</a>
+  </div>
 </div>

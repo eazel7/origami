@@ -28,7 +28,7 @@
  * @param {Object} configuration
  * @param {Function} callback gets two parameters (err, api).
  */
-var Grid = require('mongodb').Grid, ObjectID = require('mongodb').ObjectID;
+var Grid = require('mongodb').Grid, ObjectID = require('mongodb').ObjectID, async = require('async');
 
 module.exports = function (config, collections, views, eventBus, callback) {
   function fairlySimplePassword() {
@@ -118,23 +118,17 @@ module.exports = function (config, collections, views, eventBus, callback) {
                       if (err) console.log("addUser err:" + err);
                     });
                   }
-
-                  collections
-                  .createCollection(boxName, "_views", function (err) {
-                    if (err) return callback (err);
-                    
+                  
+                  async.eachSeries(["_views", "_graphs", "_workflows", "_schedules"], function (cn, callback) {
                     collections
-                    .createCollection(boxName, "_graphs", function (err) {
-                      if (err) return callback (err);
-                    
+                    .createCollection(boxName, cn, callback);
+                  }, function (err) {
+                    if (err) return callback (err);
+  
+                    async.eachSeries(["_errors", "_permissions"], function (cn, callback) {
                       collections
-                      .createServerCollection(boxName, "_workflows", function (err) {
-                        if (err) return callback (err);
-                    
-                        collections
-                        .createServerCollection(boxName, "_workflows", callback);
-                      });
-                    });
+                      .createServerCollection(boxName, cn, callback);
+                    }, callback);
                   });
                 });
               });

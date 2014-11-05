@@ -14,6 +14,7 @@ angular.module('boxes3.manager', [
   'box.manager.configInfo',
   'angularFileUpload',
   'ui.ace',
+  'boxes3.permissions',
   'boxes3.usersapi'
 ])
 .config(function ($stateProvider) {
