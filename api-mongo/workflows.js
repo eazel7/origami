@@ -30,7 +30,6 @@ module.exports = function (api, callback) {
       connections: []
     },
       nodesById = {};
-
     for (var i = 0; i < flow.nodes.length; i++) {
       var node = flow.nodes[i],
           nodeId = String(node.id);
@@ -275,7 +274,8 @@ module.exports = function (api, callback) {
         collection.findOne({_id: graphId}, function (err, doc) {
           if (err) return callback(err);
           if (!doc) return callback(new Error('Graph does not exists'));
-          if (!doc.graph) return callback(new Error('Graph does not contains any nodes'));
+          if (!doc.graph || !doc.graph.nodes) return callback(new Error('Graph does not contains any nodes'));
+          
           
           var workflowId = uuid.v4();
           

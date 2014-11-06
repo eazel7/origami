@@ -53,6 +53,8 @@ module.exports = function (api, callback) {
       .collections
       .getCollection(boxName, "_permissions", function (err, collection) {
         if (err) return callback(err);
+        
+        console.log(newPermissions);
 
         collection.update({_id: groupId}, {$set: {permissions: newPermissions}}, callback);
       });
@@ -121,7 +123,6 @@ module.exports = function (api, callback) {
                   "deleteUploads" : false
               }
           };
-          
           
           for (var i = 0; i < docs.length; i++) {
             var cur = docs[i].permissions;

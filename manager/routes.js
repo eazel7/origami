@@ -401,9 +401,21 @@ module.exports = function(app, rawApi) {
   
   
   app.use('/api/box-api/:boxName', function (req, res, next) {
-    var boxApi = require('origami-app/boxApiHandlers')(req.params.boxName);
+    var boxName = req.params.boxName, boxApi = require('origami-app/boxApiHandlers')(boxName);
     
     var apiApp = express();
+  
+    apiApp.use(function requestApiInjector(req, res, next) {
+      req.api = wrappedApi(function () {
+        return {
+          userAlias: req.session.user.alias,
+          boxName: boxName
+        };
+      }, res, rawApi);
+      
+      next();
+    });        
+    
     apiApp.get('/collections', boxApi.getCollections);
     apiApp.post('/collection/:collection/find', boxApi.findInCollection);
     apiApp.post('/collection/:collection/count', boxApi.countInCollection);

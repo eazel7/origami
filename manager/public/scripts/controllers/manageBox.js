@@ -237,7 +237,7 @@ $stateProvider.state('manageBox', {
       return BoxesApi.getBoxInfo($stateParams.boxName);
     }]
   },
-  controller: function ($scope, BoxesApi, boxInfo, configInfo, $stateParams, UsersApi, $http, PermissionsApi) {
+  controller: function ($scope, BoxesApi, boxInfo, configInfo, $stateParams, UsersApi, $http, PermissionsApi, WorkflowsApi) {
       var boxName = $stateParams.boxName;
       
       function refreshUsers() {
@@ -261,6 +261,12 @@ $stateProvider.state('manageBox', {
       
       function refreshEffectivePermissions() {
         if ($scope.editingGroupsOfUser) {
+          WorkflowsApi
+          .listGraphs($stateParams.boxName)
+          .then(function (graphs) {
+            $scope.workflows = graphs;
+          });
+        
           PermissionsApi.getEffectivePermissions($stateParams.boxName, $scope.editingGroupsOfUser)
           .then(function (effective) {
             $scope.effectivePermissions = effective;

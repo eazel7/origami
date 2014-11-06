@@ -25,17 +25,17 @@ function getArgNames(fn) {
 }
 
 
-function callbackFor(context, realApi, res, module, method, impl, origArgments) {
-  return function (err, allowed, reason) {
+function callbackFor(context, realApi, res, module, method, impl, origArgments, reason) {
+  return function (err, allowed) {
     if (err) {
+      console.log(context.checks.join (' > '));
       console.error(['error checking', module, method,':', err].join(' '));
       res.status(418);
       res.end();
     } else if (!allowed) {
-      console.error([JSON.stringify(context),'not allowed for', module, method].join(' '));
+      console.log(context.checks.join (' > '));
+      console.log('api.' + module + '.' + method + ' for ' + JSON.stringify(context)) + 'rejected';
       res.status(405);
-      res.send('Insufficient user permissions to perform this action');
-      console.log(reason);
       res.end();
     } else {
       impl.apply(realApi, origArgments);
@@ -48,6 +48,7 @@ function wrapFor(shouldCheck, contextProvider, res, impl, realApi, module, metho
     var origArgments = [], context = contextProvider();
     
     context.arguments = {};
+    context.checks = [];
     
     var argNames = getArgNames(impl);
     
@@ -55,8 +56,6 @@ function wrapFor(shouldCheck, contextProvider, res, impl, realApi, module, metho
       origArgments.push(arguments[i]);
       context.arguments[argNames[i]] = arguments[i];
     }
-    
-    console.log('wrapped api.' + [module,method].join('.') + ' invoke for ' + JSON.stringify(context));
     
     shouldCheck(context, realApi, callbackFor(context, realApi, res, module, method, impl, origArgments));
   }

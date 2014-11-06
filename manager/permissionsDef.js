@@ -20,7 +20,7 @@ module.exports = {
     destroyCollection: anyOf(allOf(isBoxDeveloper,isBoxActive),isBoxAdmin)
   },
   packages: {
-    getActivePackagesWithDependencies: isBoxDeveloper,
+    getActivePackagesWithDependencies: isBoxUser,
     activatePackage: isBoxDeveloper,
     dectivatePackage: isBoxDeveloper,
     setActivePackages: isBoxDeveloper, 
@@ -74,66 +74,99 @@ module.exports = {
 };
 
 function hasPermission(permission) {
+  
   return function (context, api, callback) {
-    callback(null, true);
-  }
+    context.checks.push('has permission ' + permission);
+
+    var vm = require('vm'), allowed;
+    
+    api.permissions.getEffectivePermissions(context.boxName, context.userAlias, function (err, effectivePermissions) {
+      if (err) return callback(err);
+      
+      var sandbox = {};
+      
+      for (k in effectivePermissions) {
+        sandbox[k] = effectivePermissions[k];
+      }
+      
+      for (k in context.arguments) {
+        sandbox[k] = context.arguments[k];
+      }
+      
+      console.log(sandbox); 
+      
+      try {
+        vm.runInNewContext('result = ' + permission, sandbox, 'permission check.vm');
+      } catch (e) {
+        return callback(e, sandbox.result);
+      }
+      
+      callback(null, sandbox.result);
+    });
+    
+  };
 }
 
 function isBoxActive (context, api, callback) {
   api.boxes.getBox(context.boxName, function (err, doc) {
-    callback(err, doc && doc.info && doc.info.status, 'is ' + context.boxName + ' active');
+    context.checks.push('is box active');
+    callback(err, doc && doc.info && doc.info.status);
   });
 }
 
 function isLoggedIn (context, api, callback) {
-  return callback(null, context.userAlias, 'is logged in');
+  context.checks.push('user is logged in');
+  return callback(null, context.userAlias);
 }
 
 function isBoxOwner (context, api, callback) {
+  context.checks.push('is box owner');
   if (!context.userAlias) return callback('missing user alias', false);
   if (!context.boxName) return callback('missing box name', false);
   
   api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    return callback(err, role == 'owner', context.userAlias + 'is owner of ' + boxName);
+    return callback(err, role == 'owner');
+  });
+}
+function isBoxAdmin (context, api, callback) {
+  context.checks.push('is box admin');
+  if (!context.userAlias) return callback('missing user alias', false);
+  if (!context.boxName) return callback('missing box name', false);
+  
+  api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
+    return callback(err, role == 'owner' || role == 'admin');
   });
 }
 
-function isBoxAdmin (context, api, callback) {
-  if (!context.userAlias) return callback('missing user alias', false);
-  if (!context.boxName) return callback('missing box name', false);
-  
-  api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    return callback(err, role == 'owner' || role == 'admin', context.userAlias + 'is admin of ' + context.boxName);
-  });
-}
+isBoxAdmin.prototype.reason = 'is box admin';
 
 function isBoxDeveloper (context, api, callback) {
+  context.checks.push('is box dev');
+  
   if (!context.userAlias) return callback('missing user alias', false);
   if (!context.boxName) return callback('missing box name', false);
   
   api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    return callback(err, role == 'owner' || role == 'admin' || role == 'dev', context.userAlias + 'is dev of ' + context.boxName);
+    return callback(err, role == 'owner' || role == 'admin' || role == 'dev');
   });
 }
 
 function isBoxUser (context, api, callback) {
+  context.checks.push('is box user');
+  
   if (!context.userAlias) return callback('missing user alias', false);
   if (!context.boxName) return callback('missing box name', false);
   
   api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    return callback(err, !!role, context.userAlias + 'is user of ' + context.boxName);
+    return callback(err, !!role);
   });
 }
 
-function allOf() {
-  var toCheck = [];
-  
-  for (var i = 0; i < arguments.length; i++) {
-    toCheck.push(arguments[i]);
-  }
-  
-  return function (context, api, callback) {
-    var allowed = true, queued = [], reason;
+function allOfFor(toCheck, reason) {
+  var fn = function (context, api, callback) {
+    var allowed = true, queued = [];
+    
+    context.checks.push('all of [');
     
     for (var j = 0; j < toCheck.length; j++) {
       queued.push(toCheck[j]);
@@ -144,32 +177,47 @@ function allOf() {
     }, function (callback) {
       var inner = queued.shift();
       
-      inner(context, api, function (err, iallowed, ireason) {
+      inner(context, api, function (err, iallowed) {
         if (err) return callback(err);
         
         allowed = iallowed;
         
-        if (!allowed) {
-        console.log(ireason);
-          reason = 'failed: ' + ireason;
-        }
-        
         callback();
       });
     }, function (err) {
-      callback(err, allowed, reason);
+      context.checks.push(']');
+      callback(err, allowed);
     });
   };
+  
+  fn.prototype.reason = reason;
+  
+  return fn
 }
 
-function anyOf() {
-  var toCheck = [], reason;
+function allOf() {
+  var toCheck = [], reasons = [], reason;
   
   for (var i = 0; i < arguments.length; i++) {
     toCheck.push(arguments[i]);
+    reasons.push(arguments[i].prototype.reason);
+  }
+  
+  var fn = allOfFor(toCheck);
+  
+  return fn;
+}
+
+function anyOf() {
+  var toCheck = [], reasons = [];
+  
+  for (var i = 0; i < arguments.length; i++) {
+    toCheck.push(arguments[i]);
+    reasons.push(arguments[i].prototype.reason);
   }
   
   return function (context, api, checkedCallback) {
+    context.checks.push('any of [');
     var allowed = false, queued = [];
     
     for (var j = 0; j < toCheck.length; j++) {
@@ -181,7 +229,7 @@ function anyOf() {
     }, function (callback) {
       var inner = queued.shift();
       
-      inner(context, api, function (err, iallowed, ireason) {
+      inner(context, api, function (err, iallowed) {
         if (err) return callback(err);
         
         allowed = iallowed;
@@ -189,29 +237,32 @@ function anyOf() {
         callback();
       });
     }, function (err) {
-      console.log('any of... ' + allowed);
-      checkedCallback(err, allowed, reason);
+      context.checks.push(']');
+      checkedCallback(err, allowed);
     });
   };
 }
 
 function addGraphIdToArgumentsFromWorkflowId(paramName, then) {
   return function (context, api, callback) {
+    context.checks.push('map graphId from argument ' + paramName);
+  
     api
     .collections
-    .getCollection(context.boxName, '_workflowResults')
-    .findOne({
-      workflowId: context.arguments[paramName]
-    }, function (err, doc) {
+    .getCollection(context.boxName, '_workflowResults', function (err, collection) {
       if (err) return callback(err);
       
-      if (doc) {
-        context.graphId = doc.graphId;
+      collection.findOne({
+        workflowId: context.arguments[paramName]
+      }, function (err, doc) {
+        if (err) return callback(err);
         
-        console.log(context);
-      };
-        
-      then(context, api, callback);
+        if (doc) {
+          context.graphId = doc.graphId;
+        };
+          
+        then(context, api, callback);
+      });
     });
   };
 }
