@@ -1,4 +1,4 @@
-return {
+module.exports = {
   boxes: {
     createBox: isLoggedIn,
     listBoxes: isLoggedIn,
@@ -207,9 +207,17 @@ function addGraphIdToArgumentsFromWorkflowId(paramName, then) {
       
       if (doc) {
         context.graphId = doc.graphId;
+        
+        console.log(context);
       };
         
       then(context, api, callback);
     });
   };
+}
+
+function rejectAlways () {
+  return function (context, api, callback) {
+    callback(null, false);
+  }
 }

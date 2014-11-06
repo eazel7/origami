@@ -274,6 +274,9 @@ module.exports = function (api, callback) {
       api.collections.getCollection(boxName, "_graphs", function (err, collection) {
         collection.findOne({_id: graphId}, function (err, doc) {
           if (err) return callback(err);
+          if (!doc) return callback(new Error('Graph does not exists'));
+          if (!doc.graph) return callback(new Error('Graph does not contains any nodes'));
+          
           var workflowId = uuid.v4();
           
           self.saveWorkflowStartDate(boxName, workflowId, graphId, function (err) {

@@ -39,6 +39,11 @@ module.exports = function (boxName, app, callback) {
   var mmm = require('mmmagic');
   var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
 
+  app.get('/api/ping', function (req, res) {
+    res.status(200);
+    res.end();
+  });
+  
   app.use(function (req, res, next) {
     var api = req.api;
     
@@ -236,6 +241,7 @@ module.exports = function (boxName, app, callback) {
   app.post('/api/graphs/:graphId/start', function (req, res) {
     var api = req.api;
 
+    debugger;
     api.workflows.startWorkflow(boxName, req.params.graphId, req.body || {}, function (err, graphs){
       if (err) {
         res.status(418);
@@ -336,11 +342,6 @@ module.exports = function (boxName, app, callback) {
 
       return res.json(response);
     });
-  });
-  
-  app.get('/api/ping', function (req, res) {
-    res.status(200);
-    res.end();
   });
   
   app.post('/api/error', function (req, res) {
