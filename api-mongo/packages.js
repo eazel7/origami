@@ -408,7 +408,9 @@ module.exports = function (config, eventBus, callback) {
               "name": packageName
             }, {
               "$pull": {
-                "files": assetPath
+                "files": assetPath,
+                "scripts": assetPath,
+                "styles": assetPath
               }
             },  {w: 1}, function (err) {
               if (err) return callback(err);
