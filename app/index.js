@@ -240,8 +240,7 @@ module.exports = function (boxName, app, callback) {
 
   app.post('/api/graphs/:graphId/start', function (req, res) {
     var api = req.api;
-
-    debugger;
+    
     api.workflows.startWorkflow(boxName, req.params.graphId, req.body || {}, function (err, graphs){
       if (err) {
         res.status(418);
