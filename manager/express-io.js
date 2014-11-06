@@ -149,6 +149,10 @@ module.exports = function(app, io) {
       .emit('desktop-notification', message);
     });
     
+    var browserKeyByUser = {};
+    
+//    io.on('
+    
     api.eventBus.on('desktop-notification-user', function (boxName, user, message) {
       var ns = io.of('/' + boxName);
       for (var socket in ns.sockets) {

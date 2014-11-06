@@ -109,6 +109,45 @@ angular.module("boxes3.manager")
     resolve: {
     },
     controller: function ($scope, $http, $stateParams, $upload, $location, $q) {
+      $http.get('/api/packages/' + encodeURIComponent($stateParams.packageName) + '/info')
+      .success(function (info) {
+        $scope.packageInfo = info || {version: '', description: ''};
+      })
+      .error(function () {
+        $scope.packageInfo = {
+          version: '',
+          description: ''
+        };
+      });
+      
+      $scope.savePackageInfo = function () {
+        $http.put('/api/packages/' + encodeURIComponent($stateParams.packageName) + '/info', $scope.packageInfo || {});
+      };
+      
+      $scope.canBumpVersion = function (version) {
+        if (!version) return true;
+      
+        var split = (version || '').split('.');
+        
+        if (!split.length === 1 && split[0] === '') return true;
+        
+        for (var i = 0; i < split.length; i++) {
+          if (String(Number(split[i])) !== split[i]) return false;
+        }
+        
+        return true;
+      };
+      
+      $scope.bumpVersion = function (version) {
+        var split = (version || '').split('.');
+        
+        if (!split.length || !version) return '1';
+        
+        if (split.length == 1) return String(Number(version) + 1);
+        
+        return split.slice(0, split.length - 1) + '.' + (String(Number(split.slice(-1)[0]) + 1));
+      };
+    
       $scope.createAsset = function () {
         var path = Array.prototype.constructor.apply(this, arguments).join('/');
         
@@ -497,6 +536,15 @@ angular.module("boxes3.manager")
   $scope.refreshModules = refreshModules;
   
   refreshModules();
+})
+.controller("PackageRowCtrl", function ($scope, $http) {
+  $scope.$watch('package', function (p) {
+    if (!p) return $scope.packageInfo = null;
+    $http.get('/api/packages/' + encodeURIComponent(p) + '/info')
+    .success(function (info) {
+      $scope.info = info;
+    });
+  });
 })
 .controller("CreateFolderCtrl", function ($scope, $stateParams, $http) {
   $scope.createFolder = function (folderName) {

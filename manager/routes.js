@@ -223,6 +223,14 @@ module.exports = function(app, api) {
   .post(controllers.packages.createPackage);
 
   app
+  .route('/api/packages/:packageName/info')
+  .get(controllers.packages.getPackageInfo);
+
+  app
+  .route('/api/packages/:packageName/info')
+  .put(controllers.packages.setPackageInfo);
+
+  app
   .route('/api/packages/:packageName/owner')
   .get(controllers.packages.getPackageOwner);
 

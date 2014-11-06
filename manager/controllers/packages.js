@@ -363,6 +363,21 @@ module.exports = function (api) {
         res.status(200);
         res.end();
       });
+    },
+    getPackageInfo: function (req, res) {
+      api.packages.getPackageInfo(req.params.packageName, function (err, info) {
+        if (err) return resErrHelper(res, err);
+        
+        res.json(info);
+      });
+    },
+    setPackageInfo: function (req, res) {
+      api.packages.setPackageInfo(req.params.packageName, req.body, function (err) {
+        if (err) return resErrHelper(res, err);
+      
+        res.status(200);
+        res.end();
+      });
     }
   };
 }

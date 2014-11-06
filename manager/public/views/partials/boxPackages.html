@@ -1,18 +1,21 @@
 <ul class="list-group">
-  <a href="javascript:" class="list-group-item" ng-class="{'active': isActive(p)}" ng-repeat="p in packages|filter:isActive|orderBy:packagePriority" ng-click="switchPackage(p)">
-    {{p}}
+  <a href="javascript:" class="list-group-item" ng-class="{'active': isActive(package)}" ng-repeat="package in packages|filter:isActive|orderBy:packagePriority" ng-click="switchPackage(package)" ng-controller="PackageRowCtrl">
+    <strong>{{package}}</strong>
     <span class="pull-right btn-group">
-      <span ng-if="isActive(p)">
-        <button ng-disabled="packagePriority(p) === 1" ng-click="priorityUp(p, $event)" class="btn btn-xs btn-default"><i class="glyphicon glyphicon-chevron-up"></i></button>
-        <button class="btn btn-default btn-xs" disabled>{{packagePriority(p)}}</button>
-        <button ng-disabled="$last" ng-click="priorityDown(p, $event)" class="btn btn-xs btn-default"><i class="glyphicon glyphicon-chevron-down"></i></button>
+      <strong ng-if="info.version" style="margin-right: 10px">v {{info.version}}</strong>
+      <span ng-if="isActive(package)">
+        <button ng-disabled="packagePriority(package) === 1" ng-click="priorityUp(package, $event)" class="btn btn-xs btn-default"><i class="glyphicon glyphicon-chevron-up"></i></button>
+        <button class="btn btn-default btn-xs" disabled>{{packagePriority(package)}}</button>
+        <button ng-disabled="$last" ng-click="priorityDown(package, $event)" class="btn btn-xs btn-default"><i class="glyphicon glyphicon-chevron-down"></i></button>
       </span>
     </span>
   </a>
-  <a href="javascript:" class="list-group-item" ng-repeat="p in packages|filter:isNotActive|orderBy:isDependency:true|orderBy:String track by p" ng-click="switchPackage(p)">
-    {{p}}
+  <a href="javascript:" class="list-group-item" ng-repeat="package in packages|filter:isNotActive|orderBy:isDependency:true|orderBy:String" ng-click="switchPackage(package)" ng-controller="PackageRowCtrl">
     <span class="pull-right btn-group">
-      <span ng-if="isDependency(p)"><i class="glyphicon glyphicon-ok"></i></span>
+      <strong ng-if="info.version" style="margin-right: 10px">v {{info.version}}</strong>
+      <span ng-if="isDependency(package)"><i class="glyphicon glyphicon-ok"></i></span>
     </span>
+    <strong>{{package}}</strong>
+    <div ng-if="info.description">{{info.description}}</div>
   </a>
 </ul>

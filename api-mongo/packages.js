@@ -205,6 +205,25 @@ module.exports = function (config, eventBus, callback) {
           }
         },  callback);
       },
+      getPackageInfo: function (packageName, callback) {
+        db.collection("packages").findOne({
+          name: packageName
+        }, { info: 1 }, function (err, doc){ 
+          if (err) return callback (err);
+          if (!doc) return callback ('No pacakge');
+          
+          callback (null, doc.info || {});
+        });
+      },
+      setPackageInfo: function (packageName, info, callback) {
+        db.collection("packages").update({
+          name: packageName
+        }, {
+          $set: {
+            info: info || { version: '', description: '' }
+          }
+        },  callback);
+      },
       setPackageType: function (packageName, packageType, callback, silent) {
         db.collection("packages").update({
           name: packageName
@@ -564,6 +583,14 @@ module.exports = function (config, eventBus, callback) {
             dependencies = JSON.parse(zip.getEntry("dependencies.json").getData().toString()),
             angularModules = JSON.parse(zip.getEntry("angular-modules.json").getData().toString()),
             mergedMetadata = JSON.parse(zip.getEntry("metadata.json").getData().toString());
+            
+        var info;
+        try {
+            info = JSON.parse(zip.getEntry("info.json").getData().toString());
+        } catch (e) {
+            console.log('No package info to import');
+            info = {};
+        };
         
         async.series([function (callback) {
           self.createPackage(packageName, callback);
@@ -575,6 +602,8 @@ module.exports = function (config, eventBus, callback) {
           self.setStyles(packageName, styles, callback, true);
         }, function (callback) {
           self.setAngularModules(packageName, angularModules, callback, true);
+        }, function (callback) {
+          self.setPackageInfo(packageName, info, callback);
         }, function (callback) {
           self.setScripts(packageName, scripts, callback, true);
         }, function (callback) {
@@ -730,6 +759,15 @@ module.exports = function (config, eventBus, callback) {
                   if (err) return callback(err);
                   
                   zip.addFile("folders.json", new Buffer(JSON.stringify(folders, undefined, 2)));
+                  
+                  callback();
+                });
+              },
+              function(callback){
+                self.getPackageInfo(packageName, function (err, info) {
+                  if (err) return callback(err);
+                  
+                  zip.addFile("info.json", new Buffer(JSON.stringify(info, undefined, 2)));
                   
                   callback();
                 });
