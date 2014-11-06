@@ -1,4 +1,4 @@
-module.exports = function (api) {
+module.exports = function () {
   var fs = require('fs'),
       formidable = require('formidable'),
       resErrHelper = require('./resErrHelper'),
@@ -6,6 +6,8 @@ module.exports = function (api) {
   
   return {
     listPackages: function (req, res) {
+      var api = req.api;
+      
       api.packages.listPackages(function (err, packages) {
         var names = [];
         for (var i = 0; i < packages.length; i++){
@@ -16,6 +18,8 @@ module.exports = function (api) {
       });
     },
     createPackage: function (req, res) {
+      var api = req.api;
+      
       api.packages.createPackage(req.params.packageName, function (err) {
         if (err) {
           console.error(err);
@@ -32,6 +36,8 @@ module.exports = function (api) {
       });
     },
     removeFolder: function (req, res) {
+      var api = req.api;
+      
       var path = req.params.path;
       if (req.params[0]) path = path + req.params[0];
       
@@ -42,6 +48,8 @@ module.exports = function (api) {
       });
     },
     uploadAsset: function (req, res) {
+      var api = req.api;
+      
       var form = new formidable.IncomingForm();
       form.parse(req, function (err, fields, files) {
         async.each(Object.keys(files), function (fileEntry, callback) {
@@ -70,6 +78,8 @@ module.exports = function (api) {
       });
     },
     removeAsset: function (req, res) {
+      var api = req.api;
+      
       api.packages.removeAsset(req.params.packageName, req.params.filename, function (err) {
         if (err) console.error(err);
         
@@ -78,6 +88,8 @@ module.exports = function (api) {
       });
     },
     createFolder: function (req, res) {
+      var api = req.api;
+      
       api.packages.createFolder(req.params.packageName, req.params.path, function (err) {
         if (err) console.error(err);
         res.status(err ? 418 : 200);
@@ -85,6 +97,8 @@ module.exports = function (api) {
       });
     },
     listFolders: function (req, res) {
+      var api = req.api;
+      
       api.packages.listFolders(req.params.packageName, function (err, folders) {
         if (err) {
           console.error(err);
@@ -96,6 +110,8 @@ module.exports = function (api) {
       });
     },
     removePackage: function (req, res) {
+      var api = req.api;
+      
       api.packages.removePackage(req.params.packageName, function (err) {
         if (err) console.error(err);
         res.status(err ? 418 : 200);
@@ -103,6 +119,8 @@ module.exports = function (api) {
       });
     },
     serveAsset: function (req, res) {
+      var api = req.api;
+      
       var path = req.params.path;
       if (req.params[0]) path = path + req.params[0];
       
@@ -127,22 +145,30 @@ module.exports = function (api) {
       });
     },
     listAssets: function (req, res) {
+      var api = req.api;
+      
       api.packages.listAssets(req.params.packageName, function (err, assets) {
         res.json(assets);
       });
     },
     getAssetMetadata: function (req, res) {
+      var api = req.api;
+      
       api.packages.getAssetMetadata(req.params.packageName, req.params.assetName, function (err, metadata) {
         res.json(metadata);
       });
     },
     setAssetMetadata: function (req, res) {
+      var api = req.api;
+      
       api.packages.setAssetMetadata(req.params.packageName, req.params.assetName, req.body, function (err) {
         res.status(err ? 418 : 200);
         res.end();
       });
     },
     listActivePackages: function (req, res) {
+      var api = req.api;
+      
       api.packages.getActivePackages(req.params.boxName, function (err, packages) {
         if (err) {
           res.status(418);
@@ -153,24 +179,32 @@ module.exports = function (api) {
       });
     },
     resortPackages: function (req, res) {
+      var api = req.api;
+      
       api.packages.setActivePackages(req.params.boxName, req.body, function (err) {
         res.status(err ? 418 : 200);
         res.end();
       });
     },
     activatePackage: function (req, res) {
+      var api = req.api;
+      
       api.packages.activatePackage(req.params.boxName, req.params.package, function (err) {
         res.status(err ? 418 : 200);
         res.end();
       });
     },
     deactivatePackage: function (req, res) {
+      var api = req.api;
+      
       api.packages.deactivatePackage(req.params.boxName, req.params.package, function (err) {
         res.status(err ? 418 : 200);
         res.end();
       });
     },
     listScripts: function (req, res) {
+      var api = req.api;
+      
       api.packages.listScripts(req.params.packageName, function (err, scripts) {
         if (err) {
           console.error(err);
@@ -183,6 +217,8 @@ module.exports = function (api) {
       });
     },
     listStyles: function (req, res) {
+      var api = req.api;
+      
       api.packages.listStyles(req.params.packageName, function (err, styles) {
         if (err) {
           console.error(err);
@@ -195,6 +231,8 @@ module.exports = function (api) {
       });
     },
     setScripts: function (req, res) {
+      var api = req.api;
+      
       api.packages.setScripts(req.params.packageName, req.body, function (err) {
         if (err) console.error(err);
           
@@ -203,6 +241,8 @@ module.exports = function (api) {
       });
     },
     listAngularModules: function (req, res) {
+      var api = req.api;
+      
       api.packages.listAngularModules(req.params.packageName, function (err, modules) {
         if (err) {
           console.error(err);
@@ -215,6 +255,8 @@ module.exports = function (api) {
       });
     },
     setAngularModules: function (req, res) {
+      var api = req.api;
+      
       api.packages.setAngularModules(req.params.packageName, req.body, function (err) {
         if (err) console.error(err);
           
@@ -223,6 +265,8 @@ module.exports = function (api) {
       });
     },
     setStyles: function (req, res) {
+      var api = req.api;
+      
       api.packages.setStyles(req.params.packageName, req.body, function (err) {
         if (err) console.error(err);
           
@@ -231,6 +275,8 @@ module.exports = function (api) {
       });
     },
     unzipAsset: function (req, res) {
+      var api = req.api;
+      
       var path = req.params.assetName;
       if (req.params[0]) path = path + req.params[0];
       
@@ -242,6 +288,8 @@ module.exports = function (api) {
       });
     },
     exportPackage: function (req, res) {
+      var api = req.api;
+      
       api.packages.exportPackage(req.params.packageName, function (err, exported) {
         if (err) {
           console.error(err);
@@ -257,6 +305,8 @@ module.exports = function (api) {
       });
     },
     importPackages: function (req, res) {
+      var api = req.api;
+      
       var form = new formidable.IncomingForm();
       
       form.parse(req, function (err, fields, files) {
@@ -275,6 +325,8 @@ module.exports = function (api) {
       });
     },
     getPackageType: function (req, res) {
+      var api = req.api;
+      
       api.packages.getPackageType(req.params.packageName, function (err, type) {
         if (err) {
           console.error(err);
@@ -287,6 +339,8 @@ module.exports = function (api) {
       });
     },
     setPackageType: function (req, res) {
+      var api = req.api;
+      
       api.packages.setPackageType(req.params.packageName, req.body.type, function (err) {
         if (err) {
           console.error(err);
@@ -299,6 +353,8 @@ module.exports = function (api) {
       });
     },
     getPackageOwner: function (req, res) {
+      var api = req.api;
+      
       api.packages.getPackageOwner(req.params.packageName, function (err, owner) {
         if (err) {
           console.error(err);
@@ -311,6 +367,8 @@ module.exports = function (api) {
       });
     },
     setPackageOwner: function (req, res) {
+      var api = req.api;
+      
       api.packages.setPackageOwner(req.params.packageName, req.body.owner, function (err) {
         if (err) {
           console.error(err);
@@ -323,6 +381,8 @@ module.exports = function (api) {
       });
     },
     getDependencies: function (req, res) {
+      var api = req.api;
+      
       api.packages.getDependencies(req.params.packageName, function (err, deps) {
         if (err) {
           console.error(err);
@@ -335,6 +395,8 @@ module.exports = function (api) {
       });
     },
     setDependencies: function (req, res) {
+      var api = req.api;
+      
       api.packages.setDependencies(req.params.packageName, req.body, function (err) {
         if (err) {
           console.error(err);
@@ -346,6 +408,8 @@ module.exports = function (api) {
       });
     },
     newBlankAsset: function (req, res) {
+      var api = req.api;
+      
       var path = req.params.path;
       if (req.params[0]) path = path + req.params[0];
       
@@ -365,13 +429,17 @@ module.exports = function (api) {
       });
     },
     getPackageInfo: function (req, res) {
-      api.packages.getPackageInfo(req.params.packageName, function (err, info) {
+     var api = req.api;
+      
+     api.packages.getPackageInfo(req.params.packageName, function (err, info) {
         if (err) return resErrHelper(res, err);
         
         res.json(info);
       });
     },
     setPackageInfo: function (req, res) {
+      var api = req.api;
+      
       api.packages.setPackageInfo(req.params.packageName, req.body, function (err) {
         if (err) return resErrHelper(res, err);
       

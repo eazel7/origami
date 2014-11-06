@@ -1,14 +1,14 @@
-module.exports = function (api) {
+module.exports = function () {
   return {
-    boxes: require('./boxes')(api),
-    config: require('./config')(api),
-    misc: require('./misc')(api),
-    users: require('./users')(api),
-    views: require('./views')(api),
-    permissions: require('./permissions')(api),
-    workflows: require('./workflows')(api),
-    authentication: require('./authentication')(api),
-    packages: require('./packages')(api),
-    dataTransfer: require('./data-transfer')(api)
+    boxes: require('./boxes')(),
+    config: require('./config')(),
+    misc: require('./misc')(),
+    users: require('./users')(),
+    views: require('./views')(),
+    permissions: require('./permissions')(),
+    workflows: require('./workflows')(),
+    authentication: require('./authentication')(),
+    packages: require('./packages')(),
+    dataTransfer: require('./data-transfer')()
   };
 }

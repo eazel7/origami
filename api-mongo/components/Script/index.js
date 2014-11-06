@@ -40,112 +40,17 @@ module.exports = {
           }
         
           if (component.outPorts.success.isAttached() && component.outPorts.success.connect()) {
-            var vm = require('vm');
-            vm.runInNewContext(component.script, { 
-              input: data,
-              db: {
-                getCollection: function (collectionName) {
-                  return {
-                    find: function (predicate) {
-                      var defer = Q.defer();
-                      
-                      component.api.collections.getCollection(component.boxName, collectionName, function (err, collection) {
-                        if (err) {
-                          console.error(err);
-                          return defer.reject(err);
-                        }
-                        
-                        collection
-                        .find(predicate, function (err, docs) {
-                          if (err) return defer.reject(err);
-                          
-                          defer.resolve(docs);
-                        });
-                      });
-                      
-                      return defer.promise;
-                    },
-                    findOne: function (predicate) {
-                      var defer = Q.defer();
-                      
-                      component.api.collections.getCollection(component.boxName, collectionName, function (err, collection) {
-                        if (err) {
-                          console.error(err);
-                          return defer.reject(err);
-                        }
-                        
-                        collection
-                        .findOne(predicate, function (err, doc) {
-                          if (err) return defer.reject(err);
-                          
-                          defer.resolve(doc);
-                        });
-                      });
-                      
-                      return defer.promise;
-                    },
-                    insert: function (object) {
-                      var defer = Q.defer();
-                      
-                      component.api.collections.getCollection(component.boxName, collectionName, function (err, collection) {
-                        if (err) {
-                          console.error(err);
-                          return defer.reject(err);
-                        }
-                        
-                        collection
-                        .insert(object, function (err, doc) {
-                          if (err) return defer.reject(err);
-                          
-                          defer.resolve(doc);
-                        });
-                      });
-                      
-                      return defer.promise;
-                    },
-                    update: function (predicate, replacement) {
-                      var defer = Q.defer();
-                      
-                      component.api.collections.getCollection(component.boxName, collectionName, function (err, collection) {
-                        if (err) {
-                          console.error(err);
-                          return defer.reject(err);
-                        }
-                        
-                        collection
-                        .update(predicate, replacement, function (err) {
-                          if (err) return defer.reject(err);
-                          
-                          defer.resolve();
-                        });
-                      });
-                      
-                      return defer.promise;
-                    }
-                  }
-                }
-              },
-              success: function (data) {
-                component.outPorts.success.send(data);
-                component.outPorts.success.disconnect();
-              },
-              error: function (err) {
-                component.error.success.send(data);
-                component.error.success.disconnect();
-              },
-              notifyUser: function (alias, message) {
-                component.api.eventBus.emit('desktop-notification-user', component.boxName, alias, message);
-              },
-              JSON: JSON,
-              console: {
-                log: function () {
-                  component.api.eventBus.emit('workflow-output', component.boxName, component.workflowId, {
-                    date: new Date().valueOf(),
-                    string: JSON.stringify(arguments)
-                  });
-                }
-              } 
-            }, 'component.vm');
+            var vm = require('vm'),
+                successCallback = function (data) {
+                  component.outPorts.success.send(data);
+                  component.outPorts.success.disconnect();
+                },
+                errorCallback = function (err) {
+                  component.error.success.send(data);
+                  component.error.success.disconnect();
+                };
+            
+            vm.runInNewContext(component.script, scriptContext(component.api, component.boxName, component.workflowId, data, successCallback, errorCallback), component.workflowId + '.vm');
           }
         })(this);
       };

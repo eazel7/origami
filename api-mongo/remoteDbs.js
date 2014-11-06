@@ -40,7 +40,7 @@ module.exports = function (config, connect, callback) {
         })
         .toArray(callback);
       },
-      unserForBox: function (box, name, callback) {
+      unsetForBox: function (box, name, callback) {
         db
         .collection("remote_dbs")
         .remove({

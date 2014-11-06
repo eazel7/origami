@@ -1,8 +1,10 @@
 var async = require('async');
 
-module.exports = function (api) {
+module.exports = function () {
   return {
     transfer: function (req, res) {
+      var api = req.api;
+      
       async.eachSeries(req.body.collections, function (collectionName, callback) {
         api.collections.getCollection(req.body.from, collectionName, function (err, sourceCollection) {
           if (err) return callback (err);

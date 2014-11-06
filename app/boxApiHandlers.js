@@ -1,6 +1,8 @@
-module.exports = function (boxName, api) {
+module.exports = function (boxName) {
   return {
     getCollections: function (req, res) {
+      var api = req.api;
+
       return api.collections.getCollections(
         boxName,
         function (err, names){
@@ -14,6 +16,8 @@ module.exports = function (boxName, api) {
         });
     },
     findInCollection: function (req, res) {
+      var api = req.api;
+
       return api.collections.getCollection(
         boxName,
         req.params.collection,
@@ -36,6 +40,8 @@ module.exports = function (boxName, api) {
         });
     },
     findOneInCollection: function (req, res) {
+      var api = req.api;
+
       return api.collections.getCollection(
         boxName,
         req.params.collection,
@@ -63,6 +69,8 @@ module.exports = function (boxName, api) {
         });
     },
     countInCollection: function (req, res) {
+      var api = req.api;
+
       api.collections.getCollection(
         boxName,
         req.params.collection,
@@ -85,6 +93,8 @@ module.exports = function (boxName, api) {
         });
     },
     removeInCollection: function (req, res) {
+      var api = req.api;
+
       return api.collections.getCollection(boxName, req.params.collection, function (err, collection){
         if (err) {
           console.log({ box: boxName, url: req.params.url, err: err});
@@ -105,6 +115,8 @@ module.exports = function (boxName, api) {
       });
     },
     insertInCollection: function (req, res) {
+      var api = req.api;
+
       return api.collections.getCollection(
         boxName,
         req.params.collection,
@@ -127,6 +139,8 @@ module.exports = function (boxName, api) {
         });
     },
     updateInCollection: function (req, res) {
+      var api = req.api;
+
       return api.collections.getCollection(
         boxName,
         req.params.collection,
@@ -150,6 +164,8 @@ module.exports = function (boxName, api) {
         });
     },
     findInRemoteDb: function (req, res) {
+      var api = req.api;
+
       api.remoteDbs.getCollection (
         boxName,
         req.params.name,
@@ -174,6 +190,8 @@ module.exports = function (boxName, api) {
         });
     },
     countInRemoteDb: function (req, res) {
+      var api = req.api;
+
       api.remoteDbs.getCollection (
         boxName,
         req.params.name,
@@ -197,6 +215,8 @@ module.exports = function (boxName, api) {
         });
     },
     findOneInRemoteDb: function (req, res) {
+      var api = req.api;
+
       api.remoteDbs.getCollection (
         boxName,
         req.params.name,
@@ -227,6 +247,8 @@ module.exports = function (boxName, api) {
         });
     },
     updateInRemoteDb: function (req, res) {
+      var api = req.api;
+
       api.remoteDbs.getCollection (
         boxName,
         req.params.name,
@@ -251,6 +273,8 @@ module.exports = function (boxName, api) {
         });
     },
     removeInRemoteDb: function (req, res) {
+      var api = req.api;
+
       api.remoteDbs.getCollection (
         boxName,
         req.params.name,
@@ -275,6 +299,8 @@ module.exports = function (boxName, api) {
       });
     },
     insertInRemoteDb: function (req, res) {
+      var api = req.api;
+
       api.remoteDbs.getCollection (
         boxName,
         req.params.name,
@@ -298,6 +324,8 @@ module.exports = function (boxName, api) {
         });
     },
     getQueuedSyncOps: function (req, res) {
+      var api = req.api;
+
       function handleErr (err){
         console.log(err);
         res.status(418);
@@ -326,6 +354,8 @@ module.exports = function (boxName, api) {
       });
     },
     startSchedule: function (req, res) {
+      var api = req.api;
+
       api.schedules.startSchedule(boxName, req.params.id, function (err) {
         if (err) {
           console.log(err);
@@ -338,6 +368,8 @@ module.exports = function (boxName, api) {
       });
     },
     stopSchedule: function (req, res) {
+      var api = req.api;
+
       api.schedules.stopSchedule(boxName, req.params.id, function (err) {
         if (err) {
           console.log(err);

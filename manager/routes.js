@@ -10,7 +10,7 @@ module.exports = function(app, api) {
 
   var controllers = require('./controllers')(api);
 
-  controllers.authentication.install(app);
+  controllers.authentication.install(app, api);
 
   if (env === 'production') {
     var partialsPath = config.root + '/views/partials';
@@ -25,8 +25,14 @@ module.exports = function(app, api) {
     return next();
   }
   
+  app.use(function requestApiInjector(req, res, next) {
+    req.api = api;
+    
+    next();
+  });
+  
   app.use('/:boxName/', function (req, res, next) {
-    var boxName = req.params.boxName;
+    var boxName = req.params.boxName, api = req.api;
 
     api.boxes.getBox(boxName, function (err, box) {
       if (!box) {
@@ -329,7 +335,7 @@ module.exports = function(app, api) {
   
   
   app.use('/api/box-api/:boxName', function (req, res, next) {
-    var boxApi = require('origami-app/boxApiHandlers')(req.params.boxName, api);
+    var boxApi = require('origami-app/boxApiHandlers')(req.params.boxName);
     
     var apiApp = express();
     apiApp.get('/collections', boxApi.getCollections);
@@ -351,10 +357,8 @@ module.exports = function(app, api) {
 
   // Box controller
 
-  var boxCtrl = require('origami-app')(api);
-
   app.use('/:boxName', function (req, res, next) {
-  var boxName = req.params.boxName;
+  var boxName = req.params.boxName, api = req.api;
     api.boxes.getBox(boxName, function (err, box) {
       if (!box) {
         // no box, not this handler
@@ -368,7 +372,7 @@ module.exports = function(app, api) {
   });
   
   app.use('/:boxName/', function (req, res, next) {
-    var boxName = req.params.boxName;
+    var boxName = req.params.boxName, api = req.api;
 
     api.boxes.getBox(boxName, function (err, box) {
       if (!box) {
@@ -380,7 +384,9 @@ module.exports = function(app, api) {
       } else {
         controllers.authentication.isAllowed(req, function (err, isAllowed) {
           if (isAllowed) {
-            return boxCtrl(boxName, function (err, app) {
+            return require('origami-app')(boxName, function (err, app) {
+              req.api = api;
+              
               app(req, res, next);
             });
           } else {
