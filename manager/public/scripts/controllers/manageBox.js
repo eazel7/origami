@@ -140,7 +140,7 @@ angular.module('boxes3.manager')
     });
   };
 })
-.controller("BoxAdministratorsCtrl", function ($scope, $stateParams, UsersApi) {
+.controller("BoxAdministratorsCtrl", function ($scope, $stateParams, UsersApi, CollectionApi) {
   $scope.revoke = function (user) {
     $scope.box.info.admins.splice($scope.box.info.admins.indexOf(user), 1);
     $scope.$emit('changes');
@@ -149,6 +149,7 @@ angular.module('boxes3.manager')
   .then(function (users) {
     $scope.users = users;
   });
+  
   $scope.getUser = function(user) {
     if (!$scope.users) return;
     for (var i = 0; i < $scope.users.length; i++) {
@@ -198,13 +199,25 @@ angular.module('boxes3.manager')
     });
   };
 })
-.controller("BoxUsersCtrl", function ($scope, $stateParams, UsersApi) {
+.controller("BoxUsersCtrl", function ($scope, $stateParams, UsersApi, CollectionApi) {
+  var boxName = $stateParams.boxName;
+
   function refresh() {
     UsersApi.getAllUsers()
     .then(function (users) {
       $scope.users = users;
     });
   };
+  
+  CollectionApi
+  .getCollections(boxName)
+  .then(function (collections) {
+    $scope.collections = collections;
+  });
+  
+  $scope.notSystemCollection = function (c) {
+    return c && c[0] !== '_';
+  }
   
   refresh();
   

@@ -346,26 +346,18 @@ module.exports = function (boxName, app, callback) {
   app.post('/api/error', function (req, res) {
     var api = req.api;
 
-    api.collections.getCollection (boxName, "_errors", function (err, collection) {
+    var error = req.body;
+    error.user = req.session.user.alias;
+    error.box = boxName;
+    
+    collection.insert(boxName, "_errors", req.body, function (err) {
       if (err) {
         console.error(err);
         res.status(418);
         return res.end();
       }
-      
-      var error = req.body;
-      error.user = req.session.user.alias;
-      error.box = boxName;
-      
-      collection.insert(req.body, function (err) {
-        if (err) {
-          console.error(err);
-          res.status(418);
-          return res.end();
-        }
-        res.status(200);
-        res.end();
-      });
+      res.status(200);
+      res.end();
     });
   });
   

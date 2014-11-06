@@ -14,7 +14,12 @@ module.exports = {
   },
   collections: {
     getCollection: anyOf(isBoxAdmin, allOf(isBoxActive, isBoxUser)),
-    getCollections: anyOf(isBoxAdmin, allOf(isBoxActive, isBoxUser)),
+    find: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
+    findOne: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
+    count: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
+    update: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].update'))),
+    insert: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].insert'))),
+    remove: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].remove'))),
     createCollection: anyOf(allOf(isBoxDeveloper,isBoxActive),isBoxAdmin),
     createServerCollection: anyOf(allOf(isBoxDeveloper,isBoxActive),isBoxAdmin),
     destroyCollection: anyOf(allOf(isBoxDeveloper,isBoxActive),isBoxAdmin)

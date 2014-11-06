@@ -18,91 +18,66 @@ module.exports = function (boxName) {
     findInCollection: function (req, res) {
       var api = req.api;
 
-      return api.collections.getCollection(
+      return api.collections.find(
         boxName,
-        req.params.collection,
-        function (err, collection){
+        req.params.collection, 
+        req.body || {}, 
+        function (err, docs) {
           if (err) {
             console.log({ box: boxName, url: req.params.url, err: err});
             res.status(418);
             return res.end();
           }
 
-          collection.find(req.body || {}, function (err, docs) {
-            if (err) {
-              console.log({ box: boxName, url: req.params.url, err: err});
-              res.status(418);
-              return res.end();
-            }
-
-            return res.json(docs);
-          });
+          return res.json(docs);
         });
     },
     findOneInCollection: function (req, res) {
       var api = req.api;
 
-      return api.collections.getCollection(
+      return api.collections.find(
         boxName,
-        req.params.collection,
-        function (err, collection){
+        req.params.collection, 
+        req.body || {},
+        function (err, doc) {
           if (err) {
             console.log({ box: boxName, url: req.params.url, err: err});
             res.status(418);
             return res.end();
           }
 
-          collection.findOne(req.body || {}, function (err, doc) {
-            if (err) {
-              console.log({ box: boxName, url: req.params.url, err: err});
-              res.status(418);
-              return res.end();
-            }
+          if (!doc) {
+            res.status(404);
+            return res.end();
+          }
 
-            if (!doc) {
-              res.status(404);
-              return res.end();
-            }
-
-            return res.json(doc);
-          });
+          return res.json(doc);
         });
     },
     countInCollection: function (req, res) {
       var api = req.api;
 
-      api.collections.getCollection(
+      api.collections.count(
         boxName,
         req.params.collection,
-        function (err, collection){
+        req.body || {}, function (err, docs) {
           if (err) {
             console.log({ box: boxName, url: req.params.url, err: err});
             res.status(418);
             return res.end();
           }
 
-          collection.count(req.body || {}, function (err, docs) {
-            if (err) {
-              console.log({ box: boxName, url: req.params.url, err: err});
-              res.status(418);
-              return res.end();
-            }
-
-            return res.json(docs);
-          });
+          return res.json(docs);
         });
     },
     removeInCollection: function (req, res) {
       var api = req.api;
 
-      return api.collections.getCollection(boxName, req.params.collection, function (err, collection){
-        if (err) {
-          console.log({ box: boxName, url: req.params.url, err: err});
-          res.status(418);
-          return res.end();
-        }
-
-        collection.remove(req.body || {}, function (err) {
+      return api.collections.remove(
+        boxName, 
+        req.params.collection,
+        req.body || {}, 
+        function (err) {
           if (err) {
             console.log({ box: boxName, url: req.params.url, err: err});
             res.status(418);
@@ -112,7 +87,6 @@ module.exports = function (boxName) {
           res.status(200);
           return res.end();
         }, req.headers['box.browserkey']);
-      });
     },
     insertInCollection: function (req, res) {
       var api = req.api;

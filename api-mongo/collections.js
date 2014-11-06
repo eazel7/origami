@@ -1,17 +1,61 @@
 module.exports = function (config, connect, collectionWrapper, router, callback) {
   connect(function (err, db) {
+    function getCollection (boxName, collectionName, callback) {
+      if (!boxName) callback(new Error("No box name"));
+      if (!collectionName) callback(new Error("No collection name"));
+      
+      router.routeCollection(boxName, collectionName, function (err, route) {
+        collectionWrapper.wrap(db
+          .db(route.database)
+          .collection(route.collection), {
+            "box": boxName,
+            "collection": collectionName
+          }, callback);
+      });
+    }
+    
     callback(null, {
-      getCollection: function (boxName, collectionName, callback) {
-        if (!boxName) callback(new Error("No box name"));
-        if (!collectionName) callback(new Error("No collection name"));
-        
-        router.routeCollection(boxName, collectionName, function (err, route) {
-          collectionWrapper.wrap(db
-            .db(route.database)
-            .collection(route.collection), {
-              "box": boxName,
-              "collection": collectionName
-            }, callback);
+      getCollection: getCollection,
+      find: function (boxName, collectionName, predicate, callback) {
+        getCollection(boxName, collectionName, function (err, collection) {
+          if (err) return callback(err);
+          
+          collection.find(predicate, callback);
+        });
+      },
+      count: function (boxName, collectionName, predicate, callback) {
+        getCollection(boxName, collectionName, function (err, collection) {
+          if (err) return callback(err);
+          
+          collection.count(predicate, callback);
+        });
+      },
+      findOne: function(boxName, collectionName, predicate, callback) {
+        getCollection(boxName, collectionName, function (err, collection) {
+          if (err) return callback(err);
+          
+          collection.findOne(predicate, callback);
+        });
+      },
+      update: function (boxName, collectionName, predicate, replacement, callback, browserKey) {
+        getCollection(boxName, collectionName, function (err, collection) {
+          if (err) return callback(err);
+          
+          collection.update(predicate, replacement, callback);
+        });
+      },
+      remove: function (boxName, collectionName, predicate, callback, browserKey) {
+        getCollection(boxName, collectionName, function (err, collection) {
+          if (err) return callback(err);
+          
+          collection.find(predicate, callback);
+        });
+      },
+      insert: function (boxName, collectionName, object, callback, browserKey) {
+        getCollection(boxName, collectionName, function (err, collection) {
+          if (err) return callback(err);
+          
+          collection.insert(object, callback);
         });
       },
       getCollections: function (boxName, callback) {

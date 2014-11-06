@@ -24,7 +24,8 @@
         <td>Perform search, inserts, updates and removals from collections according to the permission groups they belong. By default they can't start or stop workflows, neither modify graphs, schedules or views.</td>
       </tr>
       <tr ng-repeat="pg in groups track by pg._id">
-        <th colspan="2"><a href="javascript:" ng-click="edit(pg)"><i class="glyphicon glyphicon-edit"></i>&nbsp;{{pg.name}}</a></th>
+        <th><a href="javascript:" ng-click="edit(pg)"><i class="glyphicon glyphicon-edit"></i>&nbsp;{{pg.name}}</a></th>
+        <td ng-if="pg.users.length">{{pg.users.sort().join(', ')}}</td>
       </tr>
       <tr>
         <td colspan="2">

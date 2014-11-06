@@ -5,24 +5,16 @@ module.exports = function () {
     transfer: function (req, res) {
       var api = req.api;
       
-      async.eachSeries(req.body.collections, function (collectionName, callback) {
-        api.collections.getCollection(req.body.from, collectionName, function (err, sourceCollection) {
+      async.eachSeries(req.body.collections, function (sourceCollection, callback) {
+        api.collections.find(req.body.from, collectionName, {}, function (err, docs) {
           if (err) return callback (err);
           
-          api.collections.getCollection(req.body.target, collectionName, function (err, targetCollection) {
+          api.collections.remove(req.body.target, collectionName, {}, function (err) {
             if (err) return callback (err);
             
-            sourceCollection.find({}, function (err, docs) {
-              if (err) return callback (err);
-              
-              targetCollection.remove({}, function (err) {
-                if (err) return callback (err);
-                
-                async.eachSeries(docs, function (doc, callback) {
-                  targetCollection.insert(doc, callback, 'system');
-                }, callback);
-              });
-            });
+            async.eachSeries(docs, function (doc, callback) {
+              api.collections.insert(req.body.target, collectionName, doc, callback, 'system');
+            }, callback);
           });
         });
       }, function (err) {

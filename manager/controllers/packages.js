@@ -14,7 +14,7 @@ module.exports = function () {
           names.push(packages[i].name);
         }
         
-        res.json(names);
+        res.json(names.sort());
       });
     },
     createPackage: function (req, res) {
