@@ -410,7 +410,9 @@ $stateProvider.state('manageBox', {
     .then(function () {
       $scope.editing = null;
     })
-    .then(refresh);
+    .then(function () {
+      $scope.$broadcast('refresh-permission-groups');
+    });
   };
   
   $scope.deleteGroup = function () {

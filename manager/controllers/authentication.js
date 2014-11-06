@@ -10,6 +10,8 @@ module.exports = function () {
           callback (null, req.headers.apikey == box.apiKey);
         });
       } else {
+        var api = rawApi;
+        
         api.settings.get("master-user", function (masterUser) {
           if (masterUser == req.session.user.alias) return callback(null, true);
 

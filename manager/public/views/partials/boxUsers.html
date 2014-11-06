@@ -165,9 +165,9 @@
         </tr>
         <tr>
           <th colspan="2">
-            <span class="btn-group">
-              <a disabled class="btn btn-default"><i class="glyphicon glyphicon-upload"></i> Allow file upload</a>
-              <a disabled class="btn btn-default"><i class="glyphicon glyphicon-fire"></i> Allow deleting uploads</a>
+            <span class="btn-group btn-group-justified">
+              <a disabled ng-class="{'btn-primary': effectivePermissions.system.deleteUploads}" class="btn btn-default"><i class="glyphicon glyphicon-fire"></i> Allow deleting uploads</a>
+              <a disabled ng-class="{'btn-primary': effectivePermissions.system.fileUpload}" class="btn btn-default"><i class="glyphicon glyphicon-upload"></i> Allow file upload</a>
             </span>
           </th>
         </tr>

@@ -183,9 +183,9 @@
         </tr>
         <tr>
           <th colspan="2">
-            <span class="btn-group">
-              <a class="btn btn-default"><i class="glyphicon glyphicon-upload"></i> Allow file upload</a>
-              <a class="btn btn-default"><i class="glyphicon glyphicon-fire"></i> Allow deleting uploads</a>
+            <span class="btn-group btn-group-justified">
+              <a ng-click="editing.permissions.system.fileUpload = !editing.permissions.system.fileUpload" ng-class="{'active': editing.permissions.system.fileUpload}" class="btn btn-default"><i class="glyphicon glyphicon-upload"></i> Allow file upload</a>
+              <a ng-click="editing.permissions.system.deleteUploads = !editing.permissions.system.deleteUploads" ng-class="{'active': editing.permissions.system.deleteUploads}" class="btn btn-default"><i class="glyphicon glyphicon-fire"></i> Allow deleting uploads</a>
             </span>
           </th>
         </tr>
@@ -226,7 +226,7 @@
         <tr>
           <th class="text-center" colspan="2">Workflows</th>
         </tr>
-        <tr ng-repeat="w in workflows">
+        <tr ng-repeat="w in graphs">
           <th>{{w.name}}</th>
           <td><span class="btn-group">
             <a class="btn btn-default"

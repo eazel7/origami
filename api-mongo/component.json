@@ -9,7 +9,8 @@
       "ListenOps": "./components/ListenOps",
       "WaitWorkflow": "./components/WaitWorkflow",
       "Script": "./components/Script",
-      "ListenSocketConnections": "./components/ListenSocketConnections"
+      "ListenSocketConnections": "./components/ListenSocketConnections",
+      "SendEmail": "./components/SendEmail"
     }
   }
 }

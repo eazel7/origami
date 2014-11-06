@@ -32,10 +32,8 @@ function findAsset(req, url, res, next) {
   });
 }
 
-module.exports = function (boxName, callback) {
+module.exports = function (boxName, app, callback) {
   var boxApi = require('./boxApiHandlers')(boxName),
-      express = require('express'),
-      app = express(),
       fs = require('fs');
       
   var mmm = require('mmmagic');

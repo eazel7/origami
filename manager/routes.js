@@ -26,11 +26,56 @@ module.exports = function(app, rawApi) {
     
     return next();
   }
+
+  app.use('/:boxName', function (req, res, next) {
+  var boxName = req.params.boxName;
+    rawApi.boxes.getBox(boxName, function (err, box) {
+      if (!box) {
+        // no box, not this handler
+        return next();
+      } else if (req.originalUrl === '/' + boxName) {
+        return res.redirect(req.originalUrl + '/');
+      } else {
+        return next();
+      }
+    });
+  });
   
-  app.use(function requestApiInjector(req, res, next) {
-    req.api = wrappedApi(req, res, rawApi);
-    
-    next();
+  app.use('/:boxName/', function (req, res, next) {
+    var boxName = req.params.boxName;
+
+    rawApi.boxes.getBox(boxName, function (err, box) {
+      if (!box) {
+        // no box, not this handler
+        return next();
+      } else if (!box.info || !box.info.status) {
+        res.status(503);
+        return res.redirect('/#/box-inactive/' + encodeURIComponent(boxName));
+      } else {
+        controllers.authentication.isAllowed(rawApi, req, function (err, isAllowed) {
+          if (isAllowed) {
+            var boxApp = express();
+      
+            boxApp.use(function requestApiInjector(req, res, next) {
+              req.api = wrappedApi(function () {
+                return {
+                  userAlias: req.session.user.alias,
+                  boxName: boxName
+                };
+              }, res, rawApi);
+              
+              next();
+            });
+            
+            return require('origami-app')(boxName, boxApp, function (err) {
+              boxApp(req, res, next);
+            });
+          } else {
+            return res.redirect('/login?returnTo=' + encodeURIComponent(req.originalUrl));
+          }
+        });
+      }
+    });
   });
   
   app.use('/:boxName/', function (req, res, next) {
@@ -44,13 +89,37 @@ module.exports = function(app, rawApi) {
         res.status(503);
         return res.redirect('/#/box-inactive/' + encodeURIComponent(boxName));
       } else if (box.info && box.info.public === true) {
-        return boxCtrl(boxName, function (err, app) {
-          app(req, res, next);
+        var boxApp = express();
+  
+        boxApp.use(function requestApiInjector(req, res, next) {
+          req.api = wrappedApi(function () {
+            return {
+              userAlias: req.session.user.alias,
+              boxName: boxName
+            };
+          }, res, rawApi);
+          
+          next();
+        });
+        
+        return require('origami-app')(boxName, boxApp, function (err) {
+          boxApp(req, res, next);
         });
       } else {
         next();
       }
     });
+  });
+  
+  app.use(function requestApiInjector(req, res, next) {
+    req.api = wrappedApi(function () {
+      return {
+        userAlias: req.session.user.alias,
+        boxName: req.params.boxName
+      };
+    }, res, rawApi);
+    
+    next();
   });
   
   app.route('/')
@@ -353,42 +422,4 @@ module.exports = function(app, rawApi) {
   });
 
   // Box controller
-
-  app.use('/:boxName', function (req, res, next) {
-  var boxName = req.params.boxName;
-    rawApi.boxes.getBox(boxName, function (err, box) {
-      if (!box) {
-        // no box, not this handler
-        return next();
-      } else if (req.originalUrl === '/' + boxName) {
-        return res.redirect(req.originalUrl + '/');
-      } else {
-        return next();
-      }
-    });
-  });
-  
-  app.use('/:boxName/', function (req, res, next) {
-    var boxName = req.params.boxName;
-
-    rawApi.boxes.getBox(boxName, function (err, box) {
-      if (!box) {
-        // no box, not this handler
-        return next();
-      } else if (!box.info || !box.info.status) {
-        res.status(503);
-        return res.redirect('/#/box-inactive/' + encodeURIComponent(boxName));
-      } else {
-        controllers.authentication.isAllowed(rawApi, req, function (err, isAllowed) {
-          if (isAllowed) {
-            return require('origami-app')(boxName, function (err, app) {
-              app(req, res, next);
-            });
-          } else {
-            return res.redirect('/login?returnTo=' + encodeURIComponent(req.originalUrl));
-          }
-        });
-      }
-    });
-  });
 };

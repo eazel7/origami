@@ -1,136 +1,31 @@
 var async = require('async'); 
 
-function hasPermission(permission) {
-  return function (context, api, callback) {
-    callback(null, true);
-  }
-}
+var permissions = require('./permissionsDef');
 
-function isBoxActive (context, api, callback) {
-  api.boxes.getBox(context.boxName, function (err, doc) {
-    callback(err, doc && doc.info && doc.info.status, 'is ' + context.boxName + ' active');
-  });
-}
+var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
+var FN_ARG_SPLIT = /,/;
+var FN_ARG = /^\s*(_?)(.+?)\1\s*$/;
+var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 
-function isLoggedIn (context, api, callback) {
-  return callback(null, context.userAlias, 'is logged in');
-}
-
-function isBoxOwner (context, api, callback) {
-  if (!context.userAlias || !context.boxName) {
-    return callback('missing user alias or box name', false);
-  }
-  
-  api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    console.log('fdsfds' + role);
-    return callback(err, role == 'owner', context.userAlias + 'is owner of ' + boxName);
-  });
-}
-
-function isBoxAdmin (context, api, callback) {
-  if (!context.userAlias || !context.boxName) {
-    return callback('missing user alias or box name', false);
-  }
-  
-  api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    console.log(context.userAlias, context.boxName, role);
-    return callback(err, role == 'owner' || role == 'admin', context.userAlias + 'is admin of ' + context.boxName);
-  });
-}
-
-function isBoxDeveloper (context, api, callback) {
-  if (!context.userAlias || !context.boxName) {
-    return callback('missing user alias or box name', false);
-  }
-  
-  api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    console.log(context.userAlias, context.boxName, role);
-    return callback(err, role == 'owner' || role == 'admin' || role == 'dev', context.userAlias + 'is dev of ' + context.boxName);
-  });
-}
-
-function isBoxUser (context, api, callback) {
-  if (!context.userAlias || !context.boxName) {
-    return callback('missing user alias or box name', false);
-  }
-  
-  api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    console.log(context.userAlias, context.boxName, role);
-    return callback(err, !!role, context.userAlias + 'is user of ' + context.boxName);
-  });
-}
-
-function allOf() {
-  var toCheck = [];
-  
-  for (var i = 0; i < arguments.length; i++) {
-    toCheck.push(arguments[i]);
-  }
-  
-  return function (context, api, callback) {
-    var allowed = true, queued = [], reason;
-    
-    for (var j = 0; j < toCheck.length; j++) {
-      queued.push(toCheck[j]);
-    }
-    
-    async.until(function () {
-      return !allowed || queued.length == 0;
-    }, function (callback) {
-      var inner = queued.shift();
+function getArgNames(fn) {
+  var argNames = [],
+      fnText = fn.toString().replace(STRIP_COMMENTS, ''),
+      argDecl = fnText.match(FN_ARGS),
+      splitted = argDecl[1].split(FN_ARG_SPLIT);
       
-      inner(context, api, function (err, iallowed, ireason) {
-        if (err) return callback(err);
-        
-        allowed = iallowed;
-        
-        if (!allowed) {
-        console.log(ireason);
-          reason = 'failed: ' + ireason;
-        }
-        
-        callback();
-      });
-    }, function (err) {
-      callback(err, allowed, reason);
+  for (var i = 0; i < splitted.length; i++) {
+    var arg = splitted[i];
+    
+    arg.replace(FN_ARG, function(all, underscore, name){
+      argNames.push(name);
     });
-  };
-}
-
-function anyOf() {
-  var toCheck = [], reason;
-  
-  for (var i = 0; i < arguments.length; i++) {
-    toCheck.push(arguments[i]);
   }
   
-  return function (context, api, checkedCallback) {
-    var allowed = false, queued = [];
-    
-    for (var j = 0; j < toCheck.length; j++) {
-      queued.push(toCheck[j]);
-    }
-    
-    async.until(function () {
-      return allowed || queued.length === 0;
-    }, function (callback) {
-      var inner = queued.shift();
-      
-      inner(context, api, function (err, iallowed, ireason) {
-        if (err) return callback(err);
-        
-        allowed = iallowed;
-
-        callback();
-      });
-    }, function (err) {
-      console.log('any of... ' + allowed);
-      checkedCallback(err, allowed, reason);
-    });
-  };
+  return argNames;
 }
 
-function callbackFor(context, realApi, req, res, module, method, impl, origArgments) {
+
+function callbackFor(context, realApi, res, module, method, impl, origArgments) {
   return function (err, allowed, reason) {
     if (err) {
       console.error(['error checking', module, method,':', err].join(' '));
@@ -148,51 +43,26 @@ function callbackFor(context, realApi, req, res, module, method, impl, origArgme
   }
 }
   
-function wrapFor(shouldCheck, req, res, impl, realApi, module, method) {
+function wrapFor(shouldCheck, contextProvider, res, impl, realApi, module, method) {
   return function () {
-    var origArgments = [], context = {};
+    var origArgments = [], context = contextProvider();
+    
+    context.arguments = {};
+    
+    var argNames = getArgNames(impl);
     
     for (var i = 0; i < arguments.length; i++) {
       origArgments.push(arguments[i]);
+      context.arguments[argNames[i]] = arguments[i];
     }
-    
-    if (req.session && req.session.user && req.session.user.alias) {
-      context.userAlias = req.session.user.alias;
-    }
-    
-    if (req.params) context.boxName = req.params.boxName;
     
     console.log('wrapped api.' + [module,method].join('.') + ' invoke for ' + JSON.stringify(context));
     
-    shouldCheck(context, realApi, callbackFor(context, realApi, req, res, module, method, impl, origArgments));
+    shouldCheck(context, realApi, callbackFor(context, realApi, res, module, method, impl, origArgments));
   }
 }
 
-
-var permissions = {
-  boxes: {
-    listBoxes: isLoggedIn,
-    createBox: isLoggedIn,
-    listActiveBoxes: isLoggedIn,
-    getBox: anyOf(isBoxAdmin,allOf(isBoxUser,isBoxActive))
-  },
-  packages: {
-    activatePackage: isBoxDeveloper,
-    dectivatePackage: isBoxDeveloper,
-    setActivePackages: isBoxDeveloper, 
-  },
-  users: {
-    enableUser: isBoxAdmin
-  },
-  permissions: {
-    createPermissionGroup: isBoxDeveloper,
-    listPermissionGroups: isBoxDeveloper,
-    describePermissionGroup: isBoxDeveloper,
-    modifyPermissionGroup: anyOf(isBoxDeveloper,hasPermission('groups[groupId].manageUsers'))
-  }
-};
-
-module.exports = function wrappedApi(req, res, api) {
+module.exports = function wrappedApi(contextProvider, res, api) {
   var wrapped = {};
   
   for (var m in api) {
@@ -201,7 +71,7 @@ module.exports = function wrappedApi(req, res, api) {
   
       for (var n in api[m]) {
         if (permissions[m][n]) {
-          wrapped[m][n] = wrapFor(permissions[m][n], req, res, api[m][n], api, m, n).bind(api);
+          wrapped[m][n] = wrapFor(permissions[m][n], contextProvider, res, api[m][n], api, m, n).bind(api);
         } else {
           wrapped[m][n] = api[m][n];
         }

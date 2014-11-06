@@ -115,8 +115,10 @@ module.exports = function (api, callback) {
               "system" : {
                   "stopAnySchedule" : false,
                   "startAnyWorkflow" : false,
-                  "stopAnyWorkflow" : true,
-                  "startAnySchedule" : true
+                  "stopAnyWorkflow" : false,
+                  "startAnySchedule" : false,
+                  "fileUpload" : false,
+                  "deleteUploads" : false
               }
           };
           
