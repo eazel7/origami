@@ -98,6 +98,75 @@ module.exports = function (api, callback) {
           callback(null, doc.users);
         });
       });
+    },
+    getEffectivePermissions: function (boxName, alias, callback) {
+      api
+      .collections
+      .getCollection(boxName, "_permissions", function (err, collection) {
+        if (err) return callback(err);
+
+        collection.find({users: {$all: [alias]}}, function (err, docs) {
+          if (err) return callback(err);
+          
+          var effective = {
+              "collections" : {},
+              "graphs" : {},
+              "groups" : {},
+              "system" : {
+                  "stopAnySchedule" : false,
+                  "startAnyWorkflow" : false,
+                  "stopAnyWorkflow" : true,
+                  "startAnySchedule" : true
+              }
+          };
+          
+          
+          for (var i = 0; i < docs.length; i++) {
+            var cur = docs[i].permissions;
+            
+            if (cur.collections) {
+              for (var c in cur.collections) {
+                for (var p in cur.collections[c]) {
+                  if (cur.collections[c][p]) {
+                    if (!effective.collections[c]) effective.collections[c] = cur.collections[c];
+                    else effective.collections[c][p] = true;
+                  }
+                }
+              }
+            }
+          
+            if (cur.graphs) {
+              for (var g in cur.graphs) {
+                for (var p in cur.graphs[g]) {
+                  if (cur.graphs[g][p]) {
+                    if (!effective.graphs[g]) effective.graphs[g] = cur.graphs[g];
+                    else effective.graphs[g][p] = true;
+                  }
+                }
+              }
+            }
+            
+            if (cur.groups) {
+              for (var g in cur.groups) {
+                for (var p in cur.groups[g]) {
+                  if (cur.groups[g][p]) {
+                    if (!effective.groups[g]) effective.groups[g] = cur.groups[g];
+                    else effective.groups[g][p] = true;
+                  }
+                }
+              }
+            }
+            
+            if (cur.system) {
+              for (p in cur.system) {
+                if (cur.system[p]) effective.system[p] = true;
+              }
+            }
+          }
+          
+          callback(null, effective);
+        });
+      });
     }
   });
 };

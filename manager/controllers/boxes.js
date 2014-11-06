@@ -46,12 +46,12 @@ module.exports = function () {
     getBoxInfo: function (req, res) {
       var api = req.api;
       
-      api.boxes.getBox(req.params.boxName, function (err, box) {
-        if (!box) {
+      api.boxes.getBoxInfo(req.params.boxName, function (err, info) {
+        if (!info) {
           res.status(404);
           res.end();
         } else {
-          res.json(box.info);
+          res.json(info);
         }
       });
     },

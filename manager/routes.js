@@ -1,16 +1,18 @@
 'use strict';
 
+var wrappedApi = require('./api-wrapper');
+
 /**
  * Application routes
  */
-module.exports = function(app, api) {
-  var config = api.config,
+module.exports = function(app, rawApi) {
+  var config = rawApi.config,
       express = require('express'),
       env = app.get('env');
 
-  var controllers = require('./controllers')(api);
+  var controllers = require('./controllers')();
 
-  controllers.authentication.install(app, api);
+  controllers.authentication.install(app, rawApi);
 
   if (env === 'production') {
     var partialsPath = config.root + '/views/partials';
@@ -26,15 +28,15 @@ module.exports = function(app, api) {
   }
   
   app.use(function requestApiInjector(req, res, next) {
-    req.api = api;
+    req.api = wrappedApi(req, res, rawApi);
     
     next();
   });
   
   app.use('/:boxName/', function (req, res, next) {
-    var boxName = req.params.boxName, api = req.api;
+    var boxName = req.params.boxName;
 
-    api.boxes.getBox(boxName, function (err, box) {
+    rawApi.boxes.getBox(boxName, function (err, box) {
       if (!box) {
         // no box, not this handler
         return next();
@@ -95,15 +97,6 @@ module.exports = function(app, api) {
   .route('/api/boxes')
   .get(controllers.boxes.listBoxes);
 
-  app.use('/api/box/:boxName', function (req, res, next) {
-    controllers.authentication.isAllowed(req, function (err, isAllowed) {
-      if (isAllowed) return next();
-
-      res.status(400);
-      return res.end();
-    });
-  });
-  
   app
   .route('/api/box/:boxName/info')
   .get(controllers.boxes.getBoxInfo);
@@ -129,11 +122,11 @@ module.exports = function(app, api) {
   .get(controllers.packages.listActivePackages);
 
   app
-  .route('/api/box/:boxName/permissionGroups')
+  .route('/api/box/:boxName/permissionGroup')
   .get(controllers.permissions.listPermissionGroups);
 
   app
-  .route('/api/box/:boxName/permissionGroups')
+  .route('/api/box/:boxName/permissionGroup')
   .post(controllers.permissions.createPermissionGroup);
 
   app
@@ -195,6 +188,10 @@ module.exports = function(app, api) {
   app
   .route('/api/box/:boxName/users/:userAlias')
   .post(controllers.users.setRole);
+
+  app
+  .route('/api/box/:boxName/users/:alias')
+  .get(controllers.permissions.getUserEffectivePermissions);
 
   app
   .route('/api/box/:boxName/users')
@@ -351,15 +348,15 @@ module.exports = function(app, api) {
 
   // All undefined api routes should return a 404
   app.route('/api/*')
-    .get(function(req, res) {
-      res.send(404);
-    });
+  .get(function(req, res) {
+    res.send(404);
+  });
 
   // Box controller
 
   app.use('/:boxName', function (req, res, next) {
-  var boxName = req.params.boxName, api = req.api;
-    api.boxes.getBox(boxName, function (err, box) {
+  var boxName = req.params.boxName;
+    rawApi.boxes.getBox(boxName, function (err, box) {
       if (!box) {
         // no box, not this handler
         return next();
@@ -372,9 +369,9 @@ module.exports = function(app, api) {
   });
   
   app.use('/:boxName/', function (req, res, next) {
-    var boxName = req.params.boxName, api = req.api;
+    var boxName = req.params.boxName;
 
-    api.boxes.getBox(boxName, function (err, box) {
+    rawApi.boxes.getBox(boxName, function (err, box) {
       if (!box) {
         // no box, not this handler
         return next();
@@ -382,11 +379,9 @@ module.exports = function(app, api) {
         res.status(503);
         return res.redirect('/#/box-inactive/' + encodeURIComponent(boxName));
       } else {
-        controllers.authentication.isAllowed(req, function (err, isAllowed) {
+        controllers.authentication.isAllowed(rawApi, req, function (err, isAllowed) {
           if (isAllowed) {
             return require('origami-app')(boxName, function (err, app) {
-              req.api = api;
-              
               app(req, res, next);
             });
           } else {

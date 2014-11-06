@@ -2,9 +2,7 @@ var passport = require('passport');
 
 module.exports = function () {
   return {
-    isAllowed: function (req, callback) {
-      var api = req.api;
-      
+    isAllowed: function (rawApi, req, callback) {
       if ((!req.session || !req.session.user || !req.session.user.alias) && (!req.headers || !req.headers.apikey)) {
         return callback (null, false);
       } else if (req.headers && req.headers.apikey) {
@@ -25,10 +23,7 @@ module.exports = function () {
         });
       }
     },
-    isAdmin: function (req, callback) {
-      var api = req.api;
-      
-      if (!req.user || !req.user.alias) return callback (null, false);
+    isAdmin: function (req, callback) {if (!req.user || !req.user.alias) return callback (null, false);
       api.settings.get("master-user", function (masterUser) {
         if (masterUser == req.user.alias) return callback(null, true);
 

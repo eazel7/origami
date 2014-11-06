@@ -181,7 +181,15 @@ module.exports = function (config, collections, views, eventBus, callback) {
        * @return {Function} callback function. It gets two arguments (err, box).
        * @api public
        */
-      getBox: getBox,
+      getBox: function (boxName, callback) {
+        return getBox(boxName, callback);
+      },
+      getBoxInfo: function (boxName, callback) {
+        debugger;
+        getBox(boxName, function (err, box) {
+          return callback(err, box && box.info ? box.info : null);
+        });
+      },
       /**
        * # Updates the box info field.
        *

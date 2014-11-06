@@ -6,7 +6,7 @@ angular.module('boxes3.permissions', [])
     listPermissionGroups: function (boxName) {
       var defer = $q.defer();
       
-      $http.get('/api/box/' + encodeURIComponent(boxName) + '/permissionGroups')
+      $http.get('/api/box/' + encodeURIComponent(boxName) + '/permissionGroup')
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -15,7 +15,7 @@ angular.module('boxes3.permissions', [])
     createPermissionGroup: function (boxName, groupName) {
       var defer = $q.defer();
       
-      $http.post('/api/box/' + encodeURIComponent(boxName) + '/permissionGroups', {name: groupName})
+      $http.post('/api/box/' + encodeURIComponent(boxName) + '/permissionGroup', {name: groupName})
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -24,7 +24,7 @@ angular.module('boxes3.permissions', [])
     describePermissionGroup: function (boxName, groupId) {
       var defer = $q.defer();
       
-      $http.get('/api/box/' + encodeURIComponent(boxName) + '/permissionGroups/' + encodeURIComponent(groupId))
+      $http.get('/api/box/' + encodeURIComponent(boxName) + '/permissionGroup/' + encodeURIComponent(groupId))
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -33,7 +33,7 @@ angular.module('boxes3.permissions', [])
     deletePermissionGroup: function (boxName, groupId) {
       var defer = $q.defer();
       
-      $http.delete('/api/box/' + encodeURIComponent(boxName) + '/permissionGroups/' + encodeURIComponent(groupId))
+      $http.delete('/api/box/' + encodeURIComponent(boxName) + '/permissionGroup/' + encodeURIComponent(groupId))
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -51,7 +51,7 @@ angular.module('boxes3.permissions', [])
     addUserToGroup: function (boxName, groupId, alias) {
       var defer = $q.defer();
       
-      $http.post('/api/box/' + encodeURIComponent(boxName) + '/permissionGroups/' + encodeURIComponent(groupId) + '/users/' + encodeURIComponent(alias))
+      $http.post('/api/box/' + encodeURIComponent(boxName) + '/permissionGroup/' + encodeURIComponent(groupId) + '/users/' + encodeURIComponent(alias))
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -60,7 +60,7 @@ angular.module('boxes3.permissions', [])
     removeUserFromGroup: function (boxName, groupId, alias) {
       var defer = $q.defer();
       
-      $http.delete('/api/box/' + encodeURIComponent(boxName) + '/permissionGroups/' + encodeURIComponent(groupId) + '/users/' + encodeURIComponent(alias))
+      $http.delete('/api/box/' + encodeURIComponent(boxName) + '/permissionGroup/' + encodeURIComponent(groupId) + '/users/' + encodeURIComponent(alias))
       .success(defer.resolve)
       .error(defer.reject);
       
@@ -69,7 +69,16 @@ angular.module('boxes3.permissions', [])
     listUsersInGroup: function (boxName, groupId, alias) {
       var defer = $q.defer();
       
-      $http.get('/api/box/' + encodeURIComponent(boxName) + '/permissionGroups/' + encodeURIComponent(groupId) + '/users')
+      $http.get('/api/box/' + encodeURIComponent(boxName) + '/permissionGroup/' + encodeURIComponent(groupId) + '/users')
+      .success(defer.resolve)
+      .error(defer.reject);
+      
+      return defer.promise;
+    },
+    getEffectivePermissions: function (boxName, alias) {
+      var defer = $q.defer();
+      
+      $http.get('/api/box/' + encodeURIComponent(boxName) + '/users/' + encodeURIComponent(alias))
       .success(defer.resolve)
       .error(defer.reject);
       

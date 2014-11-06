@@ -199,18 +199,31 @@ angular.module('boxes3.manager')
   };
 })
 .controller("BoxUsersCtrl", function ($scope, $stateParams, UsersApi) {
-  UsersApi.getAllUsers()
-  .then(function (users) {
-    $scope.users = users;
-  });
+  function refresh() {
+    UsersApi.getAllUsers()
+    .then(function (users) {
+      $scope.users = users;
+    });
+  };
+  
+  refresh();
+  
+  $scope.$on('refresh-users', refresh);
 })
-.controller("BoxUserDetailsCtrl", function ($scope, UsersApi) {
+.controller("BoxUserDetailsCtrl", function ($scope, UsersApi, $stateParams) {
   $scope.$watch('alias', function (alias) {
     UsersApi.getUser(alias)
     .then(function (profile) {
       $scope.profile = profile;
     });
   });
+  
+  $scope.setNewRole = function (alias, newRole) {
+    UsersApi.enableUser($stateParams.boxName, alias, newRole)
+    .then(function () {
+      $scope.$emit('refresh-users');
+    });
+  };
 })
 .controller("SearchUserCtrl", function ($scope) {
 
@@ -224,7 +237,7 @@ $stateProvider.state('manageBox', {
       return BoxesApi.getBoxInfo($stateParams.boxName);
     }]
   },
-  controller: function ($scope, BoxesApi, boxInfo, configInfo, $stateParams, UsersApi, $http) {
+  controller: function ($scope, BoxesApi, boxInfo, configInfo, $stateParams, UsersApi, $http, PermissionsApi) {
       var boxName = $stateParams.boxName;
       
       function refreshUsers() {
@@ -234,7 +247,40 @@ $stateProvider.state('manageBox', {
         });
       }
       
+  
+      function refreshGroups() {
+        PermissionsApi
+        .listPermissionGroups(boxName)
+        .then(function (groups) {
+          $scope.groups = groups;
+        });
+      }
+      refreshGroups();
+      
       refreshUsers();
+      
+      function refreshEffectivePermissions() {
+        if ($scope.editingGroupsOfUser) {
+          PermissionsApi.getEffectivePermissions($stateParams.boxName, $scope.editingGroupsOfUser)
+          .then(function (effective) {
+            $scope.effectivePermissions = effective;
+          });
+        }
+      }
+      
+      $scope.$on('refresh-groups', refreshGroups);
+      
+      $scope.editGroupsFor = function (alias) {
+        $scope.editingGroupsOfUser = alias;
+        refreshEffectivePermissions();
+      };
+      
+      $scope.toggleUserGroup = function (alias, pg) {
+        if (pg.users.indexOf(alias) > -1) PermissionsApi.removeUserFromGroup($stateParams.boxName, pg._id, alias).then(refreshGroups).then(refreshEffectivePermissions);
+        else PermissionsApi.addUserToGroup($stateParams.boxName, pg._id, alias).then(refreshGroups).then(refreshEffectivePermissions);
+      };
+      
+      $scope.$on('refresh-users', refreshUsers);
       
       $scope.addUser = function (user) {
         UsersApi.enableUser(boxName, user)
@@ -254,12 +300,6 @@ $stateProvider.state('manageBox', {
           $scope.changes = false;
         });
       };
-      
-      BoxesApi
-      .listBoxUsers(boxName)
-      .then(function (users) {
-        $scope.boxUsers = users;
-      });
       
       $scope.box = boxInfo;
       $scope.boxName = boxName;
@@ -312,15 +352,6 @@ $stateProvider.state('manageBox', {
 .controller("BoxPermissionsCtrl", function ($scope, $stateParams, PermissionsApi, CollectionApi, WorkflowsApi) {
   var boxName = $stateParams.boxName;
   
-  function refresh() {
-    PermissionsApi
-    .listPermissionGroups(boxName)
-    .then(function (groups) {
-      $scope.groups = groups;
-    });
-  }
-  refresh();
-  
   $scope.createPermissionsGroup = function () {
     if (!$scope.newGroup && $scope.newGroup.name) return;
     
@@ -329,7 +360,9 @@ $stateProvider.state('manageBox', {
     .then(function () {
       $scope.newGroup = {};
     })
-    .then(refresh);
+    .then(function () {
+      $scope.$broadcast('refresh-permission-groups');
+    });
   };
   
   WorkflowsApi

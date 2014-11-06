@@ -3,13 +3,13 @@
 var express = require('express'),
     fs = require('fs'),
     path = require('path'),
-    app = express();
+    app = express(),
+    morgan = require('morgan');
 
 // Set default node environment to development
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 var config = require('./config');
-
 
 function spdyServer(app) {
   var spdy = require('spdy');
@@ -42,6 +42,8 @@ var io = require('socket.io')(server);
 
 require('./express-io')(app, io);
   
+app.use(morgan('dev'));
+
 server.listen(config.port, config.ip, function () {
   console.log('Express server listening on %s://%s:%d, in %s mode', config.protocol == 'spdy' ? 'https' : 'http', config.ip, config.port, app.get('env'));
 });

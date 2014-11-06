@@ -67,7 +67,7 @@ module.exports = function () {
     removeUserFromGroup: function (req, res) {
       var api = req.api;
       
-      api.permissions.addUserToGroup(req.params.boxName, req.params.groupId, req.params.alias, function (err) {
+      api.permissions.removeUserFromGroup(req.params.boxName, req.params.groupId, req.params.alias, function (err) {
         if (err) console.error(err);
         
         res.status(err ? 418 : 200);
@@ -82,6 +82,19 @@ module.exports = function () {
         
         res.status(err ? 418 : 200);
         return res.end();
+      });
+    },
+    getUserEffectivePermissions: function (req, res) {
+      var api = req.api;
+      
+      api.permissions.getEffectivePermissions(req.params.boxName, req.params.alias, function (err, effective) {
+        if (err) {
+          console.error(err);      
+          res.status(418);
+          return res.end();
+        }
+        
+        res.json(effective);
       });
     }
   }
