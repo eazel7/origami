@@ -44,7 +44,7 @@ module.exports = {
     startSchedule: anyOf(isBoxAdmin,allOf(isBoxActive,isBoxDeveloper))
   },
   users: {
-    listUsers: isBoxDeveloper,
+    listUsers: isLoggedIn,
     listBoxUsers: isBoxDeveloper,
     enableUser: isBoxDeveloper,
     getUserRole: isBoxDeveloper,
