@@ -93,61 +93,57 @@ module.exports = function (api, callback) {
 
   self = {
     listPastWorkflows: function (boxName, graphId, callback) {
-      api.collections.getCollection(boxName, '_workflowResults', function (err, collection) {
-        if (err) return callback (err);
-        
-        collection.find({
-          graphId: graphId
-        }, callback);
-      });
+      api.collections.find(boxName, '_workflowResults', {
+        graphId: graphId
+      }, callback);
     },
     getWorkflowResult: function (boxName, workflowId, callback) {
-      api.collections.getCollection(boxName, '_workflowResults', function (err, collection) {
+      api.collections.findOne(boxName, '_workflowResults', {
+        workflowId: workflowId
+      }, function (err, doc) {
         if (err) return callback (err);
         
-        collection.findOne({
-          workflowId: workflowId
-        }, function (err, doc) {
-          if (err) return callback (err);
-          
-          if (doc) return callback (null, { err: doc.err, result: doc.result });
-          
-          return callback (null, null);
-        });
+        if (doc) return callback (null, { err: doc.err, result: doc.result });
+        
+        return callback (null, null);
       });
     },
     setWorkflowResult: function (boxName, workflowId, graphId, err, result, callback) {
-      api.collections.getCollection(boxName, '_workflowResults', function (err, collection) {
+      api.collections
+      .count(
+        boxName, 
+        '_workflowResults', 
+        {
+          workflowId: workflowId
+        }, 
+        function (err, count) {
         if (err) return callback(err);
         
-        collection
-        .count({
-          workflowId: workflowId
-        }, function (err, count) {
-          if (err) return callback(err);
-          
-          if (count) {
-            collection
-            .update({
-              workflowId: workflowId
-            }, {
-              $set: {
-                err: err,
-                result: result,
-                unknown: !result && !err
-              }
-            }, callback);
-          } else {
-            collection
-            .insert({
-              workflowId: workflowId,
-              graphId: running[workflowId] ? running[workflowId].graphId : notRunning[workflowId].graphId,
+        if (count) {
+          api.collections.update(
+          boxName, 
+          '_workflowResults', 
+          {
+            workflowId: workflowId
+          }, {
+            $set: {
               err: err,
               result: result,
-              unkown: !err && !result
-            }, callback);
-          }
-        });
+              unknown: !result && !err
+            }
+          }, callback);
+        } else {
+          api.collections.insert(
+          boxName, 
+          '_workflowResults', 
+          {
+            workflowId: workflowId,
+            graphId: running[workflowId] ? running[workflowId].graphId : notRunning[workflowId].graphId,
+            err: err,
+            result: result,
+            unkown: !err && !result
+          }, callback);
+        }
       });
     },
     listRunningWorkflows: function (boxName, callback) {
@@ -184,18 +180,20 @@ module.exports = function (api, callback) {
       }
     },
     saveWorkflowEndDate: function (boxName, workflowId, graphId, callback) {
-      api.collections.getCollection(boxName, '_workflowResults', function (err, collection) {
-        if (err) return callback(err);
-        
-        collection
-        .count({
+      api
+      .collections
+      .count(
+        boxName, 
+        '_workflowResults', 
+        {
           workflowId: workflowId
-        }, function (err, count) {
+        },
+        function (err, count) {
           if (err) return callback(err);
           
           if (count) {
             collection
-            .update({
+            .update(boxName, '_workflowResults', {
               workflowId: workflowId
             }, {
               $set: {
@@ -204,43 +202,39 @@ module.exports = function (api, callback) {
             }, callback);
           } else {
             collection
-            .insert({
+            .insert(boxName, '_workflowResults', {
               workflowId: workflowId,
               graphId: running[workflowId] ? running[workflowId].graphId : notRunning[workflowId].graphId,
               endDate: new Date()
             }, callback);
           }
         });
-      });
     },
     saveWorkflowStartDate: function (boxName, workflowId, graphId, callback) {
-      api.collections.getCollection(boxName, '_workflowResults', function (err, collection) {
+      api.collections.count(boxName, '_workflowResults', {
+        workflowId: workflowId
+      }, function (err, count) {
         if (err) return callback(err);
         
-        collection
-        .count({
-          workflowId: workflowId
-        }, function (err, count) {
-          if (err) return callback(err);
-          
-          if (count) {
-            collection
-            .update({
-              workflowId: workflowId
-            }, {  
-              $set: {
-                startDate: new Date()
-              }
-            }, callback);
-          } else {
-            collection
-            .insert({
-              workflowId: workflowId,
-              graphId: graphId,
+        if (count) {
+          api
+          .collections
+          .update(boxName, '_workflowResults', {
+            workflowId: workflowId
+          }, {  
+            $set: {
               startDate: new Date()
-            }, callback);
-          }
-        });
+            }
+          }, callback);
+        } else {
+          api
+          .collections
+          .insert(boxName, '_workflowResults', {
+            workflowId: workflowId,
+            graphId: graphId,
+            startDate: new Date()
+          }, callback);
+        }
       });
     },
     startWorkflow: function (boxName, graphId, params, callback) {
@@ -270,88 +264,85 @@ module.exports = function (api, callback) {
         }
       }
       
-      api.collections.getCollection(boxName, "_graphs", function (err, collection) {
-        collection.findOne({_id: graphId}, function (err, doc) {
+      api.collections.findOne(boxName, "_graphs", {_id: graphId}, function (err, doc) {
+        if (err) return callback(err);
+        if (!doc) return callback(new Error('Graph does not exists'));
+        if (!doc.graph || !doc.graph.nodes) return callback(new Error('Graph does not contains any nodes'));
+        
+        
+        var workflowId = uuid.v4();
+        
+        self.saveWorkflowStartDate(boxName, workflowId, graphId, function (err) {
           if (err) return callback(err);
-          if (!doc) return callback(new Error('Graph does not exists'));
-          if (!doc.graph || !doc.graph.nodes) return callback(new Error('Graph does not contains any nodes'));
           
+          var jsonGraph = toNofloGraph(doc.graph, {}, {
+            boxName: boxName,
+            workflowId: workflowId
+          });
           
-          var workflowId = uuid.v4();
-          
-          self.saveWorkflowStartDate(boxName, workflowId, graphId, function (err) {
-            if (err) return callback(err);
-            
-            var jsonGraph = toNofloGraph(doc.graph, {}, {
-              boxName: boxName,
-              workflowId: workflowId
-            });
-            
-            noflo.graph.loadJSON(jsonGraph, function (g) {
+          noflo.graph.loadJSON(jsonGraph, function (g) {
 
-              for (var i = 0; i < g.nodes.length; i++) {
-                if (g.nodes[i].component == 'WorkflowStart') {
-                  g.addInitial(params, g.nodes[i].id, 'in', {});
-                }
+            for (var i = 0; i < g.nodes.length; i++) {
+              if (g.nodes[i].component == 'WorkflowStart') {
+                g.addInitial(params, g.nodes[i].id, 'in', {});
               }
+            }
+            
+            g.componentLoader = new (require("noflo/lib/ComponentLoader").ComponentLoader)(__dirname);
+
+            noflo.createNetwork(g, function(n) {
+              n.activeConnections = [];
               
-              g.componentLoader = new (require("noflo/lib/ComponentLoader").ComponentLoader)(__dirname);
-
-              noflo.createNetwork(g, function(n) {
-                n.activeConnections = [];
+              n.on('connect', function (event) {
+                var socket = event.socket;
                 
-                n.on('connect', function (event) {
-                  var socket = event.socket;
+                if (!socket.from) return;
+                  var id = socket.from.process.id + ':' + socket.from.port + '/' + socket.to.process.id + ':' + socket.to.port;
                   
-                  if (!socket.from) return;
-                    var id = socket.from.process.id + ':' + socket.from.port + '/' + socket.to.process.id + ':' + socket.to.port;
-                    
-                    if (n.activeConnections.indexOf(id) === -1) {
-                      n.activeConnections.push(id);
-                      api.eventBus.emit('workflow-connection-on', boxName, workflowId, id);
-                    }
-                });
-                n.on('disconnect', function (event) {
-                  var socket = event.socket;
-                  
-                  if (socket.from && socket.from.process && socket.from.process.id && socket.to && socket.to.process && socket.to.process.id) {
-                    var id = socket.from.process.id + ':' + socket.from.port + '/' + socket.to.process.id + ':' + socket.to.port;
-                    
-                    if (n.activeConnections.indexOf(id) !== -1) {
-                      n.activeConnections.splice(n.activeConnections.indexOf(id), -1);
-                      api.eventBus.emit('workflow-connection-off', boxName, workflowId, id);
-                    }
+                  if (n.activeConnections.indexOf(id) === -1) {
+                    n.activeConnections.push(id);
+                    api.eventBus.emit('workflow-connection-on', boxName, workflowId, id);
                   }
-                });
+              });
+              n.on('disconnect', function (event) {
+                var socket = event.socket;
                 
-                n.connect(function () {
-                  n.id = workflowId;
-                  n.graphId = graphId;
-                  n.startDate = new Date();
-
-                  n.boxName = boxName;
+                if (socket.from && socket.from.process && socket.from.process.id && socket.to && socket.to.process && socket.to.process.id) {
+                  var id = socket.from.process.id + ':' + socket.from.port + '/' + socket.to.process.id + ':' + socket.to.port;
                   
-                  running[n.id] = n;
-                  n.on('end', function () {
-                    console.log('workflow end');
-                    getWorkflowEnd(n.id, doc.name)
-                  });
-                  
-                  for (var c in n.processes) {
-                    n.processes[c].component.api = api;
-                    n.processes[c].component.workflowId = workflowId;
-                    n.processes[c].component.graphId = graphId;
-                    n.processes[c].component.boxName = boxName;
+                  if (n.activeConnections.indexOf(id) !== -1) {
+                    n.activeConnections.splice(n.activeConnections.indexOf(id), -1);
+                    api.eventBus.emit('workflow-connection-off', boxName, workflowId, id);
                   }
-                  
-                  n.start();
-                  api.eventBus.emit('workflow-started', boxName, n.id);
-
-                  callback(null, n.id);
-                });
-              }, true);
-            });
+                }
+              });
               
+              n.connect(function () {
+                n.id = workflowId;
+                n.graphId = graphId;
+                n.startDate = new Date();
+
+                n.boxName = boxName;
+                
+                running[n.id] = n;
+                n.on('end', function () {
+                  console.log('workflow end');
+                  getWorkflowEnd(n.id, doc.name)
+                });
+                
+                for (var c in n.processes) {
+                  n.processes[c].component.api = api;
+                  n.processes[c].component.workflowId = workflowId;
+                  n.processes[c].component.graphId = graphId;
+                  n.processes[c].component.boxName = boxName;
+                }
+                
+                n.start();
+                api.eventBus.emit('workflow-started', boxName, n.id);
+
+                callback(null, n.id);
+              });
+            }, true);
           });
         });
       });
@@ -372,35 +363,24 @@ module.exports = function (api, callback) {
       callback();
     },
     listGraphs: function (boxName, callback) {
-      api.collections.getCollection(boxName, "_graphs", function (err, collection) {
-        if (err) return callback(err);
-        
-        collection.find({}, callback);
-      });
+      api.collections.find(boxName, "_graphs", {}, callback);
     },
     saveGraph: function (boxName, graph, callback) {
-      api.collections.getCollection(boxName, "_graphs", function (err, collection){
-        if (err) return callback(err);
-
-        if (graph._id) {
-          collection.update({_id: graph._id}, {$set: {name: graph.name, graph: graph.graph}}, function (err) {
-            return callback (err, graph._id);
-          });
-        } else {
-          collection.insert(graph, function(err, graph) {
-            if (graph) return callback(err, graph._id);
-            return callback(err);
-          });
-        }
-      });
+      if (graph._id) {
+        api.collections.update(boxName, "_graphs", {_id: graph._id}, {$set: {name: graph.name, graph: graph.graph}}, function (err) {
+          return callback (err, graph._id);
+        });
+      } else {
+        api.collections.insert(boxName, "_graphs", graph, function(err, graph) {
+          if (graph) return callback(err, graph._id);
+          return callback(err);
+        });
+      }
     },
     removeGraph: function (boxName, graphId, callback) {
-      api.collections.getCollection(boxName, "_graphs", function (err, collection){
-        if (err) return callback(err);
-          collection.remove({
-            _id: graphId
-          }, callback);
-      });
+      api.collections.remove(boxName, "_graphs", {
+        _id: graphId
+      }, callback);
     },
     listComponents: function (callback) {
       var defined = require('./component.json').noflo.components,

@@ -87,28 +87,6 @@ module.exports = function (boxName, app, callback) {
         magic.detect(new Buffer(body), function(err, result) {
             res.set('Content-Type', result);
             
-            console.log(res.get('Content-Type'));
-            
-            orig.apply(self, args);
-        });
-      } else {
-        orig.apply(this, arguments);
-      }
-    };
-    next();
-  });
-  app.use(function (req, res, next) {
-    var orig = res.end;
-    
-    res.end = function (body) {
-      var self = this, args = arguments;
-      
-      if (body && !res.get('Content-Type')) {
-        magic.detect(new Buffer(body), function(err, result) {
-            res.set('Content-Type', result);
-            
-            console.log(res.get('Content-Type'));
-            
             orig.apply(self, args);
         });
       } else {

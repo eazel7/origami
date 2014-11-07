@@ -24,151 +24,107 @@ module.exports = function (api, callback) {
     listPermissionGroups: function (boxName, callback) {
       api
       .collections
-      .getCollection(boxName, "_permissions", function (err, collection) {
-        if (err) return callback(err);
-
-        collection.find({}, callback);
-      });
+      .find(boxName, "_permissions", {}, callback);
     },
     describePermissionGroup: function (boxName, groupId, callback) {
-      api
-      .collections
-      .getCollection(boxName, "_permissions", function (err, collection) {
-        if (err) return callback(err);
-
-        collection.findOne({_id: groupId}, callback);
-      });
+      api.collections.findOne(boxName, "_permissions", {_id: groupId}, callback);
     },
     createPermissionGroup: function (boxName, groupName, callback) {
       api
       .collections
-      .getCollection(boxName, "_permissions", function (err, collection) {
-        if (err) return callback(err);
-
-        collection.insert({name: groupName, users: [], permissions: {}}, callback);
-      });
+      .insert(boxName, "_permissions", {name: groupName, users: [], permissions: {}}, callback);
     },
     modifyPermissionGroup: function (boxName, groupId, newPermissions, callback) {
       api
       .collections
-      .getCollection(boxName, "_permissions", function (err, collection) {
-        if (err) return callback(err);
-        
-        console.log(newPermissions);
-
-        collection.update({_id: groupId}, {$set: {permissions: newPermissions}}, callback);
-      });
+      .update(boxName, "_permissions", {_id: groupId}, {$set: {permissions: newPermissions}}, callback);
     },
     deletePermissionGroup: function (boxName, groupId, callback) {
       api
       .collections
-      .getCollection(boxName, "_permissions", function (err, collection) {
-        if (err) return callback(err);
-
-        collection.remove({_id: groupId}, callback);
-      });
+      .remove(boxName, "_permissions", {_id: groupId}, callback);
     },
     addUserToGroup: function (boxName, groupId, alias, callback) {
       api
       .collections
-      .getCollection(boxName, "_permissions", function (err, collection) {
-        if (err) return callback(err);
-
-        collection.update({_id: groupId}, {$addToSet: {users: alias}}, callback);
-      });
+      .update(boxName, "_permissions", {_id: groupId}, {$addToSet: {users: alias}}, callback);
     },
     removeUserFromGroup: function (boxName, groupId, alias, callback) {
       api
       .collections
-      .getCollection(boxName, "_permissions", function (err, collection) {
-        if (err) return callback(err);
-
-        collection.update({_id: groupId}, {$pull: {users: alias}}, callback);
-      });
+      .update({_id: groupId}, {$pull: {users: alias}}, callback);
     },
     listUsersInGroup: function (boxName, groupId, callback) {
-      api
-      .collections
-      .getCollection(boxName, "_permissions", function (err, collection) {
+      api.collections.findOne(boxName, "_permissions", {_id: groupId}, function (err, doc) {
         if (err) return callback(err);
-
-        collection.findOne({_id: groupId}, function (err, doc) {
-          if (err) return callback(err);
-          
-          if (!doc) return callback(new Error('Group does not exists'));
-          
-          callback(null, doc.users);
-        });
+        
+        if (!doc) return callback(new Error('Group does not exists'));
+        
+        callback(null, doc.users);
       });
     },
     getEffectivePermissions: function (boxName, alias, callback) {
-      api
-      .collections
-      .getCollection(boxName, "_permissions", function (err, collection) {
+      api.collections.find(boxName, "_permissions", {users: {$all: [alias]}}, function (err, docs) {
         if (err) return callback(err);
-
-        collection.find({users: {$all: [alias]}}, function (err, docs) {
-          if (err) return callback(err);
+        
+        var effective = {
+            "collections" : {},
+            "graphs" : {},
+            "groups" : {},
+            "system" : {
+                "stopAnySchedule" : false,
+                "startAnyWorkflow" : false,
+                "stopAnyWorkflow" : false,
+                "startAnySchedule" : false,
+                "fileUpload" : false,
+                "deleteUploads" : false
+            }
+        };
+        
+        for (var i = 0; i < docs.length; i++) {
+          var cur = docs[i].permissions;
           
-          var effective = {
-              "collections" : {},
-              "graphs" : {},
-              "groups" : {},
-              "system" : {
-                  "stopAnySchedule" : false,
-                  "startAnyWorkflow" : false,
-                  "stopAnyWorkflow" : false,
-                  "startAnySchedule" : false,
-                  "fileUpload" : false,
-                  "deleteUploads" : false
-              }
-          };
-          
-          for (var i = 0; i < docs.length; i++) {
-            var cur = docs[i].permissions;
-            
-            if (cur.collections) {
-              for (var c in cur.collections) {
-                for (var p in cur.collections[c]) {
-                  if (cur.collections[c][p]) {
-                    if (!effective.collections[c]) effective.collections[c] = cur.collections[c];
-                    else effective.collections[c][p] = true;
-                  }
+          if (cur.collections) {
+            for (var c in cur.collections) {
+              for (var p in cur.collections[c]) {
+                if (cur.collections[c][p]) {
+                  if (!effective.collections[c]) effective.collections[c] = cur.collections[c];
+                  else effective.collections[c][p] = true;
                 }
               }
             }
-          
-            if (cur.graphs) {
-              for (var g in cur.graphs) {
-                for (var p in cur.graphs[g]) {
-                  if (cur.graphs[g][p]) {
-                    if (!effective.graphs[g]) effective.graphs[g] = cur.graphs[g];
-                    else effective.graphs[g][p] = true;
-                  }
+          }
+        
+          if (cur.graphs) {
+            for (var g in cur.graphs) {
+              for (var p in cur.graphs[g]) {
+                if (cur.graphs[g][p]) {
+                  if (!effective.graphs[g]) effective.graphs[g] = cur.graphs[g];
+                  else effective.graphs[g][p] = true;
                 }
-              }
-            }
-            
-            if (cur.groups) {
-              for (var g in cur.groups) {
-                for (var p in cur.groups[g]) {
-                  if (cur.groups[g][p]) {
-                    if (!effective.groups[g]) effective.groups[g] = cur.groups[g];
-                    else effective.groups[g][p] = true;
-                  }
-                }
-              }
-            }
-            
-            if (cur.system) {
-              for (p in cur.system) {
-                if (cur.system[p]) effective.system[p] = true;
               }
             }
           }
           
-          callback(null, effective);
-        });
+          if (cur.groups) {
+            for (var g in cur.groups) {
+              for (var p in cur.groups[g]) {
+                if (cur.groups[g][p]) {
+                  if (!effective.groups[g]) effective.groups[g] = cur.groups[g];
+                  else effective.groups[g][p] = true;
+                }
+              }
+            }
+          }
+          
+          if (cur.system) {
+            for (p in cur.system) {
+              if (cur.system[p]) effective.system[p] = true;
+            }
+          }
+        }
+        
+        callback(null, effective);
       });
     }
   });

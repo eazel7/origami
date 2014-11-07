@@ -98,8 +98,6 @@ function hasPermission(permission) {
         sandbox[k] = context.arguments[k];
       }
       
-      console.log(sandbox); 
-      
       try {
         vm.runInNewContext('result = ' + permission, sandbox, 'permission check.vm');
       } catch (e) {

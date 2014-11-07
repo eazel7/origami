@@ -15,7 +15,6 @@ module.exports = function (config, connect, collectionWrapper, router, callback)
     }
     
     callback(null, {
-      getCollection: getCollection,
       find: function (boxName, collectionName, predicate, callback) {
         getCollection(boxName, collectionName, function (err, collection) {
           if (err) return callback(err);

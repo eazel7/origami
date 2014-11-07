@@ -29,7 +29,7 @@ function callbackFor(context, realApi, res, module, method, impl, origArgments, 
   return function (err, allowed) {
     if (err) {
       console.log(context.checks.join (' > '));
-      console.error(['error checking', module, method,':', err].join(' '));
+      console.error(['error checking', module, method,':', err, JSON.stringify(context)].join(' '));
       res.status(418);
       res.end();
     } else if (!allowed) {

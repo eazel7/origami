@@ -11,6 +11,12 @@ module.exports = function (boxName) {
             res.status(418);
             return res.end();
           }
+          
+          for (var i = names.length - 1; i >= 0; i--)
+          {
+            if (names[i][0] === '_') names.splice(i, 1);
+          }
+
 
           return res.json(names);
         });
@@ -91,51 +97,39 @@ module.exports = function (boxName) {
     insertInCollection: function (req, res) {
       var api = req.api;
 
-      return api.collections.getCollection(
+      return api.collections.insert(
         boxName,
         req.params.collection,
-        function (err, collection){
+        req.body || {}, 
+        function (err, newDoc) {
           if (err) {
             console.log({ box: boxName, url: req.params.url, err: err});
             res.status(418);
             return res.end();
           }
 
-          collection.insert(req.body || {}, function (err, newDoc) {
-            if (err) {
-              console.log({ box: boxName, url: req.params.url, err: err});
-              res.status(418);
-              return res.end();
-            }
-
-            return res.json(newDoc);
-          }, req.headers['box.browserkey']);
-        });
+          return res.json(newDoc);
+        }, req.headers['box.browserkey']);
     },
     updateInCollection: function (req, res) {
       var api = req.api;
 
-      return api.collections.getCollection(
+      return api.collections.update(
         boxName,
         req.params.collection,
-        function (err, collection){
+        (req.body || {}).predicate || {}, 
+        (req.body || {}).replacement || {},
+        function (err, newDoc) {
           if (err) {
             console.log({ box: boxName, url: req.params.url, err: err});
             res.status(418);
             return res.end();
           }
 
-          collection.update((req.body || {}).predicate || {}, (req.body||{}).replacement || {}, function (err, newDoc) {
-            if (err) {
-              console.log({ box: boxName, url: req.params.url, err: err});
-              res.status(418);
-              return res.end();
-            }
-
-            res.status(200);
-            return res.end();
-          }, req.headers['box.browserkey']);
-        });
+          res.status(200);
+          
+          return res.end();
+        }, req.headers['box.browserkey']);
     },
     findInRemoteDb: function (req, res) {
       var api = req.api;
