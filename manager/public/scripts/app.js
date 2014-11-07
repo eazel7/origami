@@ -52,24 +52,14 @@ angular.module('boxes3.manager', [
   });
 })
 .config(function ($stateProvider, $urlRouterProvider, $locationProvider) {
-  $stateProvider.state('home', {
-      url: '/',
-      templateUrl: 'views/partials/home.html',
-      controller: function ($scope, $window) {
-        $scope.clearTempData = function () {
-          for (var k in $window.localStorage) {
-            delete $window.localStorage[k];
-          }
-        }
-      }
-  });
-  $stateProvider.state('about', {
-      url: '/about',
-      templateUrl: 'views/partials/about.html'
-  });
   $stateProvider.state('server', {
       url: '/server',
       templateUrl: 'views/partials/server.html'
+  });
+  $stateProvider.state('users', {
+      url: '/users',
+      templateUrl: 'views/partials/users.html',
+      controller: "UsersCtrl"
   });
   $stateProvider.state('box-inactive', {
       url: '/box-inactive/:box',

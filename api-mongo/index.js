@@ -45,21 +45,21 @@ module.exports = function (config, callback) {
         });
       },
       function (callback) {
-        require('./boxes')(config, self.collections, self.views, self.eventBus, function (err, boxes) {
-          self.boxes = boxes;
-          
-          callback(err);
-        });
-      },
-      function (callback) {
         require('./settings')(config, function (settings) {
           self.settings = settings;
           callback(err);
         });
       },
       function (callback) {
-        require('./users')(config, function (err, users) {
+        require('./users')(self.connect, self.settings, function (err, users) {
           self.users = users;
+          callback(err);
+        });
+      },
+      function (callback) {
+        require('./boxes')(config, self.connect, self.settings, self.users, self.collections, self.views, self.eventBus, function (err, boxes) {
+          self.boxes = boxes;
+          
           callback(err);
         });
       },

@@ -113,10 +113,12 @@ module.exports = function(app, rawApi) {
   
   app.use(function requestApiInjector(req, res, next) {
     req.api = wrappedApi(function () {
-      return {
-        userAlias: req.session.user.alias,
-        boxName: req.params.boxName
-      };
+      var ctx = {};
+      
+      if (req.session && req.session.user) ctx.userAlias = req.session.user.alias;
+      if (req.params) ctx.boxName = req.params.boxName;
+      
+      return ctx;
     }, res, rawApi);
     
     next();
@@ -155,8 +157,12 @@ module.exports = function(app, rawApi) {
   .get(controllers.misc.randomName);
 
   app
-  .route('/api/masterUser')
-  .get(controllers.misc.masterUser);
+  .route('/api/master-user')
+  .get(controllers.misc.getMasterUser);
+
+  app
+  .route('/api/master-user')
+  .put(controllers.misc.setMasterUser);
 
   app
   .route('/scripts/info.js')
@@ -339,6 +345,14 @@ module.exports = function(app, rawApi) {
   app
   .route('/api/packages/:packageName/export')
   .get(controllers.packages.exportPackage);
+  
+  app
+  .route('/api/export/all-packages')
+  .get(controllers.misc.exportAllPackages);
+  
+  app
+  .route('/api/export/all-boxes')
+  .get(controllers.misc.exportAllBoxes);
 
   app
   .route('/api/packages/:packageName/scripts')
@@ -405,12 +419,14 @@ module.exports = function(app, rawApi) {
     
     var apiApp = express();
   
-    apiApp.use(function requestApiInjector(req, res, next) {
+    apiApp.use(function (req, res, next) {
       req.api = wrappedApi(function () {
-        return {
-          userAlias: req.session.user.alias,
-          boxName: boxName
-        };
+        var ctx = {};
+        
+        if (req.session && req.session.user) ctx.userAlias = req.session.user.alias;
+        ctx.boxName = boxName;
+        
+        return ctx;
       }, res, rawApi);
       
       next();

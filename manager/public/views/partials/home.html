@@ -1,12 +1,23 @@
-<page-title title="Welcome"></page-title>
-<div class="well text-center" style="margin: 0">
-    <h1>Welcome</h1>
-    <p class="lead">
-        <img src="images/box.svg" style="width: 180px; height: 180px" alt="A box">
-        <br>New boxes sometimes hold surprises.
-    </p>
-    <p>
-        <a class="btn btn-lg btn-primary" href="#/new-box">
-            <span class="glyphicon glyphicon-plus"></span>&nbsp;Create one for me</a>
-    </p>
+<h4 class="text-center">
+  {{boxes.length}} boxes
+</h4>
+<div class="well">
+  
+  <ul class="list-group">
+    <a class="list-group-item" href="#/new-box">
+      <span class="glyphicon glyphicon-plus">
+      </span>
+      Create new
+    </a>
+    <a ng-controller="BoxStatusCtrl" ng-class="info && info.status && 'list-group-item-success' || 'list-group-item-danger'" ng-repeat="b in boxes" ng-href="#/manage-box/{{b}}" class="list-group-item">
+      <span class="pull-right glyphicon" ng-if="roles" ng-class="{'user': 'glyphicon-user', 'owner': 'glyphicon-dashboard', undefined: 'glyphicon glyphicon-ban-circle'}[roles[b]]">
+      </span>
+      <strong>
+        {{b}}
+      </strong>
+      <p ng-show="info.description">
+        {{info.description}}
+      </p>
+    </a>
+  </ul>
 </div>

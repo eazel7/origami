@@ -573,72 +573,112 @@ module.exports = function (config, eventBus, callback) {
         var ZipFile = require("adm-zip/zipFile"),
             AdmZipUtil = require("adm-zip/util");
         
-        var zip = new ZipFile (zippedBuffer, AdmZipUtil.Constants.BUFFER);
+        var zip;
         
-        var packageName = zip.getEntry("packageName.txt").getData().toString(),
-            packageType = zip.getEntry("packageType.txt").getData().toString(),
-            styles = JSON.parse(zip.getEntry("styles.json").getData().toString()),
-            scripts = JSON.parse(zip.getEntry("scripts.json").getData().toString()),
-            folders = JSON.parse(zip.getEntry("folders.json").getData().toString()),
-            dependencies = JSON.parse(zip.getEntry("dependencies.json").getData().toString()),
-            angularModules = JSON.parse(zip.getEntry("angular-modules.json").getData().toString()),
-            mergedMetadata = JSON.parse(zip.getEntry("metadata.json").getData().toString());
-            
-        var info;
         try {
-            info = JSON.parse(zip.getEntry("info.json").getData().toString());
+          zip = new ZipFile (zippedBuffer, AdmZipUtil.Constants.BUFFER);
         } catch (e) {
-            console.log('No package info to import');
-            info = {};
-        };
+          callback ('Couldn\'t read package file');
+        }
         
-        async.series([function (callback) {
-          self.createPackage(packageName, callback);
-        }, function (callback) {
-          async.eachSeries(folders, function (folder, folderCallback) {
-            self.createFolder(packageName, folder, folderCallback);
-          }, callback);
-        }, function (callback) {
-          self.setStyles(packageName, styles, callback, true);
-        }, function (callback) {
-          self.setAngularModules(packageName, angularModules, callback, true);
-        }, function (callback) {
-          self.setPackageInfo(packageName, info, callback);
-        }, function (callback) {
-          self.setScripts(packageName, scripts, callback, true);
-        }, function (callback) {
-          var entries = zip.entries;
+        var packageName = zip.getEntry("packageName.txt").getData().toString();
+        
+        self.createPackage(packageName, function (err) {
+          if (err) return importCallback(err);
+        
+          self.updatePackage(packageName, zip, importCallback);
+        });
+      },
+      updatePackage: function(packageName, zippedBuffer, importCallback) {
+        self.listAssets(packageName, function (err, previousAssets) {
+          if (err) return importCallback(err);
+            
+          var ZipFile = require("adm-zip/zipFile"),
+              AdmZipUtil = require("adm-zip/util"),
+              zip;
           
-          async.eachSeries(entries, function (entry, entryCallback) {
-            if (entry.entryName.indexOf('assets/') !== 0) return entryCallback();
+          try {
+            zip = new ZipFile (zippedBuffer, AdmZipUtil.Constants.BUFFER);
+          } catch (e) {
+            return callback ('Couldn\'t read package file');
+          }
           
-            var entryBuffer = entry.getData(),
-                assetPath = entry.entryName.slice("assets/".length),
-                entryMetadata = mergedMetadata[assetPath];
+          var packageType = zip.getEntry("packageType.txt").getData().toString(),
+              styles = JSON.parse(zip.getEntry("styles.json").getData().toString()),
+              scripts = JSON.parse(zip.getEntry("scripts.json").getData().toString()),
+              folders = JSON.parse(zip.getEntry("folders.json").getData().toString()),
+              dependencies = JSON.parse(zip.getEntry("dependencies.json").getData().toString()),
+              angularModules = JSON.parse(zip.getEntry("angular-modules.json").getData().toString()),
+              mergedMetadata = JSON.parse(zip.getEntry("metadata.json").getData().toString());
+              
+          var info;
+          try {
+              info = JSON.parse(zip.getEntry("info.json").getData().toString());
+          } catch (e) {
+              console.log('No package info to import');
+              info = {};
+          };
+          
+          async.series([function (callback) {
+            self.createPackage(packageName, callback);
+          }, function (callback) {
+            async.eachSeries(folders, function (folder, folderCallback) {
+              self.createFolder(packageName, folder, folderCallback);
+            }, callback);
+          }, function (callback) {
+            self.setStyles(packageName, styles, callback, true);
+          }, function (callback) {
+            self.setAngularModules(packageName, angularModules, callback, true);
+          }, function (callback) {
+            self.setPackageInfo(packageName, info, callback);
+          }, function (callback) {
+            self.setScripts(packageName, scripts, callback, true);
+          }, function (callback) {
+            var entries = zip.entries, updatedAssets = [];
+            
+            async.eachSeries(entries, function (entry, entryCallback) {
+              if (entry.entryName.indexOf('assets/') !== 0) return entryCallback();
+            
+              var entryBuffer = entry.getData(),
+                  assetPath = entry.entryName.slice("assets/".length),
+                  entryMetadata = mergedMetadata[assetPath];
+                  
+              self.createAsset(packageName, assetPath, function (err) {
+                if (err) {
+                  return entryCallback(err);
+                } else {
+                  self.updateAsset(packageName, assetPath, entryBuffer, function (err) {
+                    if (err) {
+                      return entryCallback(err);
+                    } else {
+                      self.setAssetMetadata(packageName, assetPath, entryMetadata, function (err) {
+                        if (err) return entryCallback (err);
+                        
+                        updatedAssets.push(assetPath);
+                      }, true);
+                    }
+                  }, true);
+                }
+              }, true);
+            }, function (err) {
+              if (err) return callback(err);
+              
+              async.eachSeries(previousAssets, function (previousAsset, callback) {
+                if (updatedAssets.indexOf(previousAsset) == -1) {
+                  self.removeAsset (packageName, previousAsset, callback);
+                }
                 
-            self.createAsset(packageName, assetPath, function (err) {
-              if (err) {
-                return entryCallback(err);
-              } else {
-                self.updateAsset(packageName, assetPath, entryBuffer, function (err) {
-                  if (err) {
-                    return entryCallback(err);
-                  } else {
-                    self.setAssetMetadata(packageName, assetPath, entryMetadata, entryCallback, true);
-                  }
-                }, true);
-              }
-            }, true);
-          }, function (err) {
-            callback(err);
-          });
-        }, function (callback) {
-          self.setPackageType(packageName, packageType, callback, true);
-        }, function (callback) {
-          self.setDependencies(packageName, dependencies, callback, true);
-        }, function (callback) {
-          updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
-        }], importCallback);
+                callback();
+              }, callback);
+            });
+          }, function (callback) {
+            self.setPackageType(packageName, packageType, callback, true);
+          }, function (callback) {
+            self.setDependencies(packageName, dependencies, callback, true);
+          }, function (callback) {
+            updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+          }], importCallback);
+        });
       },
       setAssetMetadata: function(packageName, assetPath, newMetadata, callback, silent) {
         self.getAssetMetadata (packageName, assetPath, function (err, metadata) {
@@ -800,6 +840,54 @@ module.exports = function (config, eventBus, callback) {
               });
           }); 
         });
+      },
+      exportAllPackages: function (callback) {
+        var AdmZip = require('adm-zip');
+
+        var zip = new AdmZip();
+      
+        self.listPackages(function (err, packages) {
+          if (err) return callback(err);
+          
+          async.eachSeries(packages, function (p, callback) {
+            self.exportPackage (p.name, function (err, buffer) {
+              if (err) return callback (err);
+            
+              try {
+                zip.addFile("packages/" + p.name, buffer);
+              } catch (e) {
+                return callback (e);
+              }
+              
+              callback();
+            });
+          }, function (err) {
+            if (err) return callback(err);
+            
+            callback (null, zip.toBuffer());
+          });
+        });
+      },
+      importPackages: function (buffer, callback) {
+        var AdmZip = require('adm-zip');
+            
+        var ZipFile = require("adm-zip/zipFile"),
+            AdmZipUtil = require("adm-zip/util"),
+            zip;
+        
+        try {
+          zip = new ZipFile (buffer, AdmZipUtil.Constants.BUFFER);
+        } catch (e) {
+          return callback ('Couldn\'t read package file');
+        }
+        
+        var entries = zip.entries, updatedAssets = [];
+        
+        async.eachSeries(entries, function (entry, entryCallback) {
+          if (entry.entryName.indexOf('packages/') !== 0) return entryCallback();
+          
+          self.importPackage(entry.getData(), entryCallback);
+        }, callback);
       }
     };
     

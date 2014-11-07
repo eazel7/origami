@@ -8,9 +8,9 @@ module.exports = function (config, callback) {
           "key": key
         }, function (err, doc) {
           if (doc) {
-            callback(doc.value);
+            callback(err, doc.value);
           } else {
-            callback(undefined);
+            callback(err, undefined);
           }
         });
       },

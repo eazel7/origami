@@ -30,7 +30,7 @@
  */
 var Grid = require('mongodb').Grid, ObjectID = require('mongodb').ObjectID, async = require('async');
 
-module.exports = function (config, collections, views, eventBus, callback) {
+module.exports = function (config, connect, settings, users, collections, views, eventBus, callback) {
   function fairlySimplePassword() {
     var a = Date.now(), b = a / 10000, c = (a - (Math.floor(b) * 10000)).toString();
 
@@ -41,7 +41,7 @@ module.exports = function (config, collections, views, eventBus, callback) {
     return require('origami-random-names')() + '-' + c;
   }
 
-  require('./connect')(config.mongo, function (err, db) {
+  connect(function (err, db) {
     function getBox (name, callback) {
       db
       .collection('boxes')
@@ -69,7 +69,7 @@ module.exports = function (config, collections, views, eventBus, callback) {
        */
       createBox: function (boxName, owner, callback) {
         if (!boxName) throw new Error("No box name");
-        if (!owner) throw new Error("No owner");      
+        if (!owner) throw new Error("No owner");
       
         return getBox(boxName, function (err, box) {
           if (box) {
@@ -107,29 +107,27 @@ module.exports = function (config, collections, views, eventBus, callback) {
               if (err) return callback(err);
               if (results) results = results[0];
 
-              require('./users')(config, function (err, usersApi) {
-                usersApi.enableUser(owner, boxName, 'owner', function (err) {
-                  if (err) return callback (err);
-                  
-                  if (!config.singleDbMode) {
-                    db
-                    .db(boxName)
-                    .addUser("readUser", mongoPassword, { "j": true, roles: ["read"] }, function (err) {
-                      if (err) console.log("addUser err:" + err);
-                    });
-                  }
-                  
-                  async.eachSeries(["_views", "_graphs", "_workflows", "_schedules"], function (cn, callback) {
-                    collections
-                    .createCollection(boxName, cn, callback);
-                  }, function (err) {
-                    if (err) return callback (err);
-  
-                    async.eachSeries(["_errors", "_permissions"], function (cn, callback) {
-                      collections
-                      .createServerCollection(boxName, cn, callback);
-                    }, callback);
+              users.enableUser(owner, boxName, 'owner', function (err) {
+                if (err) return callback (err);
+                
+                if (!config.singleDbMode) {
+                  db
+                  .db(boxName)
+                  .addUser("readUser", mongoPassword, { "j": true, roles: ["read"] }, function (err) {
+                    if (err) console.log("addUser err:" + err);
                   });
+                }
+                
+                async.eachSeries(["_views", "_graphs", "_workflows", "_schedules"], function (cn, callback) {
+                  collections
+                  .createCollection(boxName, cn, callback);
+                }, function (err) {
+                  if (err) return callback (err);
+
+                  async.eachSeries(["_errors", "_permissions"], function (cn, callback) {
+                    collections
+                    .createServerCollection(boxName, cn, callback);
+                  }, callback);
                 });
               });
             });
@@ -279,16 +277,13 @@ module.exports = function (config, collections, views, eventBus, callback) {
           
             async
             .eachSeries(collectionNames, function (collectionName, collectionCallback) {
-              collections.getCollection(boxName, collectionName, function (err, collection) {
-                if (err) return collectionCallback (err);
+              collections
+              .find(boxName, collectionName, {}, function (err, docs) {
+                if (err) return collectionCallback(err);
                 
-                collection.find({}, function (err, docs) {
-                  if (err) return collectionCallback(err);
-                  
-                  zip.addFile("collections/" + collectionName + ".json", new Buffer(JSON.stringify(docs, undefined, 2)));
-                  
-                  collectionCallback();
-                });
+                zip.addFile("collections/" + collectionName + ".json", new Buffer(JSON.stringify(docs, undefined, 2)));
+                
+                collectionCallback();
               });
             }, callback);
           });
@@ -297,6 +292,7 @@ module.exports = function (config, collections, views, eventBus, callback) {
             if (err) return callback (err);
             
             zip.addFile("box.json", new Buffer(JSON.stringify({info: box.info, packages: box.packages}, undefined, 2)));
+            zip.addFile("boxname.txt", new Buffer(box.name));
             
             callback();
           });
@@ -310,7 +306,12 @@ module.exports = function (config, collections, views, eventBus, callback) {
         var ZipFile = require("adm-zip/zipFile"),
             AdmZipUtil = require("adm-zip/util");
         
-        var zip = new ZipFile (bytes, AdmZipUtil.Constants.BUFFER);
+        var zip;
+        try {
+          zip = new ZipFile (bytes, AdmZipUtil.Constants.BUFFER);
+        } catch (e) {
+          return callback (e);
+        }
         
         var box = JSON.parse(zip.getEntry("box.json").getData().toString());
         
@@ -365,6 +366,84 @@ module.exports = function (config, collections, views, eventBus, callback) {
             }, callback);
          }
         ], callback);
+      },
+      exportAllBoxes: function(callback) {
+        var AdmZip = require('adm-zip');
+        var zip = new AdmZip();
+        
+        self.listBoxes(function (err, boxes) {
+          async.eachSeries(boxes, function (box, callback) {
+            self.export(box.name, function (err, buffer) {
+              try {
+                zip.addFile('boxes/' + box.name + '.box', buffer);
+              } catch (e) {
+                return callback (e);
+              }
+              
+              callback();
+            });
+          }, function (err) {
+            if (err) return callback(err);
+            
+            return callback(null, zip.toBuffer());
+          });
+        });
+      },
+      importBoxes: function(zippedBuffer, callback) {
+        var AdmZip = require('adm-zip');
+        
+        var zip;
+        try {
+          zip = new ZipFile (bytes, AdmZipUtil.Constants.BUFFER);
+        } catch (e) {
+          return callback (e);
+        }
+        
+        var entries = zip.entries;
+        
+        users.getMasterUser(function (err, userAlias) {
+          if (err) return callback(err);
+          
+          async.eachSeries(entries, function (entry, entryCallback) {
+            if (entry.entryName.indexOf('boxes/') !== 0) return entryCallback();
+                
+            var boxZip;
+            try {
+              boxZip = new ZipFile (entry.getData(), AdmZipUtil.Constants.BUFFER);
+            } catch (e) {
+              return entryCallback (e);
+            }
+            
+            var boxName = zip.getEntry("boxname.txt").getData().toString();
+            
+            self.getBox(boxName, function (err, box) {
+              if (!box) self.createBox(boxName, userAlias, function (err) {
+                if (err) return entryCallback();
+                
+                self.import(boxName, entry.getData(), entryCallback);
+              });
+              else self.import(boxName, entry.getData(), entryCallback);
+            });
+          }, callback);
+        
+          self.listBoxes(function (err, boxes) {
+            async.eachSeries(boxes, function (box, callback) {
+              self.export(box.name, function (err, buffer) {
+                try {
+                  zip.addFile('boxes/' + box.name + '.box', buffer);
+                } catch (e) {
+                  return callback (e);
+                }
+                
+                callback();
+              });
+            }, function (err) {
+              if (err) return callback(err);
+              
+              return callback(null, zip.toBuffer());
+            });
+          });
+        });
       }
     };
 

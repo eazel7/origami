@@ -73,7 +73,7 @@ angular.module("boxes3.manager")
   
   $scope.selectAllWorkflows = function () {
     angular.forEach($scope.workflows, function (w){
-      if (!isWorkflowSelected(w)) toggleWorkflowSelected(w);
+      if ($scope.selectedWorkflows.indexOf(w._id) === -1) $scope.selectedWorkflows.push(w._id);
     });
   };
       

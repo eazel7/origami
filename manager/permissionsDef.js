@@ -10,7 +10,9 @@ module.exports = {
     serveFile: allOf(isBoxUser,isBoxActive),
     export: isBoxDeveloper,
     import: isBoxDeveloper,
-    listFiles: isBoxUser
+    listFiles: isBoxUser,
+    exportAllBoxes: isMasterUser,
+    importBoxes: isMasterUser
   },
   collections: {
     getCollection: anyOf(isBoxAdmin, allOf(isBoxActive, isBoxUser)),
@@ -28,7 +30,9 @@ module.exports = {
     getActivePackagesWithDependencies: isBoxUser,
     activatePackage: isBoxDeveloper,
     dectivatePackage: isBoxDeveloper,
-    setActivePackages: isBoxDeveloper, 
+    setActivePackages: isBoxDeveloper,
+    exportAllPackages: isMasterUser,
+    importPackages: isMasterUser
   },
   users: {
     enableUser: isBoxAdmin,
@@ -42,7 +46,8 @@ module.exports = {
     deletePermissionGroup: isBoxDeveloper,
     addUserToGroup: anyOf(isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
     removeUserFromGroup: anyOf(isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
-    listUsersInGroup: isBoxDeveloper
+    listUsersInGroup: isBoxDeveloper,
+    setMasterUser: isMasterUser
   },
   schedules: {
     stopSchedule: isBoxDeveloper,
@@ -54,11 +59,15 @@ module.exports = {
     enableUser: isBoxDeveloper,
     getUserRole: isBoxDeveloper,
     disableUser: isBoxDeveloper,
+    getUserMetadata: rejectAlways,
+    setUserMetadata: rejectAlways,
     isValid: isBoxUser,
     listViews: anyOf(isBoxDeveloper,allOf(isBoxActive, isBoxUser)),
     getView: anyOf(isBoxDeveloper,allOf(isBoxActive, isBoxUser)),
     removeView: allOf(isBoxActive, isBoxDeveloper),
-    saveView: allOf(isBoxActive, isBoxDeveloper)
+    saveView: allOf(isBoxActive, isBoxDeveloper),
+    setCreateBoxQuota: isMasterUser,
+    setMasterUser: isMasterUser
   },
   workflows: {
     listPastWorkflows: isBoxDeveloper,
@@ -75,6 +84,10 @@ module.exports = {
     saveGraph: allOf(isBoxActive,isBoxDeveloper),
     removeGraph: allOf(isBoxActive, isBoxDeveloper),
     listComponents: allOf(isBoxActive, isBoxDeveloper)
+  },
+  settings: {
+    get: isMasterUser,
+    set: isMasterUser
   }
 };
 
@@ -162,6 +175,16 @@ function isBoxUser (context, api, callback) {
   
   api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
     return callback(err, !!role);
+  });
+}
+
+function isMasterUser (context, api, callback) {
+  context.checks.push('is master user');
+  
+  if (!context.userAlias) return callback('missing user alias', false);
+  
+  api.users.getMasterUser(function (err, alias) {
+    return callback(err, alias === context.userAlias);
   });
 }
 

@@ -1,11 +1,41 @@
-module.exports = function (config, callback) {
-  require('./connect')(config.mongo, function (err, db) {
-    callback(null, {
+module.exports = function (connect, settings, callback) {
+  connect(function (err, db) {
+    if (err) return callback(err);
+    var self = {
       listUsers: function (callback) {
         db
         .collection('users')
         .find({}, {_id: 1, displayName: 1, alias: 1})
         .toArray(callback);
+      },
+      setCreateBoxQuota: function (alias, quota, callback) {
+        self.getUserMetadata(alias, function (err, metadata) {
+          if (err) return callback(err);
+          
+          metadata.createBoxQuota = quota;
+          
+          self.setUserMetadata(alias, metadata, callback);
+        });
+      },
+      getCreateBoxQuota: function (alias, callback) {
+        self.getUserMetadata(alias, function (err, metadata) {
+          if (err) return callback(err);
+          
+          callback(null, metadata.createBoxQuota);
+        });
+      },
+      getMasterUser: function (callback) {
+        settings.get('master-user', callback);
+      },
+      setMasterUser: function (newMasterUser, callback) {
+        if (!newMasterUser) return callback ('Master user cannot be blank');
+        
+        self.isValid(newMasterUser, function (err, isValid) {
+          if (err) return callback(err);
+          if (!isValid) return callback('Invalid user alias');
+          
+          settings.set('master-user', newMasterUser, callback);
+        });
       },
       listBoxUsers: function (boxName, callback) {
         var query = {};
@@ -77,7 +107,15 @@ module.exports = function (config, callback) {
             alias: userAlias,
             displayName: displayName,
             roles: {}
-          }, callback);
+          }, function (err) {
+            self.getMasterUser(function (err, master) {
+              if (!master) {
+                self.setMasterUser(userAlias, callback);
+              } else {
+                callback (err);
+              }
+            });
+          });
         });
       },
       getUserRole: function (userAlias, boxName, callback) {
@@ -222,6 +260,8 @@ module.exports = function (config, callback) {
           }
         }, callback);
       }
-    });
+    };
+
+    callback(null, self);
   });
 }

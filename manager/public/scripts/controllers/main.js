@@ -5,9 +5,9 @@ angular.module('boxes3.manager')
   $rootScope.pageTitle = 'Boxes';
 })
 .config(function ($stateProvider) {
-  $stateProvider.state('boxes', {
-    url: '/boxes',
-    templateUrl: 'views/partials/boxes.html',
+  $stateProvider.state('home', {
+    url: '/',
+    templateUrl: 'views/partials/home.html',
     controller: function ($scope, BoxesApi, UsersApi) {
       BoxesApi.getMyBoxes().then(function (boxes) {
         $scope.boxes = boxes;
