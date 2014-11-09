@@ -1,10 +1,10 @@
 var nodeSched = require('node-schedule'), async = require('async');
 
-module.exports = function (api, callback) {
+module.exports = function (boxes, collections, workflows, callback) {
   var jobsBySched = {}, nextStarters = {};
   var self = {
     ensureSchedules: function (callback) {
-      api.boxes.listBoxes(function (err, boxes) {
+      boxes.listBoxes(function (err, boxes) {
         if (err) return callback(err);
         
         var boxesToCheck = [];
@@ -16,7 +16,7 @@ module.exports = function (api, callback) {
         }
         
         async.eachSeries(boxesToCheck, function(boxName, callback) {
-          api.collections.find(boxName, "_schedules", {running: true}, function (err, docs) {
+          collections.find(boxName, "_schedules", {running: true}, function (err, docs) {
             if(err) return callback(err);
             
             async.eachSeries(docs, function (doc, callback) {
@@ -41,12 +41,12 @@ module.exports = function (api, callback) {
         nextStarters[boxName + ':' + id] = null;
       }
       
-      api.collections.update(boxName, "_schedules", { _id: id }, { $set: { running: false } }, callback);
+      collections.update(boxName, "_schedules", { _id: id }, { $set: { running: false } }, callback);
     },
     startSchedule: function (boxName, id, callback) {
       if (jobsBySched[boxName + ':' + id]) return callback();
     
-      api.collections.findOne(boxName, "_schedules", {_id: id}, function (err, sched) {
+      collections.findOne(boxName, "_schedules", {_id: id}, function (err, sched) {
         if(err) return callback(err);
         
         if (!sched) return callback(new Error('Schedule not found'));
@@ -69,7 +69,7 @@ module.exports = function (api, callback) {
             if (err) console.error(err);
 
             if (runningToday) {
-              api.workflows.startWorkflow(boxName, sched.graph, {}, function (err, workflowId) {
+              workflows.startWorkflow(boxName, sched.graph, {}, function (err, workflowId) {
                 if (err) console.error(err);
                 console.log('Workflow ' + workflowId + ' was scheduled by ' + id + ' for ' + boxName);
               });

@@ -38,6 +38,7 @@ function callbackFor(context, realApi, res, module, method, impl, origArgments, 
       res.status(405);
       res.end();
     } else {
+      console.log('Invoking ' + module + '.' + method + '(' + JSON.stringify(origArgments) + ')');
       impl.apply(realApi, origArgments);
     }
   }

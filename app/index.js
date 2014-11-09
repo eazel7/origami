@@ -170,7 +170,7 @@ module.exports = function (boxName, app, callback) {
     });
   });
   
-  app.get('/api/collections', boxApi.getCollections);
+  app.get('/api/collections', boxApi.getSyncCollections);
   app.post('/api/collection/:collection/find', boxApi.findInCollection);
   app.post('/api/collection/:collection/count', boxApi.countInCollection);
   app.post('/api/collection/:collection/findOne', boxApi.findOneInCollection);

@@ -34,7 +34,7 @@
     "lodash": "~2.4.1",
     "method-override": "~2.0.2",
     "mmmagic": "^0.3.11",
-    "morgan": "~1.1.1",
+    "morgan": "^1.1.1",
     "origami-api-mongo": "*",
     "origami-app": "*",
     "origami-auth-local": "*",

@@ -28,7 +28,8 @@ module.exports = function(app, rawApi) {
   }
 
   app.use('/:boxName', function (req, res, next) {
-  var boxName = req.params.boxName;
+    var boxName = req.params.boxName;
+    
     rawApi.boxes.getBox(boxName, function (err, box) {
       if (!box) {
         // no box, not this handler
@@ -295,6 +296,10 @@ module.exports = function(app, rawApi) {
   app
   .route('/api/packages')
   .get(controllers.packages.listPackages);
+
+  app
+  .route('/api/rebuild-manifests')
+  .post(controllers.packages.rebuildManifests);
 
   app
   .route('/api/packages/:packageName/create')

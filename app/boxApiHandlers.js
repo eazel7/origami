@@ -21,6 +21,22 @@ module.exports = function (boxName) {
           return res.json(names);
         });
     },
+    getSyncCollections: function (req, res) {
+      var api = req.api;
+
+      return api.permissions.getSyncCollections(
+        boxName,
+        req.session.user.alias,
+        function (err, collections){
+          if (err) {
+            console.log({ box: boxName, url: req.params.url, err: err});
+            res.status(418);
+            return res.end();
+          }
+          
+          return res.json(collections);
+        });
+    },
     findInCollection: function (req, res) {
       var api = req.api;
 
@@ -41,7 +57,7 @@ module.exports = function (boxName) {
     findOneInCollection: function (req, res) {
       var api = req.api;
 
-      return api.collections.find(
+      return api.collections.findOne(
         boxName,
         req.params.collection, 
         req.body || {},

@@ -16,6 +16,7 @@ module.exports = {
   },
   collections: {
     getCollection: anyOf(isBoxAdmin, allOf(isBoxActive, isBoxUser)),
+    getCollections: anyOf(isMasterUser,isBoxUser),
     find: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
     findOne: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
     count: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
@@ -27,6 +28,7 @@ module.exports = {
     destroyCollection: anyOf(allOf(isBoxDeveloper,isBoxActive),isBoxAdmin)
   },
   packages: {
+    rebuildManifests: isMasterUser,
     getActivePackagesWithDependencies: isBoxUser,
     activatePackage: isBoxDeveloper,
     dectivatePackage: isBoxDeveloper,

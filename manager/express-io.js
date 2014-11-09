@@ -81,8 +81,9 @@ module.exports = function(app, io) {
   app.use(appCookieParser) // required before session.
   
   require('origami-api-mongo')(config, function (err, api) {
-    
     if (err) {
+      console.error(err);
+      
       app.use(express.static(path.join(config.root, 'dbOffline')));
 
       return;

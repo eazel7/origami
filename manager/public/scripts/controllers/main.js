@@ -20,9 +20,23 @@ angular.module('boxes3.manager')
   $stateProvider.state('devs', {
     url: '/devs',
     templateUrl: 'views/partials/devs.html',
-    controller: function ($scope, $window) {
-      $scope.clearStorage = function () {
+    controller: function ($scope, $window, $http) {
+      $scope.clearTempData = function () {
+        for (var k in $window.localStorage) {
+          delete $window.localStorage[k];
+        }
+        
+        if ($window.indexedDB.webkitGetDatabaseNames) {
+          $window.indexedDB.webkitGetDatabaseNames().onsuccess = function(sender,args) {
+            for (var i = sender.target.result.length - 1; i >= 0; i--) {
+              $window.indexedDB.deleteDatabase(sender.target.result[i]);
+            }
+          };
+        }
+      };
       
+      $scope.rebuildManifests = function () {
+        $http.post('/api/rebuild-manifests', {});
       };
     }
   });

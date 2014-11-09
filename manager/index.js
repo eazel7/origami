@@ -42,9 +42,14 @@ var io = require('socket.io')(server);
 
 require('./express-io')(app, io);
   
-app.use(morgan('dev', {
-  skip: function (req, res) { return res.statusCode < 400; }
-}));
+var accessLogStream = fs.createWriteStream('web.log', {flags: 'a'});
+
+var apache_log = require('apache-log');
+
+app.use(function (req, res, next) {
+  apache_log.logger(req, res);
+  next(); 
+});
 
 server.listen(config.port, config.ip, function () {
   console.log('Express server listening on %s://%s:%d, in %s mode', config.protocol == 'spdy' ? 'https' : 'http', config.ip, config.port, app.get('env'));

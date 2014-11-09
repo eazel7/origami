@@ -1,61 +1,34 @@
-module.exports = function (api, callback) {
-  callback(null, {
-    checkPermission: function (context, callback) {
-      // permission in JSON key format
-      // examples:
-      //
-      // workflow intiated by the system, user alias not present
-      // { "boxName": "the-box", "action": "start-workflow", "graphId": "abcd123" }
-      //
-      // result: callback([err or null], [boolean, being true for allowed and false for forbidden]
-      //
-      // query on collection, initiated by a user
-      // { "boxName": "the-box", "alias": "user@provider", "action": "collection-find", "collection-name": "the-collection" }
-      //
-      // result: callback([err or null], [boolean, being true for allowed and false for forbidden], [object, being the reformatted query]
-      //
-      // TODO: API key pending to implement
-      // insert in a collection by using an API key
-      // { "boxName", "api-key": "abcd-1234-defg-5678-hijk", "action": "collection-insert", "collection-name", "object": { "_id": "vwxyz", "title": "some-title" }
-      // see permissions.md for a full list
-      
-      
-    },
+module.exports = function (collections, users, callback) {
+  var self = {
     listPermissionGroups: function (boxName, callback) {
-      api
-      .collections
+      collections
       .find(boxName, "_permissions", {}, callback);
     },
     describePermissionGroup: function (boxName, groupId, callback) {
-      api.collections.findOne(boxName, "_permissions", {_id: groupId}, callback);
+      collections.findOne(boxName, "_permissions", {_id: groupId}, callback);
     },
     createPermissionGroup: function (boxName, groupName, callback) {
-      api
-      .collections
+      collections
       .insert(boxName, "_permissions", {name: groupName, users: [], permissions: {}}, callback);
     },
     modifyPermissionGroup: function (boxName, groupId, newPermissions, callback) {
-      api
-      .collections
+      collections
       .update(boxName, "_permissions", {_id: groupId}, {$set: {permissions: newPermissions}}, callback);
     },
     deletePermissionGroup: function (boxName, groupId, callback) {
-      api
-      .collections
+      collections
       .remove(boxName, "_permissions", {_id: groupId}, callback);
     },
     addUserToGroup: function (boxName, groupId, alias, callback) {
-      api
-      .collections
+      collections
       .update(boxName, "_permissions", {_id: groupId}, {$addToSet: {users: alias}}, callback);
     },
     removeUserFromGroup: function (boxName, groupId, alias, callback) {
-      api
-      .collections
+      collections
       .update({_id: groupId}, {$pull: {users: alias}}, callback);
     },
     listUsersInGroup: function (boxName, groupId, callback) {
-      api.collections.findOne(boxName, "_permissions", {_id: groupId}, function (err, doc) {
+      collections.findOne(boxName, "_permissions", {_id: groupId}, function (err, doc) {
         if (err) return callback(err);
         
         if (!doc) return callback(new Error('Group does not exists'));
@@ -63,8 +36,35 @@ module.exports = function (api, callback) {
         callback(null, doc.users);
       });
     },
+    getSyncCollections: function (boxName, alias, callback) {
+      if (!boxName) return callback(new Error("No box name given"));
+      if (!alias) return callback(new Error("No user alias given"));
+      
+      self.getEffectivePermissions(boxName, alias, function (err, effective) {
+        if (err) return callback (err);
+        
+        var syncCollections = [];
+        
+        for (var c in effective.collections) {
+          if (effective.collections[c].sync) syncCollections.push(c);
+        }
+    
+        if (syncCollections.indexOf("_views") === -1 || syncCollections.indexOf("_graphs") === -1) {
+          users.getUserRole(alias, boxName, function (err, role) {
+            if (err) return callback (err);
+            
+            if (["owner", "admin", "dev"].indexOf(role) !== -1) {
+              if (syncCollections.indexOf("_views") === -1) syncCollections.push("_views");
+              if (syncCollections.indexOf("_graphs") === -1) syncCollections.push("_graphs");
+            }
+        
+            callback (null, syncCollections);
+          });
+        }
+      });
+    },
     getEffectivePermissions: function (boxName, alias, callback) {
-      api.collections.find(boxName, "_permissions", {users: {$all: [alias]}}, function (err, docs) {
+      collections.find(boxName, "_permissions", {users: {$all: [alias]}}, function (err, docs) {
         if (err) return callback(err);
         
         var effective = {
@@ -127,5 +127,7 @@ module.exports = function (api, callback) {
         callback(null, effective);
       });
     }
-  });
+  };
+  
+  return callback(null, self);
 };

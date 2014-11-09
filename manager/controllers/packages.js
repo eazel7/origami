@@ -446,6 +446,16 @@ module.exports = function () {
         res.status(200);
         res.end();
       });
+    },
+    rebuildManifests: function (req, res) {
+      var api = req.api;
+      
+      api.packages.rebuildManifests(function (err) {
+        if (err) return resErrHelper(res, err);
+      
+        res.status(200);
+        res.end();
+      });
     }
   };
 }

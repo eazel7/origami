@@ -8,99 +8,104 @@ module.exports = function (config, callback) {
   connect(config.mongo, function (err, db) {
     if (err) return callback(err);
   
-    var self = {
-      config: config,
-      connect: function (callback) {
-        connect(config.mongo, callback);
-      },
-      eventBus: new events.EventEmitter()
-    };
-    self.eventBus.setMaxListeners(0);
+    var eventBus = new events.EventEmitter(),
+        self = {
+          config: config,
+          eventBus: eventBus
+        };
+    
+    eventBus.setMaxListeners(0);
 
-    async.series([
-      function (callback) {
-        require('./collectionRouter')(config, self.connect, function (err, router) {
-          self.router = router;
-          callback(err);
-        });
-      },
-      function (callback) {
-        require('./syncCollectionWrapper')(config, self.connect, self.router, self.eventBus, function (err, wrapper) {
-          self.syncWrapper = wrapper;
-          callback(err);
-        });
-      },
-      function (callback) {
-        require('./collections')(config, self.connect, self.syncWrapper, self.router, function (err, collections) {
-          if (err) return collectionsCallback(err);
-
-          self.collections = collections;
-          callback(err);
-        });
-      },
-      function (callback) {    
-        require('./views')(config, self.connect, self.router, self.syncWrapper, function (err, views) {
-          self.views = views;
-          callback(err);
-        });
-      },
-      function (callback) {
-        require('./settings')(config, function (settings) {
+    async.applyEachSeries([
+      function (config, db, self, callback) {
+        require('./settings')(db, function (err, settings) {
           self.settings = settings;
+          
           callback(err);
         });
       },
-      function (callback) {
-        require('./users')(self.connect, self.settings, function (err, users) {
+      function (config, db, self, callback) {
+        require('./users')(db, self.settings, function (err, users) {
           self.users = users;
           callback(err);
         });
       },
-      function (callback) {
-        require('./boxes')(config, self.connect, self.settings, self.users, self.collections, self.views, self.eventBus, function (err, boxes) {
+      function (config, db, self, callback) {
+        require('./collectionRouter')(config, db, function (err, router) {
+          self.router = router;
+          
+          callback(err);
+        });
+      },
+      function (config, db, self, callback) {
+        require('./syncCollectionWrapper')(db, self.router, self.eventBus, function (err, wrapper) {
+          self.syncWrapper = wrapper;
+          callback(err);
+        });
+      },
+      function (config, db, self, callback) {
+        require('./collections')(db, self.syncWrapper, self.router, function (err, collections) {
+          if (err) return collectionsCallback(err);
+
+          self.collections = collections;
+          
+          callback(err);
+        });
+      },
+      function (config, db, self, callback) {
+        require('./permissions')(self.collections, self.users, function (err, permissions) {
+          self.permissions = permissions;
+          callback(err);
+        });
+      },
+      function (config, db, self, callback) {    
+        require('./views')(self.collections, function (err, views) {
+          self.views = views;
+          callback(err);
+        });
+      },
+      function (config, db, self, callback) {
+        require('./boxes')(config, db, self.users, self.collections, eventBus, function (err, boxes) {
           self.boxes = boxes;
           
           callback(err);
         });
       },
-      function (callback) {
-        require('./packages')(config, self.eventBus, function (err, packages) {
+      function (config, db, self, callback) {
+        require('./packages')(db, eventBus, function (err, packages) {
           self.packages = packages;
           callback(err);
         });
       },
-      function (callback) {
-        require('./remoteDbs')(config, self.connect, function (err, remoteDbs) {
+      function (config, db, self, callback) {
+        require('./remoteDbs')(db, connect, function (err, remoteDbs) {
           self.remoteDbs = remoteDbs;
           callback(err);
         });
       },
-      function (callback) {
-        require('./stats')(self.connect, self.router, self.syncWrapper, function (err, stats) {
+      function (config, db, self, callback) {
+        require('./workflows')(self, function (err, workflows) {
+          if (err) return callback(err);
+          self.workflows = workflows;
+          
+          callback(err, self);
+        });
+      },
+      function (config, db, self, callback) {
+        require('./stats')(self.collections, self.syncWrapper, function (err, stats) {
           self.stats = stats;
           callback(err);
         });
       },
-      function (callback) {
-        require('./permissions')(self, function (err, permissions) {
-          self.permissions = permissions;
-          callback(err);
-        });
-      },
-      function (callback) {
-        require('./schedules')(self, function (err, schedules) {
+      function (config, db, self, callback) {
+        require('./schedules')(self.boxes, self.collections, self.workflows, function (err, schedules) {
           self.schedules = schedules;
           callback(err);
         });
-      }
-    ], function () {
-      require('./workflows')(self, function (err, workflows) {
-        if (err) return callback(err);
-          
-        self.workflows = workflows;
-          
+      }], 
+      config, db, self, 
+      function (err) {
         callback(err, self);
       });
-    });
   });
 }
