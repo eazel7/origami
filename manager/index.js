@@ -41,15 +41,17 @@ if (config.protocol == 'spdy') {
 var io = require('socket.io')(server);
 
 require('./express-io')(app, io);
-  
-var accessLogStream = fs.createWriteStream('web.log', {flags: 'a'});
 
-var apache_log = require('apache-log');
+if (config.logs && config.logs.web) {
+  var accessLogStream = fs.createWriteStream(config.logs.web, {flags: 'a'});
 
-app.use(function (req, res, next) {
-  apache_log.logger(req, res);
-  next(); 
-});
+  var apache_log = require('apache-log');
+
+  app.use(function (req, res, next) {
+    apache_log.logger(req, res);
+    next(); 
+  });
+}
 
 server.listen(config.port, config.ip, function () {
   console.log('Express server listening on %s://%s:%d, in %s mode', config.protocol == 'spdy' ? 'https' : 'http', config.ip, config.port, app.get('env'));

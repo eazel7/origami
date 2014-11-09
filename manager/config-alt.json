@@ -36,5 +36,8 @@
     "key": "keys/server.key",
     "cert": "keys/server.crt",
     "ca": "keys/server.csr"
+  },
+  "logs": {
+    "web": "./access.log"
   }
 }
