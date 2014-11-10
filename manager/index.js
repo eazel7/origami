@@ -4,12 +4,12 @@ var express = require('express'),
     fs = require('fs'),
     path = require('path'),
     app = express(),
-    morgan = require('morgan');
+    morgan = require('morgan'),
+    config = require('./config');
+
 
 // Set default node environment to development
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-
-var config = require('./config');
 
 function spdyServer(app) {
   var spdy = require('spdy');
