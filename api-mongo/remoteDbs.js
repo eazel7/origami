@@ -46,7 +46,9 @@ module.exports = function (db, connect, callback) {
       }, { w: 1 },callback);
     },
     setForBox: function (boxName, dbalias, url, callback) {
-      if (!box || !name || !url) return callback (new Error("Missing parameters"));
+      if (!boxName) return callback (new Error("Missing box name"));
+      if (!dbalias) return callback (new Error("Missing db alias"));
+      if (!url) return callback (new Error("Missing db url"));
     
       db
       .collection("remote_dbs")
