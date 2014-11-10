@@ -37,6 +37,6 @@
       </span>
     </div>
     <ul class="form-group list-group">
-      <a ng-controller="PackageRowCtrl" ng-href="#/packages/{{package}}" ng-repeat="package in packages" class="list-group-item" href="javascript:"><strong class="pull-right" ng-if="info.version">v {{info.version}}</strong><strong>{{package}}</strong><div ng-if="info.description">{{info.description}}</div></a>
+      <a ng-href="#/packages/{{package.name}}" ng-repeat="package in packages track by package.name" class="list-group-item" href="javascript:"><strong class="pull-right" ng-if="info.version">v {{package.info.version}}</strong><strong>{{package.name}}</strong><div ng-if="package.info.description">{{package.info.description}}</div></a>
     </ul>
 </div>

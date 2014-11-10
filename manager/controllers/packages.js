@@ -9,12 +9,13 @@ module.exports = function () {
       var api = req.api;
       
       api.packages.listPackages(function (err, packages) {
-        var names = [];
-        for (var i = 0; i < packages.length; i++){
-          names.push(packages[i].name);
+        if (err) {
+          console.error(err);
+          res.status(418);
+          return res.end();
         }
-        
-        res.json(names.sort());
+      
+        res.json(packages);
       });
     },
     createPackage: function (req, res) {

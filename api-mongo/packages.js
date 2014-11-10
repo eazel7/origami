@@ -123,7 +123,13 @@ module.exports = function (db, eventBus, callback) {
 
   var self = {
     getActivePackagesWithDependencies: function (boxName, callback) {
-      self.getActivePackages(boxName, function (err, activePackages) {
+      self.getActivePackages(boxName, function (err, packages) {
+        var activePackages = [];
+        
+        for (var i = 0; i < packages.length; i++) {
+          activePackages.push(packages[i].name);
+        }
+      
         if (err) return callback (err);
         
         require('./dependencies')(boxName, function (depName, callback) {
@@ -245,11 +251,27 @@ module.exports = function (db, eventBus, callback) {
       }, function (err, doc) {
         if (err) return callback(err);
         
-        if (!doc) {
+        if (!doc || !doc.packages) {
           return callback(null, []);
         }
         
-        return callback (null, doc.packages || []);
+        db.collection("packages")
+        .find({
+          name: {
+            $in: doc.packages
+          }
+        })
+        .toArray(function (err, docs) {
+          if (err) return callback (err);
+          
+          var ordered = [];
+          
+          for (var i = 0; i < docs.length; i++) {
+            ordered[doc.packages.indexOf(docs[i].name)] = docs[i];
+          }
+          
+          callback (null, ordered);
+        });
       });
     },
     removeFolder: function (packageName, folder, callback) {
@@ -263,6 +285,7 @@ module.exports = function (db, eventBus, callback) {
       },  {w: 1}, callback);
     },
     setActivePackages: function (boxName, packages, callback) {
+      console.log(packages);
       db.collection("boxes")
       .update({
         name: boxName

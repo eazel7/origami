@@ -367,7 +367,9 @@ angular.module("boxes3.manager")
   refreshActive();
   
   $scope.isActive = function (p) {
-    return $scope.activePackages.indexOf(p) !== -1;
+    for (var i = 0; i < $scope.activePackages.length; i++) {
+      if ($scope.activePackages[i].name === p.name) return true;
+    }
   };
 
   $scope.isNotActive = function (p) {
@@ -375,17 +377,17 @@ angular.module("boxes3.manager")
   };
   
   $scope.isDependency = function (p) {
-    return $scope.dependencies !== undefined && !$scope.isActive(p) && $scope.dependencies.indexOf(p) >= 0;
+    return $scope.dependencies !== undefined && !$scope.isActive(p) && $scope.dependencies.indexOf(p.name) >= 0;
   };
   
   $scope.packagePriority = function (p) {
-    return $scope.activePackages.indexOf(p) + 1;
+    for (var i = 0; i < $scope.activePackages.length; i++) {
+      if ($scope.activePackages[i].name === p.name) return i;
+    }
   };
   
-  $scope.priorityUp = function (p, $event) {
-    $event.stopPropagation();
-    
-    var index = $scope.activePackages.indexOf(p);
+  $scope.priorityUp = function (p) {
+    var index = $scope.packagePriority(p);
     if (index == 0) return;
     
     var active = angular.copy($scope.activePackages);
@@ -393,35 +395,44 @@ angular.module("boxes3.manager")
     active[index] = active[index - 1];
     active[index - 1] = p;
     
+    var names = [];
+    
+    for (var i = 0; i < active.length; i++) {
+      names.push(active[i].name);
+    }
+    
     $http
-    .post('/api/box/' + encodeURIComponent($stateParams.boxName) + '/packages/resort', active)
+    .post('/api/box/' + encodeURIComponent($stateParams.boxName) + '/packages/resort', names)
     .success(refreshActive);
   };
   
-  $scope.priorityDown = function (p, $event) {
-    $event.stopPropagation();
+  $scope.priorityDown = function (p) {
+    var index = $scope.packagePriority(p);
     
     var active = angular.copy($scope.activePackages);
     
-    var index = active.indexOf(p);
-    if (index == (active.length - 1)) return;
-    
     active[index] = active[index + 1];
     active[index + 1] = p;
+        
+    var names = [];
+    
+    for (var i = 0; i < active.length; i++) {
+      names.push(active[i].name);
+    }
     
     $http
-    .post('/api/box/' + encodeURIComponent($stateParams.boxName) + '/packages/resort', active)
+    .post('/api/box/' + encodeURIComponent($stateParams.boxName) + '/packages/resort', names)
     .success(refreshActive);
   };
   
   $scope.switchPackage = function (p) {
     if ($scope.isActive(p)) {
       $http
-      .post('/api/box/' + encodeURIComponent($stateParams.boxName) + '/packages/' + encodeURIComponent(p) + '/deactivate')
+      .post('/api/box/' + encodeURIComponent($stateParams.boxName) + '/packages/' + encodeURIComponent(p.name) + '/deactivate')
       .success(refreshActive);
     } else {
       $http
-      .post('/api/box/' + encodeURIComponent($stateParams.boxName) + '/packages/' + encodeURIComponent(p) + '/activate')
+      .post('/api/box/' + encodeURIComponent($stateParams.boxName) + '/packages/' + encodeURIComponent(p.name) + '/activate')
       .success(refreshActive);
     }
   };
@@ -536,15 +547,6 @@ angular.module("boxes3.manager")
   $scope.refreshModules = refreshModules;
   
   refreshModules();
-})
-.controller("PackageRowCtrl", function ($scope, $http) {
-  $scope.$watch('package', function (p) {
-    if (!p) return $scope.packageInfo = null;
-    $http.get('/api/packages/' + encodeURIComponent(p) + '/info')
-    .success(function (info) {
-      $scope.info = info;
-    });
-  });
 })
 .controller("CreateFolderCtrl", function ($scope, $stateParams, $http) {
   $scope.createFolder = function (folderName) {

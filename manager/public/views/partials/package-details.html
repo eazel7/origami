@@ -192,11 +192,11 @@
   <tab heading="Dependencies">
     <div class="well">
       <ul class="list-group">
-        <a class="list-group-item" ng-if="package !== $parent.package" href="javascript:" ng-click="switchDependency(package)" ng-class="{'active': dependsUpon(package)}" ng-repeat="package in otherPackages" ng-controller="PackageRowCtrl">
-          <strong>{{package}}</strong><span class="pull-right">
-          <strong ng-if="info.version">v {{info.version}}</strong>
-          <i ng-show="dependsUpon(package)" class="glyphicon glyphicon-ok"></i></span>
-          <div ng-if="info.description">{{info.description}}</div>
+        <a class="list-group-item" ng-if="package.name !== $parent.package" href="javascript:" ng-click="switchDependency(package.name)" ng-class="{'active': dependsUpon(package.name)}" ng-repeat="package in otherPackages track by package.name">
+          <strong>{{package.name}}</strong><span class="pull-right">
+          <strong ng-if="package.info.version">v {{package.info.version}}</strong>
+          <i ng-show="dependsUpon(package.name)" class="glyphicon glyphicon-ok"></i></span>
+          <div ng-if="package.info.description">{{package.info.description}}</div>
         </a>
       </ul>
     </div>
