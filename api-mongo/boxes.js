@@ -302,16 +302,12 @@ module.exports = function (config, db, users, collections, eventBus, callback) {
               async.series([function (callback) {
                 collections.createCollection(boxName, collectionName, callback);
               }, function (callback) {
-                collections.getCollection(boxName, collectionName, function (err, collection) {
+                collections.remove(boxName, collectionName, {}, function (err) {
                   if (err) return callback (err);
                   
-                  collection.remove({}, function (err) {
-                    if (err) return callback(err);
-                    
-                    async.eachSeries(data, function (obj, callback) {
-                      collection.insert(obj, callback);
-                    }, callback);
-                  });
+                  async.eachSeries(data, function (obj, callback) {
+                    collections.insert(boxName, collectionName, obj, callback);
+                  }, callback);
                 });
               }], entryCallback);
             } else return entryCallback();
