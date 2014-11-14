@@ -136,7 +136,6 @@ module.exports = function (config, db, users, collections, eventBus, callback) {
       return getBox(boxName, callback);
     },
     getBoxInfo: function (boxName, callback) {
-      debugger;
       getBox(boxName, function (err, box) {
         return callback(err, box && box.info ? box.info : null);
       });
