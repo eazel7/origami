@@ -37,7 +37,6 @@
     "morgan": "^1.1.1",
     "origami-api-mongo": "*",
     "origami-app": "*",
-    "origami-auth-local": "*",
     "origami-random-names": "*",
     "passport": "~0.2.0",
     "passport.socketio": "^3.2.0",
