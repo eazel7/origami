@@ -10,6 +10,7 @@ module.exports = function (api, boxName, workflowId, input, successCallback, err
     }, api),
     boxName: boxName,
     input: input,
+    async: require('async'),
     db: {
       getCollection: function (collectionName) {
         return {

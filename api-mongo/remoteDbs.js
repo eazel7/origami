@@ -29,6 +29,7 @@ module.exports = function (db, connect, callback) {
         }
       });
     },
+    ObjectID: mongo.ObjectID,
     listForBox: function (box, callback) {
       db
       .collection("remote_dbs")
