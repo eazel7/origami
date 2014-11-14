@@ -8,6 +8,8 @@ module.exports = function () {
     listPackages: function (req, res) {
       var api = req.api;
       
+      debugger;
+      
       api.packages.listPackages(function (err, packages) {
         if (err) {
           console.error(err);

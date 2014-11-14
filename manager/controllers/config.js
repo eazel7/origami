@@ -1,11 +1,11 @@
-module.exports = function () {
+module.exports = function (config) {
   return {
     infoScript: function(req, res) {
       var api = req.api;
       
       var script = 'angular.module(\'box.manager.configInfo\', [])\n' +
                  '.value(\'configInfo\', ' + JSON.stringify({
-                  prefix: api.config.prefix
+                  prefix: config.prefix
                  }) +  ');';
    
       res.setHeader('Content-Type', 'application/javascript');

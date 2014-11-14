@@ -11,7 +11,10 @@ module.exports = function (config, callback) {
     var eventBus = new events.EventEmitter(),
         self = {
           config: config,
-          eventBus: eventBus
+          eventBus: eventBus,
+          wrapper: function (contextProvider, onfail) {
+            return require('./api-wrapper')(contextProvider, onfail, self);
+          }
         };
     
     eventBus.setMaxListeners(0);

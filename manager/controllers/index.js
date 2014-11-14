@@ -1,7 +1,7 @@
-module.exports = function () {
+module.exports = function (config) {
   return {
     boxes: require('./boxes')(),
-    config: require('./config')(),
+    config: require('./config')(config),
     misc: require('./misc')(),
     users: require('./users')(),
     views: require('./views')(),

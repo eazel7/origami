@@ -1,6 +1,7 @@
 module.exports = function (boxName) {
   return {
     getCollections: function (req, res) {
+      debugger;
       var api = req.api;
 
       return api.collections.getCollections(
@@ -16,7 +17,6 @@ module.exports = function (boxName) {
           {
             if (names[i][0] === '_') names.splice(i, 1);
           }
-
 
           return res.json(names);
         });

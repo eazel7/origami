@@ -34,7 +34,8 @@ function findAsset(req, url, res, next) {
 
 module.exports = function (boxName, app, callback) {
   var boxApi = require('./boxApiHandlers')(boxName),
-      fs = require('fs');
+      fs = require('fs'),
+      express = require('express');
       
   var mmm = require('mmmagic');
   var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);

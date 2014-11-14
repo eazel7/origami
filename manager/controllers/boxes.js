@@ -55,23 +55,23 @@ module.exports = function () {
         }
       });
     },
-    getBoxAccess: function (req, res) {
-      var api = req.api;
-      
-      api.boxes.getBox(req.params.boxName, function (err, box) {
-        if (!box) {
-          res.status(404);
-          res.end();
-        } else {
-          res.json({
-            server: api.config.mongo.host,
-            port: api.config.mongo.port,
-            username: 'readUser',
-            password: box.accessPassword
-          });
-        }
-      });
-    },
+//    getBoxAccess: function (req, res) {
+//      var api = req.api;
+//      
+//      api.boxes.getBox(req.params.boxName, function (err, box) {
+//        if (!box) {
+//          res.status(404);
+//          res.end();
+//        } else {
+//          res.json({
+//            server: api.config.mongo.host,
+//            port: api.config.mongo.port,
+//            username: 'readUser',
+//            password: box.accessPassword
+//          });
+//        }
+//      });
+//    },
     listBoxUsers: function (req, res) {
       var api = req.api;
       

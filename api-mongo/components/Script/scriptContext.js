@@ -1,5 +1,14 @@
 module.exports = function (api, boxName, workflowId, input, successCallback, errorCallback) {
   return { 
+    api: api.wrapper(function () {
+      return {
+        boxName: boxName,
+        workflowOf: boxName
+      };
+    }, function () {
+      throw new Error('Invalid API usage in ' + workflowId);
+    }, api),
+    boxName: boxName,
     input: input,
     db: {
       getCollection: function (collectionName) {

@@ -326,12 +326,12 @@ $stateProvider.state('manageBox', {
         return configInfo.prefix + boxName + '/#/';
       };
       
-      $http.get('/api/box/' + boxName + '/access')
-      .success(function (access) {
-        $scope.mongoUrl = function (showPassword) {
-          return 'mongodb://readUser' + (!showPassword ? ':' + access.password : '') +'@' + access.server + (access.port && access.port === 27017 ? ':' + access.port.toString() : '') + '/' + boxName;
-        };
-      });
+//      $http.get('/api/box/' + boxName + '/access')
+//      .success(function (access) {
+//        $scope.mongoUrl = function (showPassword) {
+//          return 'mongodb://readUser' + (!showPassword ? ':' + access.password : '') +'@' + access.server + (access.port && access.port === 27017 ? ':' + access.port.toString() : '') + '/' + boxName;
+//        };
+//      });
     }
   });
 })

@@ -10,7 +10,7 @@ module.exports = function(app, rawApi) {
       express = require('express'),
       env = app.get('env');
 
-  var controllers = require('./controllers')();
+  var controllers = require('./controllers')(config);
 
   controllers.authentication.install(app, rawApi);
 
@@ -178,8 +178,8 @@ module.exports = function(app, rawApi) {
   .get(controllers.boxes.getBoxInfo);
 
   app
-  .route('/api/box/:boxName/access')
-  .get(controllers.boxes.getBoxAccess);
+//  .route('/api/box/:boxName/access')
+//  .get(controllers.boxes.getBoxAccess);
 
   app
   .route('/api/box/:boxName/export')

@@ -7,7 +7,7 @@ module.exports = function (db, settings, callback) {
       .toArray(callback);
     },
     setCreateBoxQuota: function (alias, quota, callback) {
-      self.getUserMetadata(alias, function (err, metadata) {
+      self.getUserMetadata(alias.toLowerCase(), function (err, metadata) {
         if (err) return callback(err);
         
         metadata.createBoxQuota = quota;
@@ -16,7 +16,7 @@ module.exports = function (db, settings, callback) {
       });
     },
     getCreateBoxQuota: function (alias, callback) {
-      self.getUserMetadata(alias, function (err, metadata) {
+      self.getUserMetadata(alias.toLowerCase(), function (err, metadata) {
         if (err) return callback(err);
         
         callback(null, metadata.createBoxQuota);
@@ -61,7 +61,7 @@ module.exports = function (db, settings, callback) {
       db
       .collection('users')
       .findOne({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, callback);
     },
     enableUser: function (userAlias, boxName, role, callback) {
@@ -72,7 +72,7 @@ module.exports = function (db, settings, callback) {
       db
       .collection('users')
       .findOne({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, function (err, doc) {
         var roles = doc.roles || {};
 
@@ -95,20 +95,20 @@ module.exports = function (db, settings, callback) {
       db
       .collection('users')
       .findOne({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, function (err, doc) {
         if (doc) return callback('User alias already exists');
         
         db
         .collection('users')
         .insert({
-          alias: userAlias,
+          alias: userAlias.toLowerCase(),
           displayName: displayName,
           roles: {}
         }, function (err) {
           self.getMasterUser(function (err, master) {
             if (!master) {
-              self.setMasterUser(userAlias, callback);
+              self.setMasterUser(userAlias.toLowerCase(), callback);
             } else {
               callback (err);
             }
@@ -120,7 +120,7 @@ module.exports = function (db, settings, callback) {
       db
       .collection('users')
       .findOne({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, function (err, doc) {
         if (doc && doc.roles) {
           return callback(err, doc.roles[boxName]);
@@ -133,7 +133,7 @@ module.exports = function (db, settings, callback) {
       db
       .collection('users')
       .findOne({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, function (err, doc) {
         var roles = doc.roles || {};
 
@@ -156,7 +156,7 @@ module.exports = function (db, settings, callback) {
       db
       .collection("users")
       .count({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, function (err, count) {
         callback(null, count === 1);
       });
@@ -165,7 +165,7 @@ module.exports = function (db, settings, callback) {
       db
       .collection("users")
       .remove({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, callback);
     },
     /**
@@ -187,7 +187,7 @@ module.exports = function (db, settings, callback) {
       db
       .collection('users')
       .findOne({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, function (err, doc) {
         var boxNames = [];
 
@@ -221,7 +221,7 @@ module.exports = function (db, settings, callback) {
       db
       .collection('users')
       .findOne({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, function (err, doc) {
         var boxNames = [];
 
@@ -238,7 +238,7 @@ module.exports = function (db, settings, callback) {
       db
       .collection('users')
       .findOne({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, {
         metadata: 1
       }, function (err, doc) {
@@ -251,7 +251,7 @@ module.exports = function (db, settings, callback) {
       db
       .collection('users')
       .update({
-        alias: userAlias
+        alias: userAlias.toLowerCase()
       }, {
         $set: {
           metadata: metadata

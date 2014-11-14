@@ -15,17 +15,17 @@ module.exports = {
     importBoxes: isMasterUser
   },
   collections: {
-    getCollection: anyOf(isBoxAdmin, allOf(isBoxActive, isBoxUser)),
-    getCollections: anyOf(isMasterUser,isBoxUser),
-    find: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
-    findOne: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
-    count: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
-    update: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].update'))),
-    insert: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].insert'))),
-    remove: anyOf(isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].remove'))),
-    createCollection: anyOf(allOf(isBoxDeveloper,isBoxActive),isBoxAdmin),
-    createServerCollection: anyOf(allOf(isBoxDeveloper,isBoxActive),isBoxAdmin),
-    destroyCollection: anyOf(allOf(isBoxDeveloper,isBoxActive),isBoxAdmin)
+    getCollection: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, isBoxUser)),
+    getCollections: anyOf(isWorkflow, isMasterUser,isBoxUser),
+    find: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
+    findOne: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
+    count: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
+    update: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].update'))),
+    insert: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].insert'))),
+    remove: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].remove'))),
+    createCollection: anyOf(isWorkflow, allOf(isBoxDeveloper,isBoxActive),isBoxAdmin),
+    createServerCollection: anyOf(isWorkflow, allOf(isBoxDeveloper,isBoxActive),isBoxAdmin),
+    destroyCollection: anyOf(isWorkflow, allOf(isBoxDeveloper,isBoxActive),isBoxAdmin)
   },
   packages: {
     rebuildManifests: isMasterUser,
@@ -41,51 +41,51 @@ module.exports = {
     disableUser: isBoxAdmin
   },
   permissions: {
-    createPermissionGroup: isBoxDeveloper,
-    listPermissionGroups: isBoxDeveloper,
-    describePermissionGroup: anyOf(isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
-    modifyPermissionGroup: isBoxDeveloper,
-    deletePermissionGroup: isBoxDeveloper,
-    addUserToGroup: anyOf(isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
-    removeUserFromGroup: anyOf(isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
-    listUsersInGroup: isBoxDeveloper,
+    createPermissionGroup: anyOf(isWorkflow, isBoxDeveloper),
+    listPermissionGroups: anyOf(isWorkflow, isBoxDeveloper),
+    describePermissionGroup: anyOf(isWorkflow, isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
+    modifyPermissionGroup: anyOf(isWorkflow, isBoxDeveloper),
+    deletePermissionGroup: anyOf(isWorkflow, isBoxDeveloper),
+    addUserToGroup: anyOf(isWorkflow, isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
+    removeUserFromGroup: anyOf(isWorkflow, isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
+    listUsersInGroup: anyOf(isWorkflow, isBoxDeveloper),
     setMasterUser: isMasterUser
   },
   schedules: {
-    stopSchedule: isBoxDeveloper,
-    startSchedule: anyOf(isBoxAdmin,allOf(isBoxActive,isBoxDeveloper))
+    stopSchedule: anyOf(isWorkflow, isBoxDeveloper),
+    startSchedule: anyOf(isWorkflow, isBoxAdmin,allOf(isBoxActive,isBoxDeveloper))
   },
   users: {
     listUsers: isLoggedIn,
-    listBoxUsers: isBoxDeveloper,
-    enableUser: isBoxDeveloper,
-    getUserRole: isBoxDeveloper,
-    disableUser: isBoxDeveloper,
+    listBoxUsers: anyOf(isWorkflow, isBoxDeveloper),
+    enableUser: anyOf(isWorkflow, isBoxDeveloper),
+    getUserRole: anyOf(isWorkflow, isBoxDeveloper),
+    disableUser: anyOf(isWorkflow, isBoxDeveloper),
     getUserMetadata: rejectAlways,
     setUserMetadata: rejectAlways,
-    isValid: isBoxUser,
-    listViews: anyOf(isBoxDeveloper,allOf(isBoxActive, isBoxUser)),
-    getView: anyOf(isBoxDeveloper,allOf(isBoxActive, isBoxUser)),
-    removeView: allOf(isBoxActive, isBoxDeveloper),
-    saveView: allOf(isBoxActive, isBoxDeveloper),
+    isValid: anyOf(isWorkflow, isBoxUser),
+    listViews: anyOf(isWorkflow, isBoxDeveloper,allOf(isBoxActive, isBoxUser)),
+    getView: anyOf(isWorkflow, isBoxDeveloper,allOf(isBoxActive, isBoxUser)),
+    removeView: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper)),
+    saveView: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper)),
     setCreateBoxQuota: isMasterUser,
     setMasterUser: isMasterUser
   },
   workflows: {
-    listPastWorkflows: isBoxDeveloper,
-    getWorkflowResult: isBoxDeveloper,
-    setWorkflowResult: isBoxDeveloper,
-    listRunningWorkflows: isBoxDeveloper,
-    getActiveConnections: isBoxDeveloper,
-    getOutput: isBoxDeveloper,
-    saveWorkflowEndDate: isBoxDeveloper,
-    saveWorkflowStartDate: isBoxDeveloper,
-    startWorkflow: allOf(isBoxActive, anyOf(isBoxDeveloper, hasPermission('graphs[graphId].startInstances'))),
-    stopWorkflow: allOf(isBoxActive, anyOf(isBoxDeveloper, addGraphIdToArgumentsFromWorkflowId('workflowId', hasPermission('graphs[graphId].stopInstances')))),
-    listGraphs: isBoxDeveloper,
-    saveGraph: allOf(isBoxActive,isBoxDeveloper),
-    removeGraph: allOf(isBoxActive, isBoxDeveloper),
-    listComponents: allOf(isBoxActive, isBoxDeveloper)
+    listPastWorkflows: anyOf(isWorkflow, isBoxDeveloper),
+    getWorkflowResult: anyOf(isWorkflow, isBoxDeveloper),
+    setWorkflowResult: anyOf(isWorkflow, isBoxDeveloper),
+    listRunningWorkflows: anyOf(isWorkflow, isBoxDeveloper),
+    getActiveConnections: anyOf(isWorkflow, isBoxDeveloper),
+    getOutput: anyOf(isWorkflow, isBoxDeveloper),
+    saveWorkflowEndDate: anyOf(isWorkflow, isBoxDeveloper),
+    saveWorkflowStartDate: anyOf(isWorkflow, isBoxDeveloper),
+    startWorkflow: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper, hasPermission('graphs[graphId].startInstances'))),
+    stopWorkflow: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper, addGraphIdToArgumentsFromWorkflowId('workflowId', hasPermission('graphs[graphId].stopInstances')))),
+    listGraphs: anyOf(isWorkflow, isBoxDeveloper),
+    saveGraph: allOf(isBoxActive,anyOf(isWorkflow, isBoxDeveloper)),
+    removeGraph: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper)),
+    listComponents: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper))
   },
   settings: {
     get: isMasterUser,
@@ -293,6 +293,14 @@ function addGraphIdToArgumentsFromWorkflowId(paramName, then) {
       });
     });
   };
+}
+
+function isWorkflow(context, api, callback) {
+  context.checks.push('is workflow');
+  
+  if (!context.boxName) return callback('missing box name', false);
+  
+  return callback(null, context.workflowOf === context.boxName);
 }
 
 function rejectAlways () {

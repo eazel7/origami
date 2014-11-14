@@ -46,10 +46,10 @@ module.exports = {
                   component.outPorts.success.disconnect();
                 },
                 errorCallback = function (err) {
-                  component.error.success.send(data);
-                  component.error.success.disconnect();
+                  component.outPorts.error.send(data);
+                  component.outPorts.error.disconnect();
                 };
-            
+            var scriptContext = require('./scriptContext');
             vm.runInNewContext(component.script, scriptContext(component.api, component.boxName, component.workflowId, data, successCallback, errorCallback), component.workflowId + '.vm');
           }
         })(this);
