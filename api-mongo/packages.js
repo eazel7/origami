@@ -613,7 +613,7 @@ module.exports = function (db, eventBus, callback) {
       self.createPackage(packageName, function (err) {
         if (err) return importCallback(err);
       
-        self.updatePackage(packageName, zip, importCallback, silent);
+        self.updatePackage(packageName, zippedBuffer, importCallback, silent);
       });
     },
     updatePackage: function(packageName, zippedBuffer, importCallback, silent) {
