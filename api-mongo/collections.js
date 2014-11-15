@@ -46,7 +46,7 @@ module.exports = function (db, collectionWrapper, router, callback) {
       getCollection(boxName, collectionName, function (err, collection) {
         if (err) return callback(err);
         
-        collection.find(predicate, callback);
+        collection.remove(predicate, callback);
       });
     },
     insert: function (boxName, collectionName, object, callback, browserKey) {
