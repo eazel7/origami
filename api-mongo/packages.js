@@ -1,7 +1,8 @@
 module.exports = function (db, eventBus, callback) {
   var Grid = require('mongodb').Grid,
       async = require('async'),
-      path = require('path');
+      path = require('path'),
+      archiver = require('archiver');
       
   function createManifest(allAssets) {
     return 'CACHE MANIFEST\n#' +
@@ -805,8 +806,6 @@ module.exports = function (db, eventBus, callback) {
       });
     },
     exportPackage: function (packageName, callback) {
-      var archiver = require('archiver');
-
       var zip = archiver.create('zip', {});
       
       var zipBuffer = new Buffer([]);
@@ -928,9 +927,16 @@ module.exports = function (db, eventBus, callback) {
       });
     },
     exportAllPackages: function (callback) {
-      var AdmZip = require('adm-zip');
-
-      var zip = new AdmZip();
+      var zip = new archiver('zip'),
+      zipBuffer = new Buffer([]);
+      
+      zip.on('data', function (data) {
+        zipBuffer = Buffer.concat([zipBuffer, data]);
+      });
+      
+      zip.on('end', function () {
+        callback(null, zipBuffer);
+      });
     
       self.listPackages(function (err, packages) {
         if (err) return callback(err);
@@ -940,7 +946,7 @@ module.exports = function (db, eventBus, callback) {
             if (err) return callback (err);
           
             try {
-              zip.addFile("packages/" + p.name, buffer);
+              zip.append(buffer, { name: "packages/" + p.name });
             } catch (e) {
               return callback (e);
             }
@@ -950,7 +956,7 @@ module.exports = function (db, eventBus, callback) {
         }, function (err) {
           if (err) return callback(err);
           
-          callback (null, zip.toBuffer());
+          zip.finalize();
         });
       });
     },
