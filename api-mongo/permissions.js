@@ -40,25 +40,33 @@ module.exports = function (collections, users, callback) {
       if (!boxName) return callback(new Error("No box name given"));
       if (!alias) return callback(new Error("No user alias given"));
       
-      self.getEffectivePermissions(boxName, alias, function (err, effective) {
+      users.getUserRole(alias, boxName, function (err, role) {
         if (err) return callback (err);
         
-        var syncCollections = [];
-        
-        for (var c in effective.collections) {
-          if (effective.collections[c].sync) syncCollections.push(c);
-        }
-    
-        if (syncCollections.indexOf("_views") === -1 || syncCollections.indexOf("_graphs") === -1) {
-          users.getUserRole(alias, boxName, function (err, role) {
+        if (['owner', 'admin', 'dev'].indexOf(role) !== -1) {
+          return collections.getCollections(boxName, callback);
+        } else {
+          self.getEffectivePermissions(boxName, alias, function (err, effective) {
             if (err) return callback (err);
             
-            if (["owner", "admin", "dev"].indexOf(role) !== -1) {
-              if (syncCollections.indexOf("_views") === -1) syncCollections.push("_views");
-              if (syncCollections.indexOf("_graphs") === -1) syncCollections.push("_graphs");
+            var syncCollections = [];
+            
+            for (var c in effective.collections) {
+              if (effective.collections[c].sync) syncCollections.push(c);
             }
         
-            callback (null, syncCollections);
+            if (syncCollections.indexOf("_views") === -1 || syncCollections.indexOf("_graphs") === -1) {
+              users.getUserRole(alias, boxName, function (err, role) {
+                if (err) return callback (err);
+                
+                if (["owner", "admin", "dev"].indexOf(role) !== -1) {
+                  if (syncCollections.indexOf("_views") === -1) syncCollections.push("_views");
+                  if (syncCollections.indexOf("_graphs") === -1) syncCollections.push("_graphs");
+                }
+            
+                callback (null, syncCollections);
+              });
+            }
           });
         }
       });
