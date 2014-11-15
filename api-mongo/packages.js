@@ -124,10 +124,15 @@ module.exports = function (db, eventBus, callback) {
   var self = {
     getActivePackagesWithDependencies: function (boxName, callback) {
       self.getActivePackages(boxName, function (err, packages) {
+        if (err) {
+          console.error(err);
+          return callback (err);
+        }
+      
         var activePackages = [];
         
         for (var i = 0; i < packages.length; i++) {
-          activePackages.push(packages[i].name);
+          if (packages[i]) activePackages.push(packages[i].name);
         }
       
         if (err) return callback (err);
@@ -137,7 +142,10 @@ module.exports = function (db, eventBus, callback) {
           
           self.getDependencies(depName, callback);
         }, function (err, deps) {
-          if (err) return callback(err);
+          if (err) {
+            console.error(err);
+            return callback(err);
+          }
         
           deps.splice(deps.indexOf(boxName), 1);
           
@@ -165,11 +173,19 @@ module.exports = function (db, eventBus, callback) {
       }, {w: 1}, function (err) {
         if (err) callback (err);
         
-        if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, function (err) {
-          console.log(err);
-          callback(err);
-        });
-        else callback ();
+        if (!silent) {
+          updateBoxesManifest(self.getActivePackagesWithDependencies, function (err) {
+            if (err) {
+              console.error(err);
+              return callback (err);
+            }
+            
+            callback();
+          });
+        }
+        else {
+          callback ();
+        }
       });
     },
     getPackageType: function (packageName, callback) {
@@ -262,12 +278,21 @@ module.exports = function (db, eventBus, callback) {
           }
         })
         .toArray(function (err, docs) {
-          if (err) return callback (err);
+          if (err) {
+            console.error(err);
+            return callback (err);
+          }
           
           var ordered = [];
           
           for (var i = 0; i < docs.length; i++) {
-            ordered[doc.packages.indexOf(docs[i].name)] = docs[i];
+            if (docs[i]) {
+              ordered[doc.packages.indexOf(docs[i].name)] = docs[i];
+            }
+          }
+          
+          for (var i = ordered.length - 1; i > 0; i--) {
+            if (!ordered[i]) ordered.splice(i, 1);
           }
           
           callback (null, ordered);
@@ -285,7 +310,6 @@ module.exports = function (db, eventBus, callback) {
       },  {w: 1}, callback);
     },
     setActivePackages: function (boxName, packages, callback) {
-      console.log(packages);
       db.collection("boxes")
       .update({
         name: boxName
@@ -351,7 +375,6 @@ module.exports = function (db, eventBus, callback) {
       });
     },
     createPackage: function(name, callback) {
-      debugger;
       db.collection("packages").count({
         name: name
       }, function (err, count) {
@@ -360,7 +383,12 @@ module.exports = function (db, eventBus, callback) {
         if (count === 0) {
           db.collection("packages").insert({
             name: name,
-            files: []
+            files: [],
+            folders: [],
+            styles: [],
+            angularModules: [],
+            info: { version: '1', description: ''},
+            scripts: []
           }, {w: 1}, callback);
         } else {
           callback ();
@@ -611,8 +639,11 @@ module.exports = function (db, eventBus, callback) {
       var packageName = zip.getEntry("packageName.txt").getData().toString();
       
       self.createPackage(packageName, function (err) {
-        if (err) return importCallback(err);
-      
+        if (err) {
+          console.error(err);
+          return importCallback(err);
+        }
+        
         self.updatePackage(packageName, zippedBuffer, importCallback, silent);
       });
     },
@@ -672,27 +703,37 @@ module.exports = function (db, eventBus, callback) {
                 
             self.createAsset(packageName, assetPath, function (err) {
               if (err) {
+                console.error(err);
                 return entryCallback(err);
               } else {
                 self.updateAsset(packageName, assetPath, entryBuffer, function (err) {
                   if (err) {
+                    console.error(err);
                     return entryCallback(err);
                   } else {
                     self.setAssetMetadata(packageName, assetPath, entryMetadata, function (err) {
-                      if (err) return entryCallback (err);
+                      if (err) {
+                        console.error(err);
+                        return entryCallback (err);
+                      }
                       
                       updatedAssets.push(assetPath);
+                      
+                      entryCallback();
                     }, true);
                   }
                 }, true);
               }
             }, true);
           }, function (err) {
-            if (err) return callback(err);
+            if (err) {
+              console.error(err);
+              return callback(err);
+            }
             
             async.eachSeries(previousAssets, function (previousAsset, callback) {
               if (updatedAssets.indexOf(previousAsset) == -1) {
-                self.removeAsset (packageName, previousAsset, callback);
+                return self.removeAsset (packageName, previousAsset, callback);
               }
               
               callback();
@@ -764,10 +805,21 @@ module.exports = function (db, eventBus, callback) {
       });
     },
     exportPackage: function (packageName, callback) {
-      var AdmZip = require('adm-zip');
+      var archiver = require('archiver');
 
-      var zip = new AdmZip(),
-          mergedMetadata = {};
+      var zip = archiver.create('zip', {});
+      
+      var zipBuffer = new Buffer([]);
+      
+      var mergedMetadata = {};
+      
+      zip.on('data', function (data) {
+        zipBuffer = Buffer.concat([zipBuffer, data]);
+      });
+      
+      zip.on('end', function () {
+        callback(null, zipBuffer);
+      });
 
       self.listAssets(packageName, function (err, assets) {
         if (err) return callback (err);
@@ -777,8 +829,6 @@ module.exports = function (db, eventBus, callback) {
           self.getAsset(packageName, assetPath, function (err, assetBuffer) {
             if (err) return assetCallback(err);
             
-            zip.addFile("assets/" + assetPath, assetBuffer);
-            
             self.getAssetMetadata(packageName, assetPath, function (err, metadata) {
               if (err) return assetCallback (err);
               
@@ -786,6 +836,8 @@ module.exports = function (db, eventBus, callback) {
               delete metadata.package;
               
               mergedMetadata[assetPath] = metadata;
+            
+              zip.append(assetBuffer, { name: "assets/" + assetPath });
               
               assetCallback();                
             });
@@ -793,14 +845,14 @@ module.exports = function (db, eventBus, callback) {
         }, function (err) {
           if (err) return callback (err);
           
-          zip.addFile("metadata.json", new Buffer(JSON.stringify(mergedMetadata, undefined, 2)));
+          zip.append(new Buffer(JSON.stringify(mergedMetadata, undefined, 2)), { name: "metadata.json" });
 
           async.series([
             function(callback){
               self.listScripts(packageName, function (err, scripts) {
                 if (err) return callback (err);
                 
-                zip.addFile("scripts.json", new Buffer(JSON.stringify(scripts, undefined, 2)));
+                zip.append(new Buffer(JSON.stringify(scripts, undefined, 2)), { name: "scripts.json" });
                 
                 callback();
               });
@@ -809,7 +861,7 @@ module.exports = function (db, eventBus, callback) {
               self.listAngularModules(packageName, function (err, angularModules) {
                 if (err) return callback (err);
                 
-                zip.addFile("angular-modules.json", new Buffer(JSON.stringify(angularModules, undefined, 2)));
+                zip.append(new Buffer(JSON.stringify(angularModules, undefined, 2)), { name: "angular-modules.json" });
                 
                 callback();
               });
@@ -818,7 +870,7 @@ module.exports = function (db, eventBus, callback) {
               self.listStyles(packageName, function (err, styles) {
                 if (err) return callback(err);
                 
-                zip.addFile("styles.json", new Buffer(JSON.stringify(styles, undefined, 2)));
+                zip.append(new Buffer(JSON.stringify(styles, undefined, 2)), { name: "styles.json" });
                 
                 callback();
               });
@@ -827,7 +879,7 @@ module.exports = function (db, eventBus, callback) {
               self.listFolders(packageName, function (err, folders) {
                 if (err) return callback(err);
                 
-                zip.addFile("folders.json", new Buffer(JSON.stringify(folders, undefined, 2)));
+                zip.append(new Buffer(JSON.stringify(folders, undefined, 2)), { name: "folders.json" });
                 
                 callback();
               });
@@ -836,13 +888,13 @@ module.exports = function (db, eventBus, callback) {
               self.getPackageInfo(packageName, function (err, info) {
                 if (err) return callback(err);
                 
-                zip.addFile("info.json", new Buffer(JSON.stringify(info, undefined, 2)));
+                zip.append(new Buffer(JSON.stringify(info, undefined, 2)), { name: "info.json" });
                 
                 callback();
               });
             },
             function(callback){
-              zip.addFile("packageName.txt", new Buffer(packageName));
+              zip.append(new Buffer(packageName), { name: "packageName.txt" });
               
               callback();
             },
@@ -850,7 +902,7 @@ module.exports = function (db, eventBus, callback) {
               self.getDependencies(packageName, function (err, dependencies) {
                 if (err) return callback (err);
               
-                zip.addFile("dependencies.json", new Buffer(JSON.stringify(dependencies)));
+                zip.append(new Buffer(JSON.stringify(dependencies)), { name: "dependencies.json" });
               
                 callback();
               });
@@ -859,13 +911,18 @@ module.exports = function (db, eventBus, callback) {
               self.getPackageType(packageName, function (err, packageType) {
                 if (err) return callback (err);
                 
-                zip.addFile("packageType.txt", new Buffer(packageType));
+                zip.append(new Buffer(packageType), { name: "packageType.txt" });
                 
                 callback();
               });
             }],
             function(err) {
-              callback(null, zip.toBuffer());
+              if (err) {
+                console.error(err);
+                return callback(err);
+              }
+              
+              zip.finalize();
             });
         }); 
       });
