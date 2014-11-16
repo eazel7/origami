@@ -42,11 +42,11 @@ module.exports = {
           if (component.outPorts.success.isAttached() && component.outPorts.success.connect()) {
             var vm = require('vm'),
                 successCallback = function (data) {
-                  component.outPorts.success.send(data);
+                  component.outPorts.success.send(data || {});
                   component.outPorts.success.disconnect();
                 },
                 errorCallback = function (err) {
-                  component.outPorts.error.send(data);
+                  component.outPorts.error.send(data || '');
                   component.outPorts.error.disconnect();
                 };
             var scriptContext = require('./scriptContext');

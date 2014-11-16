@@ -1,3 +1,6 @@
+var nodemailer = require('nodemailer');
+var mustache = require('mustache');
+
 module.exports = function (api, boxName, workflowId, input, successCallback, errorCallback) {
   return { 
     api: api.wrapper(function () {
@@ -11,6 +14,16 @@ module.exports = function (api, boxName, workflowId, input, successCallback, err
     boxName: boxName,
     input: input,
     async: require('async'),
+    renderTemplate: function (template, view) {
+      return mustache.render(template, view);
+    },
+    sendMail: function (transport, email, callback) {
+      nodemailer.createTransport(transport).sendMail(email, function(err, info){
+        if(err) return callback(err);
+        
+        return callback(null, info);
+      });
+    },
     db: {
       getCollection: function (collectionName) {
         return {
@@ -103,7 +116,7 @@ module.exports = function (api, boxName, workflowId, input, successCallback, err
       log: function () {
         api.eventBus.emit('workflow-output', boxName, workflowId, {
           date: new Date().valueOf(),
-          string: JSON.stringify(arguments)
+          string: arguments[0]
         });
       }
     } 
