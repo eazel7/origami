@@ -17,7 +17,11 @@ function findAsset(req, url, res, next) {
     res.status(200);
     
     api.packages.getAssetMetadata(packageName, path, function (err, metadata) {
-      if (metadata.use == 'style') {
+      if (path === 'index.html') {
+        res.set({
+          'Content-Type': 'text/html; charset=utf-8'
+        });
+      } else if (metadata.use == 'style') {
         res.set({
           'Content-Type': 'text/css'
         });
