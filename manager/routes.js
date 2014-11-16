@@ -318,6 +318,10 @@ module.exports = function(app, rawApi) {
   .get(controllers.packages.getPackageOwner);
 
   app
+  .route('/api/packages/:packageName/owner')
+  .put(controllers.packages.setPackageOwner);
+
+  app
   .route('/api/packages/:packageName/delete')
   .post(controllers.packages.removePackage);
 

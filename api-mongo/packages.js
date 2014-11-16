@@ -1,4 +1,4 @@
-module.exports = function (db, eventBus, callback) {
+module.exports = function (db, eventBus, users, callback) {
   var Grid = require('mongodb').Grid,
       async = require('async'),
       path = require('path'),
@@ -220,13 +220,19 @@ module.exports = function (db, eventBus, callback) {
       });
     },
     setPackageOwner: function (packageName, alias, callback) {
-      db.collection("packages").update({
-        name: packageName
-      }, {
-        $set: {
-          owner: alias
-        }
-      },  callback);
+      users.isValid(alias, function (err, isValid) {
+        if (err) return callback(err);
+        
+        if (!isValid) return callback ("Invalid user");
+        
+        db.collection("packages").update({
+          name: packageName
+        }, {
+          $set: {
+            owner: alias
+          }
+        },  callback);
+      });
     },
     getPackageInfo: function (packageName, callback) {
       db.collection("packages").findOne({

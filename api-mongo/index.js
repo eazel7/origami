@@ -75,7 +75,7 @@ module.exports = function (config, callback) {
         });
       },
       function (config, db, self, callback) {
-        require('./packages')(db, eventBus, function (err, packages) {
+        require('./packages')(db, eventBus, self.users, function (err, packages) {
           self.packages = packages;
           callback(err);
         });

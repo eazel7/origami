@@ -120,6 +120,19 @@ angular.module("boxes3.manager")
         };
       });
       
+      function getOwner() {
+        $http.get('/api/packages/' + encodeURIComponent($stateParams.packageName) + '/owner')
+        .success(function (owner) {
+          $scope.packageOwner = owner;
+        });
+      }
+      getOwner();
+      
+      $scope.takeOwnership = function () {
+        $http.put('/api/packages/' + encodeURIComponent($stateParams.packageName) + '/owner', { alias: $scope.identity.alias })
+        .success(getOwner);
+      };
+      
       $scope.savePackageInfo = function () {
         $http.put('/api/packages/' + encodeURIComponent($stateParams.packageName) + '/info', $scope.packageInfo || {});
       };

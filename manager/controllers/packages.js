@@ -364,15 +364,14 @@ module.exports = function () {
           res.status(418);
           return res.end();
         }
-        res.json({
-          owner: owner
-        });
+        
+        res.json({alias: owner});
       });
     },
     setPackageOwner: function (req, res) {
       var api = req.api;
       
-      api.packages.setPackageOwner(req.params.packageName, req.body.owner, function (err) {
+      api.packages.setPackageOwner(req.params.packageName, req.body.alias, function (err) {
         if (err) {
           console.error(err);
           res.status(418);

@@ -164,6 +164,10 @@
       </div>
       <h4 class="text-center">Package info</h4>
       <div class="form-group">
+        <label style="display: inline" class="control-label">Owner:</label> {{packageOwner.alias || 'No owner'}}
+        <a ng-click="takeOwnership()" ng-if="!packageOwner.alias" class="btn btn-primary pull-right">Take ownership</a>
+      </div>      
+      <div class="form-group">
         <label class="control-label">Description:</label>
         <textarea rows="2" class="form-control" style="resize: vertical" ng-model="packageInfo.description"></textarea>
       </div>

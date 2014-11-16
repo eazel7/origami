@@ -34,7 +34,25 @@ module.exports = {
     dectivatePackage: isBoxDeveloper,
     setActivePackages: isBoxDeveloper,
     exportAllPackages: isMasterUser,
-    importPackages: isMasterUser
+    importPackages: isMasterUser,
+    getPackageOwner: isLoggedIn,
+    setPackageOwner: anyOf(isMasterUser,isPackageOwner,packageHasNoOwner),
+    setDependencies: anyOf(isMasterUser, isPackageOwner),
+    setPackageInfo: anyOf(isMasterUser, isPackageOwner),
+    setPackageType: anyOf(isMasterUser, isPackageOwner),
+    removeFolder: anyOf(isMasterUser, isPackageOwner),
+    createFolder: anyOf(isMasterUser, isPackageOwner),
+    removePackage: anyOf(isMasterUser, isPackageOwner),
+    createAsset: anyOf(isMasterUser, isPackageOwner),
+    updateAsset: anyOf(isMasterUser, isPackageOwner),
+    removeAsset: anyOf(isMasterUser, isPackageOwner),
+    setAngularModules: anyOf(isMasterUser, isPackageOwner),
+    setStyles: anyOf(isMasterUser, isPackageOwner),
+    setScripts: anyOf(isMasterUser, isPackageOwner),
+    unzipAsset: anyOf(isMasterUser, isPackageOwner),
+    importPackage: anyOf(isMasterUser, isPackageOwner),
+    updatePackage: anyOf(isMasterUser, isPackageOwner),
+    setAssetMetadata: anyOf(isMasterUser, isPackageOwner)
   },
   users: {
     enableUser: isBoxAdmin,
@@ -293,6 +311,27 @@ function addGraphIdToArgumentsFromWorkflowId(paramName, then) {
       });
     });
   };
+}
+
+function isPackageOwner(context, api, callback) {
+  if (!context.arguments.packageName) return callback ('No packageName argument');
+  if (!context.userAlias) return callback ('No user alias');
+  
+  api.packages.getPackageOwner(context.arguments.packageName, function (err, owner) {
+    if (err) return callback(err);
+    
+    return callback(null, owner === context.userAlias);
+  });
+}
+
+function packageHasNoOwner(context, api, callback) {
+  if (!context.arguments.packageName) return callback ('No packageName argument');
+  
+  api.packages.getPackageOwner(context.arguments.packageName, function (err, owner) {
+    if (err) return callback(err);
+    
+    return callback(null, !owner);
+  });
 }
 
 function isWorkflow(context, api, callback) {
