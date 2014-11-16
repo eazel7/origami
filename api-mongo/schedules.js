@@ -65,7 +65,7 @@ module.exports = function (boxes, collections, workflows, callback) {
         j = jobsBySched[boxName + ':' + id] = nodeSched.scheduleJob(new Date(nextRun), function(){
           var runningToday = sched.days[['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()]];
         
-          collection.update({ _id: id }, { $set: { running: true, lastRun: new Date().valueOf() } }, function (err) {
+          collections.update(boxName, "_schedules", { _id: id }, { $set: { running: true, lastRun: new Date().valueOf() } }, function (err) {
             if (err) console.error(err);
 
             if (runningToday) {
