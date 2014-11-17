@@ -224,6 +224,10 @@ module.exports = function (db, settings, callback) {
         alias: userAlias.toLowerCase()
       }, function (err, doc) {
         var boxNames = [];
+        
+        if (!doc) {
+          return callback (null,  []);
+        }
 
         if (doc.roles) {
           for (var boxName in doc.roles) {
