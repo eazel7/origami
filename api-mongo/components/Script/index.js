@@ -1,4 +1,4 @@
-var request = require('request'), Q = require('q');
+var request = require('request'), Q = require('q'), instrument = require('./instrument');
 
 module.exports = {
   getComponent: function () {
@@ -50,7 +50,14 @@ module.exports = {
                   component.outPorts.error.disconnect();
                 };
             var scriptContext = require('./scriptContext');
-            vm.runInNewContext(component.script, scriptContext(component.api, component.boxName, component.workflowId, data, successCallback, errorCallback), component.workflowId + '.vm');
+            try {
+              var instrumented = instrument(component.script);
+            
+              vm.runInNewContext(instrumented, scriptContext(component.api, component.boxName, component.workflowId, data, successCallback, errorCallback), component.workflowId + '.vm');
+            } catch (e) {
+              console.error(e);
+              errorCallback(e);
+            }
           }
         })(this);
       };

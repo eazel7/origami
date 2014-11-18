@@ -13,6 +13,7 @@ module.exports = function (api, boxName, workflowId, input, successCallback, err
     }, api),
     boxName: boxName,
     input: input,
+    JSON: JSON,
     async: require('async'),
     renderTemplate: function (template, view) {
       return mustache.render(template, view);
