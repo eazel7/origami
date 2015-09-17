@@ -7,5 +7,6 @@ WORKDIR /src
 RUN npm install
 
 RUN mkdir /data
+RUN git clone https://github.com/eazel7/origami-packs.git /packs
 
 ENTRYPOINT mongod --logpath=/root/mongod.log --dbpath=/data --fork && node .
