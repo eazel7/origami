@@ -52,9 +52,9 @@
     "password-hash": "^1.2.2",
     "q": "^1.0.1",
     "request": "^2.39.0",
+    "serve-favicon": "^2.3.0",
     "socket.io": "^1.0.6",
     "spdy": "^1.27.0",
-    "static-favicon": "~2.0.0-alpha",
     "string": "^1.9.1",
     "xtend": "^2.0.6"
   }

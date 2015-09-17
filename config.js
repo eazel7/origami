@@ -17,13 +17,13 @@ if (process.env.OPENSHIFT_APP_NAME) {
     password: process.env.OPENSHIFT_MONGODB_DB_PASSWORD
   };
 
-  override(config.auth['origami-auth-local'].mongo, newMongo);
-  override(config.mongo, newMongo); 
+  override(config.auth['../auth-local'].mongo, newMongo);
+  override(config.mongo, newMongo);
   override(config.mongoSessions, newMongo);
-  
+
   config.mongoSessions.db = config.mongoSessions.database;
   delete config.mongoSessions.database;
-  
+
   config.protocol = 'http';
   config.prefix = 'https://' + process.env.OPENSHIFT_APP_DNS + '/';
   config.ip = process.env.OPENSHIFT_NODEJS_IP;
