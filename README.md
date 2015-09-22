@@ -1,5 +1,7 @@
 # Plataforma Origami para el desarrollo rápido de aplicaciones
 
+[![Join the chat at https://gitter.im/eazel7/origami](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/eazel7/origami?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## Características
 
 - Aplicaciones independientes por url (/{{aplicacion}})
