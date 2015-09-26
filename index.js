@@ -37,13 +37,10 @@ if (config.protocol == 'spdy') {
 
 var io = require('socket.io')(server);
 
-require('./express-io')(app, io);
+require('./express-io')(app, io, function (err) {
+  app.use(morgan('dev'));
 
-app.use(morgan('dev'));
-
-server.listen(config.port, config.ip, function () {
-  console.log('Express server listening on %s://%s:%d/', config.protocol == 'spdy' ? 'https' : 'http', config.ip, config.port);
+  server.listen(config.port, config.ip, function () {
+    console.log('Express server listening on %s://%s:%d/', config.protocol == 'spdy' ? 'https' : 'http', config.ip, config.port);
+  });
 });
-
-// Expose app
-exports = module.exports = app;

@@ -1,0 +1,3 @@
+notify:
+  webhooks:
+    - url: https://webhooks.gitter.im/e/26d4f1d9b9e1812839d1

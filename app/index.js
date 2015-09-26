@@ -2,20 +2,20 @@ var manifestDate = String(Date.now()),
     allAssets = require('./allAssets'),
     formidable = require('formidable');
 
-    
+
 function findAsset(req, url, res, next) {
   var api = req.api, assetsMap = req.assetsMap;
 
   if (!assetsMap[url]) return next();
-  
+
   var packageName = assetsMap[url].packageName,
       path = assetsMap[url].path;
-      
+
   api.packages.getAsset(packageName, path, function (err, buffer) {
     if (err) { res.status(418); return res.end('Not found: ' + JSON.stringify(path)); }
-    
+
     res.status(200);
-    
+
     api.packages.getAssetMetadata(packageName, path, function (err, metadata) {
       if (path === 'index.html') {
         res.set({
@@ -30,7 +30,7 @@ function findAsset(req, url, res, next) {
           'Content-Type': 'application/javascript;charset=utf-8'
         });
       }
-            
+
       res.end(buffer);
     });
   });
@@ -40,7 +40,7 @@ module.exports = function (boxName, app, callback) {
   var boxApi = require('./boxApiHandlers')(boxName),
       fs = require('fs'),
       express = require('express');
-      
+
   var mmm = require('mmmagic');
   var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
 
@@ -48,25 +48,25 @@ module.exports = function (boxName, app, callback) {
     res.status(200);
     res.end();
   });
-  
+
   app.use(function (req, res, next) {
     var api = req.api;
-    
+
     api.packages.getActivePackagesWithDependencies(boxName, function(err, packages) {
       var assetsMap = {};
-      
+
       async.eachSeries(packages, function (dep, callback) {
         api.packages.getPackageType(dep, function (err, packageType) {
           if (packageType === 'global') return callback();
-          
+
           api.packages.listAssets(dep, function (err, assets) {
             if (err) return callback (err);
-            
-          
+
+
             for (var i = 0; i < assets.length; i++) {
               assetsMap['/' + assets[i]] = { path: assets[i], packageName: dep};
             }
-            
+
             callback();
           });
         });
@@ -74,9 +74,9 @@ module.exports = function (boxName, app, callback) {
         if (err) {
           console.error(err);
         }
-            
+
         req.assetsMap = assetsMap;
-          
+
         return next(err);
       });
     });
@@ -84,14 +84,14 @@ module.exports = function (boxName, app, callback) {
 
   app.use(function (req, res, next) {
     var orig = res.send;
-    
+
     res.send = function (body) {
       var self = this, args = arguments;
-      
+
       if (!res.get('Content-Type')) {
         magic.detect(new Buffer(body), function(err, result) {
             res.set('Content-Type', result);
-            
+
             orig.apply(self, args);
         });
       } else {
@@ -117,9 +117,9 @@ module.exports = function (boxName, app, callback) {
         res.status(418);
         return res.end();
       }
-      
+
       res.setHeader('Content-Type', 'text/cache-manifest');
-      
+
       res.send(doc.manifest);
       res.end();
     });
@@ -133,14 +133,13 @@ module.exports = function (boxName, app, callback) {
         res.status(418);
         return res.end();
       }
-      
+
       doc.scripts.unshift("scripts/info.js");
-      doc.scripts.unshift("/socket.io/socket.io.js");
-      
+
       res.json(doc.scripts);
     });
   });
-  
+
   app.get('/styles.json', function (req, res) {
     var api = req.api;
 
@@ -149,11 +148,11 @@ module.exports = function (boxName, app, callback) {
         res.status(418);
         return res.end();
       }
-      
+
       res.json(doc.styles);
     });
   });
-  
+
   app.get('/angular-modules.json', function (req, res) {
     var api = req.api;
 
@@ -162,11 +161,11 @@ module.exports = function (boxName, app, callback) {
         res.status(418);
         return res.end();
       }
-      
+
       res.json(doc.angularModules || []);
     });
   });
-  
+
   app.get('/api/graphs/componentGallery', function (req, res) {
     var api = req.api;
 
@@ -174,7 +173,7 @@ module.exports = function (boxName, app, callback) {
       res.json(gallery);
     });
   });
-  
+
   app.get('/api/collections', boxApi.getSyncCollections);
   app.post('/api/collection/:collection/find', boxApi.findInCollection);
   app.post('/api/collection/:collection/count', boxApi.countInCollection);
@@ -223,7 +222,7 @@ module.exports = function (boxName, app, callback) {
 
   app.post('/api/graphs/:graphId/start', function (req, res) {
     var api = req.api;
-    
+
     api.workflows.startWorkflow(boxName, req.params.graphId, req.body || {}, function (err, graphs){
       if (err) {
         res.status(418);
@@ -262,11 +261,11 @@ module.exports = function (boxName, app, callback) {
         res.status(418);
         return res.end();
       }
-      
+
       return res.json(output);
     });
   });
-  
+
   app.get('/api/workflows/:workflowId/activeConnections', function (req, res) {
     var api = req.api;
 
@@ -276,11 +275,11 @@ module.exports = function (boxName, app, callback) {
         res.status(418);
         return res.end();
       }
-      
+
       return res.json(active);
     });
   });
-  
+
   app.post('/api/schedules/:id/start', boxApi.startSchedule);
   app.post('/api/schedules/:id/stop', boxApi.stopSchedule);
 
@@ -290,7 +289,7 @@ module.exports = function (boxName, app, callback) {
   app.post('/api/dbs/:name/:collection/insert', boxApi.insertInRemoteDb);
   app.post('/api/dbs/:name/:collection/update', boxApi.updateInRemoteDb);
   app.post('/api/dbs/:name/:collection/remove', boxApi.removeInRemoteDb);
-  
+
   app.get('/api/users', function (req, res) {
     var api = req.api;
 
@@ -325,14 +324,14 @@ module.exports = function (boxName, app, callback) {
       return res.json(response);
     });
   });
-  
+
   app.post('/api/error', function (req, res) {
     var api = req.api;
 
     var error = req.body;
     error.user = req.session.user.alias;
     error.box = boxName;
-    
+
     collection.insert(boxName, "_errors", req.body, function (err) {
       if (err) {
         console.error(err);
@@ -343,21 +342,21 @@ module.exports = function (boxName, app, callback) {
       res.end();
     });
   });
-  
+
   app.get('/', function (req, res, next) {
     var api = req.api;
-    
+
     return findAsset(req, '/index.html', res, next);
   });
-      
+
   app.use(function (req, res, next) {
     var assetsMap = req.assetsMap, api = req.api;
-          
+
     if (!assetsMap[req.url]) return next();
-    
+
     findAsset(req, req.url, res, next);
   });
-  
+
   app.get('/api/download/:id', function (req, res) {
     var api = req.api;
 
@@ -367,7 +366,7 @@ module.exports = function (boxName, app, callback) {
         res.status(418);
         return res.end();
       }
-      
+
       if (!buffer) {
         res.status(404);
         return res.end();
@@ -389,7 +388,7 @@ module.exports = function (boxName, app, callback) {
         res.status(418);
         return res.end();
       }
-      
+
       res.status(200);
       return res.end(buffer);
     });
@@ -403,17 +402,17 @@ module.exports = function (boxName, app, callback) {
         res.status(418);
         return res.end();
       }
-      
+
       res.json(uploads);
     });
   });
-  
+
   app.use('/api/upload', function (req, res) {
     var api = req.api;
 
     var form = new formidable.IncomingForm();
     var uploads = [];
-    
+
     form.parse(req, function (err, fields, files) {
       async.eachSeries(Object.keys(files), function (fileEntry, callback) {
         var file = files[fileEntry],
@@ -422,9 +421,9 @@ module.exports = function (boxName, app, callback) {
 
           api.boxes.uploadFile(boxName, bytes, function (err, res) {
             if (err) return callback (err);
-            
+
             uploads.push(res._id.toString());
-            
+
             callback(null);
           });
       }, function (err) {
@@ -433,16 +432,16 @@ module.exports = function (boxName, app, callback) {
           res.status(418);
           return res.end();
         }
-          
+
         async.eachSeries(Object.keys(fields), function (fileEntry, callback) {
           var filename = fileEntry,
               bytes = new Buffer(fields[fileEntry]);
 
           api.boxes.uploadFile(boxName, bytes, function (err, res) {
             if (err) return callback (err);
-            
+
             uploads.push(res._id.toString());
-            
+
             callback(null);
           });
         }, function (err) {
@@ -451,12 +450,12 @@ module.exports = function (boxName, app, callback) {
             res.status(418);
             return res.end();
           }
-        
+
           res.json(uploads);
         });
       });
     });
   });
-            
+
   callback(null, app);
 };
