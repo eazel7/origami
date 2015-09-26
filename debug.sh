@@ -1,5 +1,3 @@
 #! /bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-(cd $DIR/manager && supervisor --debug -e "js,json" .)
+supervisor --debug -e "js,json" .

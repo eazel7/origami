@@ -9,12 +9,13 @@ var express = require('express'),
     session = require('express-session'),
     path = require('path'),
     config = require('./config'),
+    async = require('async'),
     MongoStore = require('connect-mongo')(session);
 
 /**
  * Express configuration
  */
-module.exports = function(app, io) {
+module.exports = function(app, io, callback) {
   app.use(compression());
 
   if (config.forwardProto) {
@@ -150,6 +151,10 @@ module.exports = function(app, io) {
 
     var browserKeyByUser = {};
 
+    api.eventBus.on('box-created', function (boxName) {
+      io.of('/' + boxName);
+    });
+
     api.eventBus.on('desktop-notification-user', function (boxName, user, message) {
       var ns = io.of('/' + boxName);
       for (var socket in ns.sockets) {
@@ -191,6 +196,16 @@ module.exports = function(app, io) {
 
     api.schedules.ensureSchedules(function (err) {
       if (err) console.log(err);
+    });
+
+    api.boxes.listBoxes(function (err, boxes) {
+      if (err) return callback (err);
+
+      async.eachSeries(boxes, function (box, callback) {
+        io.of('/' + box.name);
+
+        callback();
+      }, callback);
     });
   });
 };
