@@ -1,7 +1,6 @@
 module.exports = function (boxName) {
   return {
     getCollections: function (req, res) {
-      debugger;
       var api = req.api;
 
       return api.collections.getCollections(
@@ -12,7 +11,7 @@ module.exports = function (boxName) {
             res.status(418);
             return res.end();
           }
-          
+
           for (var i = names.length - 1; i >= 0; i--)
           {
             if (names[i][0] === '_') names.splice(i, 1);
@@ -33,7 +32,7 @@ module.exports = function (boxName) {
             res.status(418);
             return res.end();
           }
-          
+
           return res.json(collections);
         });
     },
@@ -42,8 +41,8 @@ module.exports = function (boxName) {
 
       return api.collections.find(
         boxName,
-        req.params.collection, 
-        req.body || {}, 
+        req.params.collection,
+        req.body || {},
         function (err, docs) {
           if (err) {
             console.log({ box: boxName, url: req.params.url, err: err});
@@ -59,7 +58,7 @@ module.exports = function (boxName) {
 
       return api.collections.findOne(
         boxName,
-        req.params.collection, 
+        req.params.collection,
         req.body || {},
         function (err, doc) {
           if (err) {
@@ -96,9 +95,9 @@ module.exports = function (boxName) {
       var api = req.api;
 
       return api.collections.remove(
-        boxName, 
+        boxName,
         req.params.collection,
-        req.body || {}, 
+        req.body || {},
         function (err) {
           if (err) {
             console.log({ box: boxName, url: req.params.url, err: err});
@@ -116,7 +115,7 @@ module.exports = function (boxName) {
       return api.collections.insert(
         boxName,
         req.params.collection,
-        req.body || {}, 
+        req.body || {},
         function (err, newDoc) {
           if (err) {
             console.log({ box: boxName, url: req.params.url, err: err});
@@ -133,7 +132,7 @@ module.exports = function (boxName) {
       return api.collections.update(
         boxName,
         req.params.collection,
-        (req.body || {}).predicate || {}, 
+        (req.body || {}).predicate || {},
         (req.body || {}).replacement || {},
         function (err, newDoc) {
           if (err) {
@@ -143,7 +142,7 @@ module.exports = function (boxName) {
           }
 
           res.status(200);
-          
+
           return res.end();
         }, req.headers['box.browserkey']);
     },
@@ -315,7 +314,7 @@ module.exports = function (boxName) {
         res.status(418);
         return res.end();
       }
-      
+
       api.syncWrapper.getLog(boxName, function (err, log) {
         log
         .find({
@@ -329,7 +328,7 @@ module.exports = function (boxName) {
 
           require('./compressOps')(docs, boxName, api, function (err, compressedOps) {
             if (err) return handleErr(err);
-            
+
             console.log('Compression: ' + rawOps + ' vs ' + compressedOps.length);
 
             res.json(docs || []);
@@ -347,7 +346,7 @@ module.exports = function (boxName) {
         } else {
           res.status(200);
         }
-        
+
         res.end();
       });
     },
@@ -361,7 +360,7 @@ module.exports = function (boxName) {
         } else {
           res.status(200);
         }
-        
+
         res.end();
       });
     }

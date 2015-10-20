@@ -25,7 +25,7 @@ angular.module('boxes3.manager')
         for (var k in $window.localStorage) {
           delete $window.localStorage[k];
         }
-        
+
         if ($window.indexedDB.webkitGetDatabaseNames) {
           $window.indexedDB.webkitGetDatabaseNames().onsuccess = function(sender,args) {
             for (var i = sender.target.result.length - 1; i >= 0; i--) {
@@ -34,7 +34,7 @@ angular.module('boxes3.manager')
           };
         }
       };
-      
+
       $scope.rebuildManifests = function () {
         $http.post('/api/rebuild-manifests', {});
       };

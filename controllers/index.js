@@ -9,6 +9,7 @@ module.exports = function (config) {
     workflows: require('./workflows')(),
     authentication: require('./authentication')(),
     packages: require('./packages')(),
-    dataTransfer: require('./data-transfer')()
+    dataTransfer: require('./data-transfer')(),
+    server: require('./server')()
   };
 }

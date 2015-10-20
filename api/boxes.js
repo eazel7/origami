@@ -52,14 +52,13 @@ module.exports = function (config, db, users, collections, eventBus, callback) {
             boxObj.accessPassword = fairlySimplePassword();
           }
 
-          var apiKey = fairlySimplePassword()
+          var apiKey = fairlySimplePassword();
 
           db
           .collection('boxes')
-          .insert(boxObj, {
-            journal: true
-          }, function (err, results) {
+          .insert(boxObj, function (err, results) {
             if (err) return callback(err);
+            
             if (results) results = results[0];
 
             users.enableUser(owner, boxName, 'owner', function (err) {
@@ -68,7 +67,7 @@ module.exports = function (config, db, users, collections, eventBus, callback) {
               if (!config.singleDbMode) {
                 db
                 .db(boxName)
-                .addUser("readUser", mongoPassword, { "j": true, roles: ["read"] }, function (err) {
+                .addUser("readUser", mongoPassword, { roles: ["read"] }, function (err) {
                   if (err) console.log("addUser err:" + err);
                 });
               }

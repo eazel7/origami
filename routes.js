@@ -410,6 +410,10 @@ module.exports = function(app, rawApi) {
   .route('/api/packages/:packageName/remove-asset/:filename*')
   .post(controllers.packages.removeAsset);
 
+  app
+  .route('/api/server/import-github')
+  .post(controllers.server.importGithub);
+
 
   app.use('/api/box-api/:boxName', function (req, res, next) {
     var boxName = req.params.boxName, boxApi = require('./app/boxApiHandlers')(boxName);

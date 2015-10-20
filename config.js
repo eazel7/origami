@@ -8,6 +8,14 @@ function override (dst, src) {
   }
 }
 
+config.port = process.env.PORT || config.port;
+config.ip = process.env.IP || config.ip;
+
+if (process.env.C9_HOSTNAME) {
+  config.prefix = 'https://' + process.env.C9_HOSTNAME + '/';
+  config.protocol = 'http';
+}
+
 if (process.env.OPENSHIFT_APP_NAME) {
   var newMongo = {
     database: process.env.OPENSHIFT_APP_NAME,

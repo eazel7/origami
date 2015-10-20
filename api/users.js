@@ -86,8 +86,6 @@ module.exports = function (db, settings, callback) {
           $set: {
             roles: roles
           }
-        }, {
-          journal: true
         }, callback);
       });
     },
@@ -147,8 +145,6 @@ module.exports = function (db, settings, callback) {
           $set: {
             roles: roles
           }
-        }, {
-          journal: true
         }, callback);
       });
     },

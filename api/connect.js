@@ -4,7 +4,7 @@ module.exports = function (options, callback) {
       Server = mongo.Server;
   
   var server = new Server(options.host, options.port),
-      client = new MongoClient(server, {});
+      client = new MongoClient(server);
   
   client.open(function (err, client) {
     if (err) return callback(err);

@@ -25,45 +25,45 @@ module.exports = function (collections, users, callback) {
     },
     removeUserFromGroup: function (boxName, groupId, alias, callback) {
       collections
-      .update({_id: groupId}, {$pull: {users: alias}}, callback);
+      .update(boxName, "_permissions", {_id: groupId}, {$pull: {users: alias}}, callback);
     },
     listUsersInGroup: function (boxName, groupId, callback) {
       collections.findOne(boxName, "_permissions", {_id: groupId}, function (err, doc) {
         if (err) return callback(err);
-        
+
         if (!doc) return callback(new Error('Group does not exists'));
-        
+
         callback(null, doc.users);
       });
     },
     getSyncCollections: function (boxName, alias, callback) {
       if (!boxName) return callback(new Error("No box name given"));
       if (!alias) return callback(new Error("No user alias given"));
-      
+
       users.getUserRole(alias, boxName, function (err, role) {
         if (err) return callback (err);
-        
+
         if (['owner', 'admin', 'dev'].indexOf(role) !== -1) {
           return collections.getCollections(boxName, callback);
         } else {
           self.getEffectivePermissions(boxName, alias, function (err, effective) {
             if (err) return callback (err);
-            
+
             var syncCollections = [];
-            
+
             for (var c in effective.collections) {
               if (effective.collections[c].sync) syncCollections.push(c);
             }
-        
+
             if (syncCollections.indexOf("_views") === -1 || syncCollections.indexOf("_graphs") === -1) {
               users.getUserRole(alias, boxName, function (err, role) {
                 if (err) return callback (err);
-                
+
                 if (["owner", "admin", "dev"].indexOf(role) !== -1) {
                   if (syncCollections.indexOf("_views") === -1) syncCollections.push("_views");
                   if (syncCollections.indexOf("_graphs") === -1) syncCollections.push("_graphs");
                 }
-            
+
                 callback (null, syncCollections);
               });
             }
@@ -74,7 +74,7 @@ module.exports = function (collections, users, callback) {
     getEffectivePermissions: function (boxName, alias, callback) {
       collections.find(boxName, "_permissions", {users: {$all: [alias]}}, function (err, docs) {
         if (err) return callback(err);
-        
+
         var effective = {
             "collections" : {},
             "graphs" : {},
@@ -88,10 +88,10 @@ module.exports = function (collections, users, callback) {
                 "deleteUploads" : false
             }
         };
-        
+
         for (var i = 0; i < docs.length; i++) {
           var cur = docs[i].permissions;
-          
+
           if (cur.collections) {
             for (var c in cur.collections) {
               for (var p in cur.collections[c]) {
@@ -102,7 +102,7 @@ module.exports = function (collections, users, callback) {
               }
             }
           }
-        
+
           if (cur.graphs) {
             for (var g in cur.graphs) {
               for (var p in cur.graphs[g]) {
@@ -113,7 +113,7 @@ module.exports = function (collections, users, callback) {
               }
             }
           }
-          
+
           if (cur.groups) {
             for (var g in cur.groups) {
               for (var p in cur.groups[g]) {
@@ -124,18 +124,18 @@ module.exports = function (collections, users, callback) {
               }
             }
           }
-          
+
           if (cur.system) {
             for (p in cur.system) {
               if (cur.system[p]) effective.system[p] = true;
             }
           }
         }
-        
+
         callback(null, effective);
       });
     }
   };
-  
+
   return callback(null, self);
 };

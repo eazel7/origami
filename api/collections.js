@@ -101,8 +101,6 @@ module.exports = function (db, collectionWrapper, router, callback) {
             $set: {
               collections: collections
             }
-          }, {
-            journal: true
           }, function (err) {
             callback(err);
           });
@@ -132,8 +130,6 @@ module.exports = function (db, collectionWrapper, router, callback) {
             $set: {
               collections: collections
             }
-          }, {
-            journal: true
           }, function (err) {
             callback(err);
           });
@@ -152,9 +148,7 @@ module.exports = function (db, collectionWrapper, router, callback) {
       console.log(filter, replacement);
       db
       .collection("boxes")
-      .update(filter, replacement, {
-        journal: true
-      }, callback);
+      .update(filter, replacement, callback);
     }
   });
-}
+};

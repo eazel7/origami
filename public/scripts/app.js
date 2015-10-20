@@ -25,7 +25,7 @@ angular.module('boxes3.manager', [
 .factory("CheckAuth", function ($state, $rootScope, $http) {
   return function (toState, toParams) {
     if (toState.name == 'requireLogin') return;
-    
+
     if (!$rootScope.identiy) {
       $http.get('/api/identity')
       .success(function (identity) {
@@ -69,10 +69,21 @@ angular.module('boxes3.manager', [
 
   $urlRouterProvider.otherwise('/');
 })
-.controller("Server", function ($scope, UsersApi) {
+.controller("Server", function ($scope, UsersApi, ServerApi) {
   UsersApi.getAllUsers().then(function (users) {
     $scope.users = users;
   });
+
+  $scope.importGithub = function () {
+    $scope.importingGithub = true;
+    ServerApi.importGithub().then(function () {
+      $scope.importingGithub = false;
+      $scope.importGithubDone = true;
+    }, function (err) {
+      $scope.importingGithub = false;
+      $scope.importGithubError = err;
+    });
+  };
 })
 .controller("BoxStatusCtrl", function ($scope, BoxesApi) {
   BoxesApi.getBoxInfo($scope.b)
