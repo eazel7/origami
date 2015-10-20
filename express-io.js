@@ -15,10 +15,15 @@ var express = require('express'),
 /**
  * Express configuration
  */
-module.exports = function(app, io, callback) {
+module.exports = function(app, io, debugLog, callback) {
+  var debug = debugLog('origami:express-io');
+  debug('install compression');
+
   app.use(compression());
 
   if (config.forwardProto) {
+    debug('configure x-forwarded-proto');
+
     app.use(function (req, res, next) {
       if (req.headers['x-forwarded-proto'] == 'http') {
           res.redirect('https://' + req.headers.host + req.path);
@@ -28,11 +33,13 @@ module.exports = function(app, io, callback) {
     });
   }
 
+  debug('install favicon');
   app.use(favicon(path.join(config.root, 'public', 'favicon.ico')));
 
   var mmm = require('mmmagic');
   var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
 
+  debug('install mmmagic content-type handler');
   app.use(function (req, res, next) {
     var orig = res.send;
 
@@ -129,13 +136,22 @@ module.exports = function(app, io, callback) {
 
     var passportSocketIo = require("./socketioauth");
 
-    io.use(passportSocketIo.authorize({
-      cookieParser: cookieParser,
-      secret:      config.expressSecret,    // the session_secret to parse the cookie
-      store:       appSessionStore,        // we NEED to use a sessionstore. no memorystore please
-      success:     onAuthorizeSuccess,  // *optional* callback on success - read more below
-      fail:        onAuthorizeFail,     // *optional* callback on fail/error - read more below
-    }));
+    function authorizeIO() {
+      var ppAuthorize = passportSocketIo.authorize({
+        cookieParser: cookieParser,
+        secret:      config.expressSecret,    // the session_secret to parse the cookie
+        store:       appSessionStore,        // we NEED to use a sessionstore. no memorystore please
+        success:     onAuthorizeSuccess,  // *optional* callback on success - read more below
+        fail:        onAuthorizeFail,     // *optional* callback on fail/error - read more below
+      });
+
+      return function (data, accept) {
+        require('passport').initialize();
+        ppAuthorize(data, accept);
+      }
+    }
+
+    io.use(new authorizeIO());
 
     api.eventBus.on('op', function (op) {
       io

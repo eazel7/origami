@@ -37,7 +37,15 @@ if (config.protocol == 'spdy') {
 
 var io = require('socket.io')(server);
 
-require('./express-io')(app, io, function (err) {
+var debugFns = {};
+
+var debug = function (name) {
+  if (!debugFns[name]) debugFns[name] = require('debug')(name);
+
+  return debugFns[name];
+}
+
+require('./express-io')(app, io, debug, function (err) {
   app.use(morgan('dev'));
 
   server.listen(config.port, config.ip, function () {
