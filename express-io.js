@@ -17,9 +17,9 @@ var express = require('express'),
  */
 module.exports = function(app, io, debugLog, callback) {
   var debug = debugLog('origami:express-io');
-  
+
   debug('install compression');
-  
+
   app.use(compression());
 
   if (config.forwardProto) {
@@ -169,11 +169,14 @@ module.exports = function(app, io, debugLog, callback) {
     var browserKeyByUser = {};
 
     api.eventBus.on('box-created', function (boxName) {
+      debug('box-created: %s', boxName);
+
       io.of('/' + boxName);
     });
 
     api.eventBus.on('desktop-notification-user', function (boxName, user, message) {
       var ns = io.of('/' + boxName);
+
       for (var socket in ns.sockets) {
         if (ns.sockets[socket].client.request.user.alias === user) {
           ns.sockets[socket].emit('desktop-notification', message);
@@ -182,30 +185,40 @@ module.exports = function(app, io, debugLog, callback) {
     });
 
     api.eventBus.on('workflow-started', function (boxName, workflowId) {
+      debug('workflow-started: %s/%s', boxName, workflowId);
+
       io
       .of('/' + boxName)
       .emit('workflow-started', workflowId);
     });
 
     api.eventBus.on('workflow-finished', function (boxName, workflowId) {
+      debug('workflow-finished: %s/%s', boxName, workflowId);
+
       io
       .of('/' + boxName)
       .emit('workflow-finished', workflowId);
     });
 
     api.eventBus.on('workflow-output', function (boxName, workflowId, output) {
+      debug('workflow-output: %s/%s %s', boxName, workflowId, JSON.stringify(output));
+
       io
       .of('/' + boxName)
       .emit('workflow-output', workflowId, output);
     });
 
     api.eventBus.on('workflow-connection-on', function (boxName, workflowId, data) {
+      debug('workflow-connection-on: %s/%s %s', boxName, workflowId, JSON.stringify(data));
+
       io
       .of('/' + boxName)
       .emit('workflow-connection-on', workflowId, data);
     });
 
     api.eventBus.on('workflow-connection-off', function (boxName, workflowId, data) {
+      debug('workflow-connection-off: %s/%s %s', boxName, workflowId, JSON.stringify(data));
+
       io
       .of('/' + boxName)
       .emit('workflow-connection-off', workflowId, data);
