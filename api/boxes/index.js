@@ -58,7 +58,7 @@ module.exports = function (config, db, users, collections, eventBus, callback) {
           .collection('boxes')
           .insert(boxObj, function (err, results) {
             if (err) return callback(err);
-            
+
             if (results) results = results[0];
 
             users.enableUser(owner, boxName, 'owner', function (err) {

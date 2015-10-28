@@ -1,4 +1,5 @@
 var config = require('./config.js');
+
 var api = require('./api')(config, function (err, api) {
   if (err) {
     console.error(err);
