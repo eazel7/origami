@@ -16,7 +16,7 @@ module.exports = function (options, callback) {
       .db(options.authenticationDatabase || options.database);
 
       db
-      .authenticate(options.username, options.password, function(err, result) {
+      .authenticate(options.username, options.password, function (err, result) {
         if (err) return callback(err);
 
         if (result) {

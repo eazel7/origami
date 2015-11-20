@@ -28,8 +28,4 @@ Views.prototype.listviews = function (boxName, callback) {
     });
 };
 
-module.exports = function (collections, callback) {
-  var views = new Views(collections);
-
-  callback(null, views);
-};
+module.exports = Views;

@@ -108,13 +108,13 @@ WrappedCollection.prototype.insert = function (object, callback, browserKey) {
   });
 };
 
-function SyncCollectionWrapper (db, router, eventBus) {
+function SyncWrapper (db, router, eventBus) {
   this.db = db;
   this.router = router;
   this.eventBus = eventBus;
 }
 
-SyncCollectionWrapper.prototype.getLog = function (box, callback) {
+SyncWrapper.prototype.getLog = function (box, callback) {
   var self = this;
 
   self.router.routeCollection(box, '_syncLog', function (err, route) {
@@ -122,7 +122,7 @@ SyncCollectionWrapper.prototype.getLog = function (box, callback) {
   });
 };
 
-SyncCollectionWrapper.prototype.wrap = function (base, info, callback) {
+SyncWrapper.prototype.wrap = function (base, info, callback) {
   var self = this;
 
   self.router
@@ -137,9 +137,4 @@ SyncCollectionWrapper.prototype.wrap = function (base, info, callback) {
   });
 };
 
-module.exports = function (db, router, eventBus, callback) {
-  callback(null, {
-    wrap: function (base, info, callback) {
-    }
-  });
-};
+module.exports = SyncWrapper;

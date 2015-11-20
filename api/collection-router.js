@@ -30,6 +30,4 @@ CollectionRouter.prototype.routeCollection = function (boxName, collectionName, 
   });
 };
 
-module.exports = function (db, callback) {
-  callback(null, new CollectionRouter(db));
-};
+module.exports = CollectionRouter;

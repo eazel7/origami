@@ -388,8 +388,4 @@ BoxesAPI.prototype.importAll = function (bytes, callback) {
   });
 };
 
-module.exports = function (config, db, users, collections, eventBus, callback) {
-  var api = new BoxesAPI(db, users, collections, eventBus);
-
-  callback(null, api);
-};
+module.exports = BoxesAPI;

@@ -326,8 +326,4 @@ Users.prototype.setUserMetadata = function (userAlias, metadata, callback) {
   }, callback);
 };
 
-module.exports = function (db, settings, callback) {
-  var users = new Users(db, settings);
-
-  callback(null, users);
-};
+module.exports = Users;

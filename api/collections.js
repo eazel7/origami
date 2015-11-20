@@ -199,8 +199,4 @@ CollectionsAPI.prototype.destroyCollection = function (boxName, collectionName, 
   .update(filter, replacement, callback);
 };
 
-module.exports = function (db, collectionWrapper, router, callback) {
-  var collections = new CollectionsAPI(db, collectionWrapper, router);
-
-  callback(null, collections);
-};
+module.exports = CollectionsAPI;

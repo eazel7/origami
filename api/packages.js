@@ -1287,8 +1287,4 @@ PackagesAPI.prototype.rebuildManifests = function (callback) {
   updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
 };
 
-module.exports = function (db, eventBus, users, callback) {
-  var api = new PackagesAPI(db, eventBus, users);
-
-  callback(null, api);
-}
+module.exports = PackagesAPI;

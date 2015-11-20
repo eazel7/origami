@@ -178,29 +178,29 @@ PermissionsAPI.prototype.getEffectivePermissions = function (boxName, alias, cal
 
         if (cur.graphs) {
           for (var g in cur.graphs) {
-            for (var p in cur.graphs[g]) {
-              if (cur.graphs[g][p]) {
+            for (var p2 in cur.graphs[g]) {
+              if (cur.graphs[g][p2]) {
                 if (!effective.graphs[g]) effective.graphs[g] = cur.graphs[g];
-                else effective.graphs[g][p] = true;
+                else effective.graphs[g][p2] = true;
               }
             }
           }
         }
 
         if (cur.groups) {
-          for (var g in cur.groups) {
-            for (var p in cur.groups[g]) {
-              if (cur.groups[g][p]) {
-                if (!effective.groups[g]) effective.groups[g] = cur.groups[g];
-                else effective.groups[g][p] = true;
+          for (var g2 in cur.groups) {
+            for (var p3 in cur.groups[g2]) {
+              if (cur.groups[g2][p3]) {
+                if (!effective.groups[g2]) effective.groups[g2] = cur.groups[g2];
+                else effective.groups[g2][p3] = true;
               }
             }
           }
         }
 
         if (cur.system) {
-          for (p in cur.system) {
-            if (cur.system[p]) effective.system[p] = true;
+          for (var p4 in cur.system) {
+            if (cur.system[p4]) effective.system[p4] = true;
           }
         }
       }
@@ -209,8 +209,4 @@ PermissionsAPI.prototype.getEffectivePermissions = function (boxName, alias, cal
     });
 };
 
-module.exports = function (collections, users, callback) {
-  var api = new PermissionsAPI(collections, users);
-
-  return callback(null, api);
-};
+module.exports = PermissionsAPI;

@@ -99,8 +99,4 @@ RemoteDbsAPI.prototype.setForBox = function (boxName, dbalias, url, callback) {
   });
 };
 
-module.exports = function (db, connect, callback) {
-  var api = new RemoteDbsAPI(db, connect);
-
-  callback(null, api);
-};
+module.exports = RemoteDbsAPI;
