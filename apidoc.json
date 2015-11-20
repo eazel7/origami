@@ -1,0 +1,21 @@
+{
+  "name": "origami",
+  "version": "0.1.0",
+  "description": "Origami API",
+  "title": "Origami API",
+  "url" : "https://github.com/eazel7/origami",
+  "sampleUrl": "https://github.com/eazel7/origami",
+  "header": {
+    "title": "",
+    "filename": "header.md"
+  },
+  "footer": {
+    "title": "",
+    "filename": "footer.md"
+  },
+  "template": {
+  	"withCompare": true,
+  	"withGenerator": true
+  }
+}
+

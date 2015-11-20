@@ -1,13 +1,17 @@
+/* eslint-disable semi */
+
+var async = require('async');
+
 module.exports = {
   boxes: {
     createBox: isLoggedIn,
     listBoxes: isLoggedIn,
     listActiveBoxes: isLoggedIn,
-    getBox: anyOf(isBoxAdmin,allOf(isBoxUser,isBoxActive)),
+    getBox: anyOf(isBoxAdmin, allOf(isBoxUser, isBoxActive)),
     saveInfo: isBoxOwner,
-    uploadFile: anyOf(isBoxDeveloper,hasPermission('system.fileUpload')),
-    deleteFile: anyOf(isBoxDeveloper,hasPermission('system.deleteUploads')),
-    serveFile: allOf(isBoxUser,isBoxActive),
+    uploadFile: anyOf(isBoxDeveloper, hasPermission('system.fileUpload')),
+    deleteFile: anyOf(isBoxDeveloper, hasPermission('system.deleteUploads')),
+    serveFile: allOf(isBoxUser, isBoxActive),
     export: isBoxDeveloper,
     import: isBoxDeveloper,
     listFiles: isBoxUser,
@@ -16,16 +20,16 @@ module.exports = {
   },
   collections: {
     getCollection: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, isBoxUser)),
-    getCollections: anyOf(isWorkflow, isMasterUser,isBoxUser),
+    getCollections: anyOf(isWorkflow, isMasterUser, isBoxUser),
     find: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
     findOne: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
     count: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].find'))),
     update: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].update'))),
     insert: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].insert'))),
     remove: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, hasPermission('collections[collectionName].remove'))),
-    createCollection: anyOf(isWorkflow, allOf(isBoxDeveloper,isBoxActive),isBoxAdmin),
-    createServerCollection: anyOf(isWorkflow, allOf(isBoxDeveloper,isBoxActive),isBoxAdmin),
-    destroyCollection: anyOf(isWorkflow, allOf(isBoxDeveloper,isBoxActive),isBoxAdmin)
+    createCollection: anyOf(isWorkflow, allOf(isBoxDeveloper, isBoxActive), isBoxAdmin),
+    createServerCollection: anyOf(isWorkflow, allOf(isBoxDeveloper, isBoxActive), isBoxAdmin),
+    destroyCollection: anyOf(isWorkflow, allOf(isBoxDeveloper, isBoxActive), isBoxAdmin)
   },
   packages: {
     rebuildManifests: isMasterUser,
@@ -36,7 +40,7 @@ module.exports = {
     exportAllPackages: isMasterUser,
     importPackages: isMasterUser,
     getPackageOwner: isLoggedIn,
-    setPackageOwner: anyOf(isMasterUser,isPackageOwner,packageHasNoOwner),
+    setPackageOwner: anyOf(isMasterUser, isPackageOwner, packageHasNoOwner),
     setDependencies: anyOf(isMasterUser, isPackageOwner),
     setPackageInfo: anyOf(isMasterUser, isPackageOwner),
     setPackageType: anyOf(isMasterUser, isPackageOwner),
@@ -55,24 +59,20 @@ module.exports = {
     setAssetMetadata: anyOf(isMasterUser, isPackageOwner),
     importGithub: isMasterUser
   },
-  users: {
-    enableUser: isBoxAdmin,
-    disableUser: isBoxAdmin
-  },
   permissions: {
     createPermissionGroup: anyOf(isWorkflow, isBoxDeveloper),
     listPermissionGroups: anyOf(isWorkflow, isBoxDeveloper),
-    describePermissionGroup: anyOf(isWorkflow, isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
+    describePermissionGroup: anyOf(isWorkflow, isBoxDeveloper, hasPermission('groups[groupId].manageUsers')),
     modifyPermissionGroup: anyOf(isWorkflow, isBoxDeveloper),
     deletePermissionGroup: anyOf(isWorkflow, isBoxDeveloper),
-    addUserToGroup: anyOf(isWorkflow, isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
-    removeUserFromGroup: anyOf(isWorkflow, isBoxDeveloper,hasPermission('groups[groupId].manageUsers')),
+    addUserToGroup: anyOf(isWorkflow, isBoxDeveloper, hasPermission('groups[groupId].manageUsers')),
+    removeUserFromGroup: anyOf(isWorkflow, isBoxDeveloper, hasPermission('groups[groupId].manageUsers')),
     listUsersInGroup: anyOf(isWorkflow, isBoxDeveloper),
     setMasterUser: isMasterUser
   },
   schedules: {
     stopSchedule: anyOf(isWorkflow, isBoxDeveloper),
-    startSchedule: anyOf(isWorkflow, isBoxAdmin,allOf(isBoxActive,isBoxDeveloper))
+    startSchedule: anyOf(isWorkflow, isBoxAdmin, allOf(isBoxActive, isBoxDeveloper))
   },
   users: {
     listUsers: isLoggedIn,
@@ -83,8 +83,8 @@ module.exports = {
     getUserMetadata: rejectAlways,
     setUserMetadata: rejectAlways,
     isValid: anyOf(isWorkflow, isBoxUser),
-    listViews: anyOf(isWorkflow, isBoxDeveloper,allOf(isBoxActive, isBoxUser)),
-    getView: anyOf(isWorkflow, isBoxDeveloper,allOf(isBoxActive, isBoxUser)),
+    listViews: anyOf(isWorkflow, isBoxDeveloper, allOf(isBoxActive, isBoxUser)),
+    getView: anyOf(isWorkflow, isBoxDeveloper, allOf(isBoxActive, isBoxUser)),
     removeView: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper)),
     saveView: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper)),
     setCreateBoxQuota: isMasterUser,
@@ -102,8 +102,8 @@ module.exports = {
     startWorkflow: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper, hasPermission('graphs[graphId].startInstances'))),
     stopWorkflow: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper, addGraphIdToArgumentsFromWorkflowId('workflowId', hasPermission('graphs[graphId].stopInstances')))),
     listGraphs: anyOf(isWorkflow, isBoxDeveloper),
-    saveGraph: allOf(isBoxActive,anyOf(isWorkflow, isBoxDeveloper)),
-    removeGraph: allOf(isBoxActive,anyOf(isWorkflow, isBoxDeveloper)),
+    saveGraph: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper)),
+    removeGraph: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper)),
     listComponents: allOf(isBoxActive, anyOf(isWorkflow, isBoxDeveloper))
   },
   settings: {
@@ -112,19 +112,18 @@ module.exports = {
   }
 };
 
-function hasPermission(permission) {
-
+function hasPermission (permission) {
   return function (context, api, callback) {
     context.checks.push('has permission ' + permission);
 
-    var vm = require('vm'), allowed;
+    var vm = require('vm');
 
     api.permissions.getEffectivePermissions(context.boxName, context.userAlias, function (err, effectivePermissions) {
       if (err) return callback(err);
 
       var sandbox = {};
 
-      for (k in effectivePermissions) {
+      for (var k in effectivePermissions) {
         sandbox[k] = effectivePermissions[k];
       }
 
@@ -140,7 +139,6 @@ function hasPermission(permission) {
 
       callback(null, sandbox.result);
     });
-
   };
 }
 
@@ -162,7 +160,7 @@ function isBoxOwner (context, api, callback) {
   if (!context.boxName) return callback('missing box name', false);
 
   api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    return callback(err, role == 'owner');
+    return callback(err, role === 'owner');
   });
 }
 function isBoxAdmin (context, api, callback) {
@@ -171,7 +169,7 @@ function isBoxAdmin (context, api, callback) {
   if (!context.boxName) return callback('missing box name', false);
 
   api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    return callback(err, role == 'owner' || role == 'admin');
+    return callback(err, role === 'owner' || role === 'admin');
   });
 }
 
@@ -184,7 +182,7 @@ function isBoxDeveloper (context, api, callback) {
   if (!context.boxName) return callback('missing box name', false);
 
   api.users.getUserRole(context.userAlias, context.boxName, function (err, role) {
-    return callback(err, role == 'owner' || role == 'admin' || role == 'dev');
+    return callback(err, role === 'owner' || role === 'admin' || role === 'dev');
   });
 }
 
@@ -209,9 +207,10 @@ function isMasterUser (context, api, callback) {
   });
 }
 
-function allOfFor(toCheck, reason) {
+function allOfFor (toCheck, reason) {
   var fn = function (context, api, callback) {
-    var allowed = true, queued = [];
+    var allowed = true;
+    var queued = [];
 
     context.checks.push('all of [');
 
@@ -220,7 +219,7 @@ function allOfFor(toCheck, reason) {
     }
 
     async.until(function () {
-      return !allowed || queued.length == 0;
+      return !allowed || queued.length === 0;
     }, function (callback) {
       var inner = queued.shift();
 
@@ -242,8 +241,9 @@ function allOfFor(toCheck, reason) {
   return fn
 }
 
-function allOf() {
-  var toCheck = [], reasons = [], reason;
+function allOf () {
+  var toCheck = [];
+  var reasons = [];
 
   for (var i = 0; i < arguments.length; i++) {
     toCheck.push(arguments[i]);
@@ -255,8 +255,9 @@ function allOf() {
   return fn;
 }
 
-function anyOf() {
-  var toCheck = [], reasons = [];
+function anyOf () {
+  var toCheck = [];
+  var reasons = [];
 
   for (var i = 0; i < arguments.length; i++) {
     toCheck.push(arguments[i]);
@@ -265,7 +266,9 @@ function anyOf() {
 
   return function (context, api, checkedCallback) {
     context.checks.push('any of [');
-    var allowed = false, queued = [];
+
+    var allowed = false;
+    var queued = [];
 
     for (var j = 0; j < toCheck.length; j++) {
       queued.push(toCheck[j]);
@@ -290,7 +293,7 @@ function anyOf() {
   };
 }
 
-function addGraphIdToArgumentsFromWorkflowId(paramName, then) {
+function addGraphIdToArgumentsFromWorkflowId (paramName, then) {
   return function (context, api, callback) {
     context.checks.push('map graphId from argument ' + paramName);
 
@@ -314,9 +317,9 @@ function addGraphIdToArgumentsFromWorkflowId(paramName, then) {
   };
 }
 
-function isPackageOwner(context, api, callback) {
-  if (!context.arguments.packageName) return callback ('No packageName argument');
-  if (!context.userAlias) return callback ('No user alias');
+function isPackageOwner (context, api, callback) {
+  if (!context.arguments.packageName) return callback('No packageName argument');
+  if (!context.userAlias) return callback('No user alias');
 
   api.packages.getPackageOwner(context.arguments.packageName, function (err, owner) {
     if (err) return callback(err);
@@ -325,8 +328,8 @@ function isPackageOwner(context, api, callback) {
   });
 }
 
-function packageHasNoOwner(context, api, callback) {
-  if (!context.arguments.packageName) return callback ('No packageName argument');
+function packageHasNoOwner (context, api, callback) {
+  if (!context.arguments.packageName) return callback('No packageName argument');
 
   api.packages.getPackageOwner(context.arguments.packageName, function (err, owner) {
     if (err) return callback(err);
@@ -335,7 +338,7 @@ function packageHasNoOwner(context, api, callback) {
   });
 }
 
-function isWorkflow(context, api, callback) {
+function isWorkflow (context, api, callback) {
   context.checks.push('is workflow');
 
   if (!context.boxName) return callback('missing box name', false);
