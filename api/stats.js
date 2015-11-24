@@ -91,8 +91,4 @@ Stats.prototype.getBoxErrors = function (boxName, from, to, callback) {
   .count(boxName, '_errors', filter, callback);
 }
 
-module.exports = function (collections, syncWrapper, callback) {
-  var stats = new Stats(collections, syncWrapper);
-
-  callback(null, stats);
-};
+module.exports = Stats;

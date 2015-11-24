@@ -3,85 +3,128 @@
 var nodeSched = require('node-schedule');
 var async = require('async');
 
-module.exports = function (boxes, collections, workflows, callback) {
-  var jobsBySched = {};
-  var nextStarters = {};
-  
-  var self = {
-    ensureSchedules: function (callback) {
-      boxes.listBoxes(function (err, boxes) {
-        if (err) return callback(err);
+function Schedules (boxes, collections, workflows) {
+  this.boxes = boxes;
+  this.collections = collections;
+  this.workflows = workflows;
 
-        var boxesToCheck = [];
+  this.jobsBySched = {};
+  this.nextStarters = {};
+}
 
-        for (var i = 0; i < boxes.length; i++) {
-          if (boxes[i].info && boxes[i].info.status) {
-            boxesToCheck.push(boxes[i].name);
-          }
-        }
+Schedules.prototype.ensureSchedules = function (callback) {
+  var self = this;
 
-        async.eachSeries(boxesToCheck, function(boxName, callback) {
-          collections.find(boxName, "_schedules", {running: true}, function (err, docs) {
-            if(err) return callback(err);
+  self.boxes.listBoxes(function (err, boxes) {
+    if (err) return callback(err);
 
-            async.eachSeries(docs, function (doc, callback) {
-              self.startSchedule(boxName, doc._id, function (err) {
-                if (err) console.error(err);
-                else console.log('Schedule ' + doc._id + ' for ' + boxName + ' restarted with server');
-              });
-            }, callback);
-          });
-        }, callback);
-      });
-    },
-    stopSchedule: function (boxName, id, callback) {
-      var j = jobsBySched[boxName + ':' + id], t = nextStarters[boxName + ':' + id];
+    var boxesToCheck = [];
 
-      if (j) {
-        j.cancel();
-        jobsBySched[boxName + ':' + id] = null;
+    for (var i = 0; i < boxes.length; i++) {
+      if (boxes[i].info && boxes[i].info.status) {
+        boxesToCheck.push(boxes[i].name);
       }
-      if (t) {
-        clearTimeout(t);
-        nextStarters[boxName + ':' + id] = null;
+    }
+
+    async.eachSeries(boxesToCheck, function (boxName, callback) {
+      self.collections.find(
+        boxName,
+        '_schedules', {
+          running: true
+        },
+        function (err, docs) {
+          if (err) return callback(err);
+
+          async.eachSeries(docs, function (doc, callback) {
+            self.startSchedule(boxName, doc._id, function (err) {
+              if (err) console.error(err);
+              else console.log('Schedule ' + doc._id + ' for ' + boxName + ' restarted with server');
+            });
+          }, callback);
+        });
+    }, callback);
+  });
+};
+
+Schedules.prototype.stopSchedule = function (boxName, id, callback) {
+  var self = this;
+  var j = self.jobsBySched[boxName + ':' + id];
+  var t = self.nextStarters[boxName + ':' + id];
+
+  if (j) {
+    j.cancel();
+    self.jobsBySched[boxName + ':' + id] = null;
+  }
+
+  if (t) {
+    clearTimeout(t);
+    self.nextStarters[boxName + ':' + id] = null;
+  }
+
+  self.collections.update(
+    boxName,
+    '_schedules', {
+      _id: id
+    }, {
+      $set: {
+        running: false
+      }
+    }, callback);
+};
+
+Schedules.prototype.startSchedule = function (boxName, id, callback) {
+  var self = this;
+
+  if (self.jobsBySched[boxName + ':' + id]) return callback();
+
+  self.collections.findOne(
+    boxName,
+    '_schedules', {
+      _id: id
+    },
+    function (err, sched) {
+      if (err) return callback(err);
+
+      if (!sched) return callback(new Error('Schedule not found'));
+      if (!sched.running) return callback(new Error('Schedule isn\'t running'));
+
+      var nextRun;
+      var freqInMillis = sched.frequency.amount * {'minutes': 60000, 'hours': 3600000}[sched.frequency.unit];
+      if (!sched.lastRun) nextRun = 1000 + new Date().valueOf();
+      else nextRun = sched.lastRun + (freqInMillis);
+
+      if (nextRun < new Date().valueOf()) {
+        nextRun = 1000 + new Date().valueOf();
       }
 
-      collections.update(boxName, "_schedules", { _id: id }, { $set: { running: false } }, callback);
-    },
-    startSchedule: function (boxName, id, callback) {
-      if (jobsBySched[boxName + ':' + id]) return callback();
+      console.log('next run at ' + new Date(nextRun) + ' which is in ' + String((nextRun - new Date().valueOf()) / 60000) + ' minutes');
 
-      collections.findOne(boxName, "_schedules", {_id: id}, function (err, sched) {
-        if(err) return callback(err);
+      self.jobsBySched[boxName + ':' + id] = nodeSched.scheduleJob(new Date(nextRun), function () {
+        var runningToday = sched.days[['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()]];
 
-        if (!sched) return callback(new Error('Schedule not found'));
-        if (!sched.running) return callback(new Error('Schedule isn\'t running'));
-
-        var nextRun; freqInMillis = sched.frequency.amount * {'minutes': 60000, 'hours': 3600000}[sched.frequency.unit];
-        if (!sched.lastRun) nextRun = 1000 + new Date().valueOf();
-        else nextRun = sched.lastRun + (freqInMillis);
-
-        if (nextRun < new Date().valueOf()) {
-          nextRun = 1000 + new Date().valueOf();
-        }
-
-        console.log('next run at ' + new Date(nextRun) + ' which is in ' + String((nextRun - new Date().valueOf()) / 60000) + ' minutes');
-
-        j = jobsBySched[boxName + ':' + id] = nodeSched.scheduleJob(new Date(nextRun), function(){
-          var runningToday = sched.days[['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()]];
-
-          collections.update(boxName, "_schedules", { _id: id }, { $set: { running: true, lastRun: new Date().valueOf() } }, function (err) {
+        self.collections.update(
+          boxName,
+          '_schedules', {
+            _id: id
+          }, {
+            $set: {
+              running: true,
+              lastRun: new Date().valueOf()
+            }
+          },
+          function (err) {
             if (err) console.error(err);
 
             if (runningToday) {
-              workflows.startWorkflow(boxName, sched.graph, {}, function (err, workflowId) {
+              self.workflows.startWorkflow(boxName, sched.graph, {}, function (err, workflowId) {
                 if (err) console.error(err);
                 console.log('Workflow ' + workflowId + ' was scheduled by ' + id + ' for ' + boxName);
               });
             }
 
             console.log('preparing half-life starter of ' + id + ' for ' + boxName + ' in ' + String((freqInMillis / 2000)) + ' seconds');
-            nextStarters[boxName + ':' + id] = setTimeout(function () {
+
+            self.nextStarters[boxName + ':' + id] = setTimeout(function () {
               console.log('triggered half-life starter of ' + id + ' for ' + boxName);
               self.startSchedule(boxName, id, function (err) {
                 if (err) {
@@ -89,16 +132,15 @@ module.exports = function (boxes, collections, workflows, callback) {
                   console.log('Seems that a scheduled job failed to re-enqueue itself');
                 }
               });
-            }, freqInMillis / 2);
+            },
+            freqInMillis / 2);
 
-            jobsBySched[boxName + ':' + id] = null;
+            self.jobsBySched[boxName + ':' + id] = null;
           });
-        });
-
-        callback();
       });
-    }
-  };
 
-  callback(null, self);
+      callback();
+    });
 };
+
+module.exports = Schedules;

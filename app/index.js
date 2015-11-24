@@ -1,15 +1,16 @@
-var manifestDate = String(Date.now()),
-    allAssets = require('./allAssets'),
-    formidable = require('formidable');
+/* eslint-disable semi */
 
+var formidable = require('formidable');
+var async = require('async');
 
-function findAsset(req, url, res, next) {
-  var api = req.api, assetsMap = req.assetsMap;
+function findAsset (req, url, res, next) {
+  var api = req.api;
+  var assetsMap = req.assetsMap;
 
   if (!assetsMap[url]) return next();
 
-  var packageName = assetsMap[url].packageName,
-      path = assetsMap[url].path;
+  var packageName = assetsMap[url].packageName;
+  var path = assetsMap[url].path;
 
   api.packages.getAsset(packageName, path, function (err, buffer) {
     if (err) { res.status(418); return res.end('Not found: ' + JSON.stringify(path)); }
@@ -17,15 +18,17 @@ function findAsset(req, url, res, next) {
     res.status(200);
 
     api.packages.getAssetMetadata(packageName, path, function (err, metadata) {
+      if (err) return next(err);
+
       if (path === 'index.html') {
         res.set({
           'Content-Type': 'text/html; charset=utf-8'
         });
-      } else if (metadata.use == 'style') {
+      } else if (metadata.use === 'style') {
         res.set({
           'Content-Type': 'text/css'
         });
-      } else if (metadata.use == 'script') {
+      } else if (metadata.use === 'script') {
         res.set({
           'Content-Type': 'application/javascript;charset=utf-8'
         });
@@ -37,9 +40,8 @@ function findAsset(req, url, res, next) {
 }
 
 module.exports = function (boxName, app, callback) {
-  var boxApi = require('./boxApiHandlers')(boxName),
-      fs = require('fs'),
-      express = require('express');
+  var boxApi = require('./boxApiHandlers')(boxName);
+  var fs = require('fs');
 
   var mmm = require('mmmagic');
   var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
@@ -52,19 +54,24 @@ module.exports = function (boxName, app, callback) {
   app.use(function (req, res, next) {
     var api = req.api;
 
-    api.packages.getActivePackagesWithDependencies(boxName, function(err, packages) {
+    api.packages.getActivePackagesWithDependencies(boxName, function (err, packages) {
+      if (err) return next(err);
+
       var assetsMap = {};
 
       async.eachSeries(packages, function (dep, callback) {
         api.packages.getPackageType(dep, function (err, packageType) {
+          if (err) return callback(err)
           if (packageType === 'global') return callback();
 
           api.packages.listAssets(dep, function (err, assets) {
-            if (err) return callback (err);
-
+            if (err) return callback(err);
 
             for (var i = 0; i < assets.length; i++) {
-              assetsMap['/' + assets[i]] = { path: assets[i], packageName: dep};
+              assetsMap['/' + assets[i]] = {
+                path: assets[i],
+                packageName: dep
+              };
             }
 
             callback();
@@ -86,13 +93,15 @@ module.exports = function (boxName, app, callback) {
     var orig = res.send;
 
     res.send = function (body) {
-      var self = this, args = arguments;
+      var self = this;
+      var args = arguments;
 
       if (!res.get('Content-Type')) {
-        magic.detect(new Buffer(body), function(err, result) {
-            res.set('Content-Type', result);
+        magic.detect(new Buffer(body), function (err, result) {
+          if (err) return next(err);
+          res.set('Content-Type', result);
 
-            orig.apply(self, args);
+          orig.apply(self, args);
         });
       } else {
         orig.apply(this, arguments);
@@ -103,7 +112,7 @@ module.exports = function (boxName, app, callback) {
 
   app.get('/scripts/info.js', function (req, res) {
     var script = 'angular.module(\'box-info\', [])\n' +
-                 '.value(\'boxName\', ' + JSON.stringify(boxName) +  ');';
+                 '.value(\'boxName\', ' + JSON.stringify(boxName) + ');';
 
     res.setHeader('Content-Type', 'application/javascript');
     return res.end(script);
@@ -134,7 +143,7 @@ module.exports = function (boxName, app, callback) {
         return res.end();
       }
 
-      doc.scripts.unshift("scripts/info.js");
+      doc.scripts.unshift('scripts/info.js');
 
       res.json(doc.scripts);
     });
@@ -166,10 +175,12 @@ module.exports = function (boxName, app, callback) {
     });
   });
 
-  app.get('/api/graphs/componentGallery', function (req, res) {
+  app.get('/api/graphs/componentGallery', function (req, res, next) {
     var api = req.api;
 
     api.workflows.listComponents(function (err, gallery) {
+      if (err) return next(err);
+
       res.json(gallery);
     });
   });
@@ -184,97 +195,101 @@ module.exports = function (boxName, app, callback) {
 
   app.get('/api/queuedSyncOperations/:from', boxApi.getQueuedSyncOps);
 
-  app.get('/api/graphs/list', function () {
+  app.get('/api/graphs/list', function (req, res, next) {
     var api = req.api;
 
-    api.workflows.listGraphs(boxName, function (err, graphs){
+    api.workflows.listGraphs(boxName, function (err, graphs) {
+      if (err) return next(err);
+
       res.json(graphs);
     });
   });
 
-  app.post('/api/graphs/save', function () {
+  app.post('/api/graphs/save', function (req, res, next) {
     var api = req.api;
 
     delete req.body._id;
 
-    api.workflows.saveGraph(boxName, req.body, function (err, graphs){
+    api.workflows.saveGraph(boxName, req.body, function (err, graphs) {
+      if (err) return next(err);
+
       res.json(graphs);
     });
   });
 
-  app.post('/api/graphs/:graphId', function (req, res) {
+  app.post('/api/graphs/:graphId', function (req, res, next) {
     var api = req.api;
 
     req.body._id = req.params._id;
 
-    api.workflows.saveGraph(boxName, req.body, function (err, graphs){
+    api.workflows.saveGraph(boxName, req.body, function (err, graphs) {
+      if (err) return next(err);
+
       res.json(graphs);
     });
   });
 
-  app.get('/api/graphs/:graphId/history', function (req, res) {
+  app.get('/api/graphs/:graphId/history', function (req, res, next) {
     var api = req.api;
 
-    api.workflows.listPastWorkflows(boxName, req.params.graphId, function (err, past){
+    api.workflows.listPastWorkflows(boxName, req.params.graphId, function (err, past) {
+      if (err) return next(err);
+
       res.json(past);
     });
   });
 
-  app.post('/api/graphs/:graphId/start', function (req, res) {
+  app.post('/api/graphs/:graphId/start', function (req, res, next) {
     var api = req.api;
 
-    api.workflows.startWorkflow(boxName, req.params.graphId, req.body || {}, function (err, graphs){
-      if (err) {
-        res.status(418);
-        return res.end();
-      }
-      res.json(graphs);
-    });
+    api.workflows.startWorkflow(
+      boxName,
+      req.params.graphId,
+      req.body || {},
+      function (err, graphs) {
+        if (err) return next(err);
+
+        res.json(graphs);
+      });
   });
 
-  app.post('/api/graphs/:graphId/delete', function (req, res) {
+  app.post('/api/graphs/:graphId/delete', function (req, res, next) {
     var api = req.api;
 
-    api.workflows.removeGraph(boxName, req.params.graphId, function (err){
-      res.status(err ? 418 : 200);
+    api.workflows.removeGraph(boxName, req.params.graphId, function (err) {
+      if (err) return next(err);
+
+      res.status(200);
       return res.end();
     });
   });
 
-  app.post('/api/workflows/:workflowId/stop', function (req, res) {
+  app.post('/api/workflows/:workflowId/stop', function (req, res, next) {
     var api = req.api;
 
-    api.workflows.stopWorkflow(req.params.workflowId, function (err){
-      if (err) console.error(err);
+    api.workflows.stopWorkflow(req.params.workflowId, function (err) {
+      if (err) return next(err);
 
-      res.status(err ? 418 : 200);
+      res.status(200);
       return res.end();
     });
   });
 
-  app.get('/api/workflows/:workflowId/output', function (req, res) {
+  app.get('/api/workflows/:workflowId/output', function (req, res, next) {
     var api = req.api;
 
-    api.workflows.getOutput(req.params.workflowId, function (err, output){
-      if (err) {
-        console.error(err);
-        res.status(418);
-        return res.end();
-      }
+    api.workflows.getOutput(req.params.workflowId, function (err, output) {
+      if (err) return next(err);
 
       return res.json(output);
     });
   });
 
-  app.get('/api/workflows/:workflowId/activeConnections', function (req, res) {
+  app.get('/api/workflows/:workflowId/activeConnections', function (req, res, next) {
     var api = req.api;
 
-    api.workflows.getActiveConnections(req.params.workflowId, function (err, active){
-      if (err) {
-        console.error(err);
-        res.status(418);
-        return res.end();
-      }
+    api.workflows.getActiveConnections(req.params.workflowId, function (err, active) {
+      if (err) return next(err);
 
       return res.json(active);
     });
@@ -290,10 +305,12 @@ module.exports = function (boxName, app, callback) {
   app.post('/api/dbs/:name/:collection/update', boxApi.updateInRemoteDb);
   app.post('/api/dbs/:name/:collection/remove', boxApi.removeInRemoteDb);
 
-  app.get('/api/users', function (req, res) {
+  app.get('/api/users', function (req, res, next) {
     var api = req.api;
 
     api.users.listBoxUsers(boxName, function (err, users) {
+      if (err) return next(err);
+
       for (var i = 0; i < users.length; i++) {
         delete users[i]._id;
         users[i].role = users[i].roles[boxName];
@@ -305,15 +322,11 @@ module.exports = function (boxName, app, callback) {
   });
 
   app.route('/api/workflows')
-  .get(function (req, res) {
+  .get(function (req, res, next) {
     var api = req.api;
 
-    api.workflows.listRunningWorkflows(boxName, function (err, workflows){
-      if (err) {
-        console.error(err);
-        res.status(418);
-        return res.end();
-      }
+    api.workflows.listRunningWorkflows(boxName, function (err, workflows) {
+      if (err) return next(err);
 
       var response = [];
 
@@ -326,13 +339,11 @@ module.exports = function (boxName, app, callback) {
   });
 
   app.post('/api/error', function (req, res) {
-    var api = req.api;
-
     var error = req.body;
     error.user = req.session.user.alias;
     error.box = boxName;
 
-    collection.insert(boxName, "_errors", req.body, function (err) {
+    req.api.collections.insert(boxName, '_errors', req.body, function (err) {
       if (err) {
         console.error(err);
         res.status(418);
@@ -344,13 +355,11 @@ module.exports = function (boxName, app, callback) {
   });
 
   app.get('/', function (req, res, next) {
-    var api = req.api;
-
     return findAsset(req, '/index.html', res, next);
   });
 
   app.use(function (req, res, next) {
-    var assetsMap = req.assetsMap, api = req.api;
+    var assetsMap = req.assetsMap;
 
     if (!assetsMap[req.url]) return next();
 
@@ -390,7 +399,7 @@ module.exports = function (boxName, app, callback) {
       }
 
       res.status(200);
-      return res.end(buffer);
+      return res.end();
     });
   });
   app.get('/api/download', function (req, res) {
@@ -407,25 +416,25 @@ module.exports = function (boxName, app, callback) {
     });
   });
 
-  app.use('/api/upload', function (req, res) {
+  app.use('/api/upload', function (req, res, next) {
     var api = req.api;
 
     var form = new formidable.IncomingForm();
     var uploads = [];
 
     form.parse(req, function (err, fields, files) {
+      if (err) return next(err);
       async.eachSeries(Object.keys(files), function (fileEntry, callback) {
-        var file = files[fileEntry],
-            filename = req.params.path + (req.params[0] ? req.params[0] : ''),
-            bytes = fs.readFileSync(file.path);
+        var file = files[fileEntry];
+        var bytes = fs.readFileSync(file.path);
 
-          api.boxes.uploadFile(boxName, bytes, function (err, res) {
-            if (err) return callback (err);
+        api.boxes.uploadFile(boxName, bytes, function (err, res) {
+          if (err) return callback(err);
 
-            uploads.push(res._id.toString());
+          uploads.push(res._id.toString());
 
-            callback(null);
-          });
+          callback(null);
+        });
       }, function (err) {
         if (err) {
           console.error(err);
@@ -434,11 +443,10 @@ module.exports = function (boxName, app, callback) {
         }
 
         async.eachSeries(Object.keys(fields), function (fileEntry, callback) {
-          var filename = fileEntry,
-              bytes = new Buffer(fields[fileEntry]);
+          var bytes = new Buffer(fields[fileEntry]);
 
           api.boxes.uploadFile(boxName, bytes, function (err, res) {
-            if (err) return callback (err);
+            if (err) return callback(err);
 
             uploads.push(res._id.toString());
 

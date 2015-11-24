@@ -195,6 +195,23 @@ module.exports = function (config, callback) {
         );
       }
     ],
+    'stats': [
+      'collections',
+      'syncWrapper',
+      function (callback, results) {
+        debug('stats');
+
+        var Stats = require('./stats');
+
+        debug('stats');
+
+        callback(
+          null,
+          new Stats(
+            results.collections,
+            results.syncWarpper))
+      }
+    ],
     'remoteDbs': [
       'db',
       'connect',
@@ -210,11 +227,57 @@ module.exports = function (config, callback) {
             results.connect)
         )
       }
+    ],
+    'workflows': [
+      'remoteDbs',
+      'collections',
+      'users',
+      'permissions',
+      'packages',
+      'boxes',
+      'eventBus',
+      function (callback, results) {
+        debug('workflows');
+
+        var Workflows = require('./workflows');
+
+        callback(
+          null,
+          new Workflows(
+            results.remoteDbs,
+            results.collections,
+            results.users,
+            results.permissions,
+            results.packages,
+            results.boxes,
+            results.eventBus
+          ));
+      }
+    ],
+    'schedules': [
+      'boxes',
+      'collections',
+      'workflows',
+      function (callback, results) {
+        debug('schedules');
+
+        var Schedules = require('./schedules');
+
+        callback(
+          null,
+          new Schedules(
+            results.boxes,
+            results.collections,
+            results.workflows
+          )
+        )
+      }
     ]
   },
   function (err, results) {
     if (err) return callback(err);
 
+    callback(null, results);
     // todo: workflows
     // todo: stats
     // todo: schedules

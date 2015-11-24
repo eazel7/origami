@@ -36,7 +36,7 @@ function callbackFor (context, realApi, onfail, module, method, impl, origArgmen
       onfail();
     } else {
       console.log('Invoking ' + module + '.' + method + '(' + JSON.stringify(origArgments) + ')');
-      impl.apply(realApi, origArgments);
+      impl.apply(realApi[module], origArgments);
     }
   }
 }
@@ -72,7 +72,15 @@ APIWrapper.prototype.wrap = function (contextProvider, onfail, api) {
 
       for (var n in api[m]) {
         if (permissions[m][n]) {
-          wrapped[m][n] = wrapFor(permissions[m][n], contextProvider, onfail, api[m][n], api, m, n).bind(api);
+          wrapped[m][n] = wrapFor(
+            permissions[m][n],
+            contextProvider,
+            onfail,
+            api[m][n],
+            api,
+            m,
+            n)
+          .bind(api);
         } else {
           wrapped[m][n] = api[m][n];
         }

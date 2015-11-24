@@ -6,7 +6,7 @@
   "auth": {
     "../auth-local": {
       "mongo": {
-        "database": "origami-alt",
+        "database": "origami-refactor",
         "host": "127.0.0.1",
         "port": 27017,
         "username": "",

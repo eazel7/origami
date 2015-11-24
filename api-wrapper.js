@@ -6,6 +6,5 @@ function onFailFor(res) {
 }
 
 module.exports = function wrap(contextProvider, res, api) {
-  return api.wrapper(contextProvider, onFailFor(res));
+  return api.wrapper.wrap (contextProvider, onFailFor(res), api);
 }
-
