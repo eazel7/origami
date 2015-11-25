@@ -140,7 +140,7 @@ function PackagesAPI (db, eventBus, users) {
   this.users = users;
 
   eventBus.on('box-packages-updated', function () {
-    updateBoxesManifest(self.getActivePackagesWithDependencies, function (err) {
+    updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, function (err) {
       if (err) console.error(err);
     });
   });
@@ -206,7 +206,7 @@ PackagesAPI.prototype.setDependencies = function (packageName, dependencies, cal
     if (err) callback(err);
 
     if (!silent) {
-      updateBoxesManifest(self.getActivePackagesWithDependencies, function (err) {
+      updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, function (err) {
         if (err) {
           console.error(err);
           return callback(err);
@@ -322,7 +322,7 @@ PackagesAPI.prototype.setPackageType = function (packageName, packageType, callb
   function (err) {
     if (err) return callback(err);
 
-    if (silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+    if (silent) updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
     else callback();
   });
 };
@@ -402,7 +402,7 @@ PackagesAPI.prototype.setActivePackages = function (boxName, packages, callback)
   function (err) {
     if (err) return callback(err);
 
-    updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+    updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
   });
 };
 
@@ -419,7 +419,7 @@ PackagesAPI.prototype.activatePackage = function (boxName, packageName, callback
   }, function (err) {
     if (err) return callback(err);
 
-    updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+    updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
   });
 };
 
@@ -439,7 +439,7 @@ PackagesAPI.prototype.deactivatePackage = function (boxName, packageName, callba
   function (err) {
     if (err) return callback(err);
 
-    updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+    updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
   });
 };
 
@@ -552,7 +552,7 @@ PackagesAPI.prototype.removePackage = function (packageName, callback) {
         }, function (err) {
           if (err) return callback(err);
 
-          updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+          updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
         });
       });
     });
@@ -586,7 +586,7 @@ PackagesAPI.prototype.createAsset = function (packageName, assetPath, callback, 
   function (err) {
     if (err) return callback(err);
 
-    if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+    if (!silent) updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
     else callback();
   });
 };
@@ -605,7 +605,7 @@ PackagesAPI.prototype.updateAsset = function (packageName, assetPath, bytes, cal
     function done (err) {
       if (err) return callback(err);
 
-      if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+      if (!silent) updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
       else callback();
     }
 
@@ -657,7 +657,7 @@ PackagesAPI.prototype.removeAsset = function (packageName, assetPath, callback) 
       }, function (err) {
         if (err) return callback(err);
 
-        updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+        updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
       });
     }
 
@@ -741,7 +741,7 @@ PackagesAPI.prototype.setAngularModules = function (packageName, angularModules,
   }, function (err) {
     if (err) return callback(err);
 
-    if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+    if (!silent) updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
     else callback();
   });
 };
@@ -760,7 +760,7 @@ PackagesAPI.prototype.setStyles = function (packageName, styles, callback, silen
   }, function (err) {
     if (err) return callback(err);
 
-    if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+    if (!silent) updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
     else callback();
   });
 };
@@ -777,7 +777,7 @@ PackagesAPI.prototype.setScripts = function (packageName, scripts, callback, sil
   }, {w: 1}, function (err) {
     if (err) return callback(err);
 
-    if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+    if (!silent) updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
     else callback();
   });
 };
@@ -821,7 +821,7 @@ PackagesAPI.prototype.unzipAsset = function (packageName, assetPath, callback) {
     }, function (err) {
       if (err) return callback(err);
 
-      updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+      updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
     });
   });
 };
@@ -948,7 +948,7 @@ PackagesAPI.prototype.updatePackage = function (packageName, zippedBuffer, impor
     }, function (callback) {
       self.setDependencies(packageName, dependencies, callback, true);
     }, function (callback) {
-      if (!silent) return updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+      if (!silent) return updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
 
       callback();
     }], importCallback);
@@ -1021,7 +1021,7 @@ PackagesAPI.prototype.setAssetMetadata = function (packageName, assetPath, newMe
       function (err) {
         if (err) return callback(err);
 
-        if (!silent) updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+        if (!silent) updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
         else callback();
       });
     });
@@ -1284,7 +1284,7 @@ PackagesAPI.prototype.importPackages = function (buffer, callback) {
 PackagesAPI.prototype.rebuildManifests = function (callback) {
   var self = this;
 
-  updateBoxesManifest(self.getActivePackagesWithDependencies, callback);
+  updateBoxesManifest.bind(self)(self.getActivePackagesWithDependencies, callback);
 };
 
 module.exports = PackagesAPI;
