@@ -4,7 +4,6 @@
       "WorkflowStart": "./components/WorkflowStart",
       "WorkflowEnd": "./components/WorkflowEnd",
       "TriggerWorkflow": "./components/TriggerWorkflow",
-      "LogToConsole": "./components/LogToConsole",
       "Delay": "./components/Delay",
       "ListenOps": "./components/ListenOps",
       "WaitWorkflow": "./components/WaitWorkflow",

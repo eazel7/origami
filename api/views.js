@@ -1,18 +1,31 @@
-module.exports = function (collections, callback) {
-  callback(null, {
-    listViews: function (boxName, callback) {
-      getViewsCollection(boxName, function (err, collection){
-        collection
-        .find({}, function (err, docs) {
-          var viewNames = [];
+/* eslint-disable semi */
 
-          for (var i = 0; i < docs.length; i++) {
-            viewNames.push(docs[i].name);
-          }
+function Views (collections) {
+  this.collections = collections;
+}
 
-          callback(null, viewNames);
-        });
+Views.prototype.listviews = function (boxName, callback) {
+  var self = this;
+
+  self.collections.getCollection(
+    boxName,
+    '_views',
+    function (err, collection) {
+      if (err) return callback(err);
+
+      collection
+      .find({}, function (err, docs) {
+        if (err) return callback(err);
+
+        var viewNames = [];
+
+        for (var i = 0; i < docs.length; i++) {
+          viewNames.push(docs[i].name);
+        }
+
+        callback(null, viewNames);
       });
-    }
-  });
+    });
 };
+
+module.exports = Views;

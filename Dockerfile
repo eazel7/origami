@@ -1,4 +1,4 @@
-FROM ubuntu:15.04
+FROM ubuntu:15.10
 RUN apt-get update -y
 RUN apt-get -y install mongodb nodejs nodejs-legacy npm git
 

@@ -6,7 +6,7 @@
   "auth": {
     "../auth-local": {
       "mongo": {
-        "database": "origami-alt",
+        "database": "origami-refactor",
         "host": "127.0.0.1",
         "port": 27017,
         "username": "",
@@ -18,14 +18,14 @@
   "protocol": "spdy",
   "prefix": "https://localhost:9000/",
   "mongo": {
-    "database": "origami-alt",
+    "database": "origami-refactor",
     "host": "127.0.0.1",
     "port": 27017,
     "username": "",
     "password": ""
   },
   "mongoSessions": {
-    "db": "origami-alt",
+    "db": "origami-refactor",
     "host": "127.0.0.1",
     "port": 27017,
     "username": "",

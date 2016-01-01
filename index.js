@@ -49,6 +49,6 @@ require('./express-io')(app, io, debug, function (err) {
   app.use(morgan('dev'));
 
   server.listen(config.port, config.ip, function () {
-    console.log('Express server listening on %s://%s:%d/', config.protocol == 'spdy' ? 'https' : 'http', config.ip, config.port);
+    debug('origami')('Express server listening on %s://%s:%d/', config.protocol == 'spdy' ? 'https' : 'http', config.ip, config.port);
   });
 });

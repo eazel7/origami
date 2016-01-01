@@ -1,3 +1,5 @@
+/* eslint-disable semi */
+
 module.exports = function (config) {
   return {
     boxes: require('./boxes')(),
