@@ -1,11 +1,15 @@
 /* eslint-disable semi */
 
+var debug = require('debug')('origami:collection-router');
+
 function CollectionRouter (db) {
   this.db = db;
 };
 
 CollectionRouter.prototype.routeCollection = function (boxName, collectionName, callback) {
   var self = this;
+
+  debug('routeCollection %s, %s', boxName, collectionName);
 
   self.db
   .collection('boxes')

@@ -1,5 +1,7 @@
 /* eslint-disable semi */
 
+var debug = require('debug')('origami:collections');
+
 function CollectionsAPI (db, collectionWrapper, router) {
   this.db = db;
   this.collectionWrapper = collectionWrapper;
@@ -8,6 +10,8 @@ function CollectionsAPI (db, collectionWrapper, router) {
 
 CollectionsAPI.prototype.getCollection = function (boxName, collectionName, callback) {
   var self = this;
+
+  debug('getCollection %s, %s', boxName, collectionName);
 
   if (!boxName) callback('No box name');
   if (!collectionName) callback('No collection name');
@@ -26,6 +30,8 @@ CollectionsAPI.prototype.getCollection = function (boxName, collectionName, call
 
 CollectionsAPI.prototype.find = function (boxName, collectionName, predicate, callback) {
   var self = this;
+
+  debug('find %s, %s, %s', boxName, collectionName, predicate);
 
   self.getCollection(boxName, collectionName, function (err, collection) {
     if (err) return callback(err);
