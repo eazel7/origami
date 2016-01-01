@@ -1,8 +1,8 @@
 /* eslint-disable semi */
 
-function Stats (collections, syncWarpper) {
+function Stats (collections, syncWrapper) {
   this.collections = collections;
-  this.syncWarpper = syncWarpper;
+  this.syncWrapper = syncWrapper;
 }
 
 Stats.prototype.getBoxUsage = function (boxName, from, to, collection, callback) {
@@ -28,7 +28,8 @@ Stats.prototype.getBoxUsage = function (boxName, from, to, collection, callback)
 
   if (collection) filter.collection = collection;
 
-  self.syncWrapper
+  self
+  .syncWrapper
   .getLog(boxName, function (err, logCollection) {
     if (err) return callback(err);
 

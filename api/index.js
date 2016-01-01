@@ -209,7 +209,7 @@ module.exports = function (config, callback) {
           null,
           new Stats(
             results.collections,
-            results.syncWarpper))
+            results.syncWrapper))
       }
     ],
     'remoteDbs': [

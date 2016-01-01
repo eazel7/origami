@@ -1,6 +1,7 @@
 /* eslint-disable semi */
 
 var permissions = require('./permissionsDef');
+var debug = require('debug')('origami:api-wrapper');
 
 var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
 var FN_ARG_SPLIT = /,/;
@@ -35,7 +36,7 @@ function callbackFor (context, realApi, onfail, module, method, impl, origArgmen
       console.log('api.' + module + '.' + method + ' for ' + JSON.stringify(context)) + 'rejected';
       onfail();
     } else {
-      console.log('Invoking ' + module + '.' + method + '(' + JSON.stringify(origArgments) + ')');
+      debug('Invoking %s.%s (%s)', module, method, JSON.stringify(origArgments));
       impl.apply(realApi[module], origArgments);
     }
   }

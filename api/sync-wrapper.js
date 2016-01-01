@@ -1,6 +1,7 @@
 /* eslint-disable semi */
 
 var mongo = require('mongodb');
+var debug = require('debug')('origami:sync-wrapper');
 
 function WrappedCollection (logCollection, base, info) {
   this.base = base;
@@ -116,9 +117,13 @@ function SyncWrapper (db, router, eventBus) {
 
 SyncWrapper.prototype.getLog = function (box, callback) {
   var self = this;
+  debug('getLog %s', box);
 
   self.router.routeCollection(box, '_syncLog', function (err, route) {
-    callback(err, self.db.db(route.database).collection(route.collection));
+    if (err) return callback(err);
+    if (!route) return callback('No route to _syncLog collection');
+
+    callback(null, self.db.db(route.database).collection(route.collection));
   });
 };
 
