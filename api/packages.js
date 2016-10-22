@@ -600,7 +600,7 @@ PackagesAPI.prototype.updateAsset = function (packageName, assetPath, bytes, cal
   }, function (err, doc) {
     if (err) return callback(err);
 
-    var grid = new GridFSBucket(self.db, 'package_assets');
+    var grid = new GridFSBucket(self.db, { bucketName: 'package_assets' });
 
     function done (err) {
       if (err) return callback(err);
@@ -638,7 +638,7 @@ PackagesAPI.prototype.removeAsset = function (packageName, assetPath, callback) 
   }, function (err, doc) {
     if (err) return callback(err);
 
-    var grid = new GridFSBucket(self.db, 'package_assets');
+    var grid = new GridFSBucket(self.db, { bucketName: 'package_assets' });
 
     function done (err) {
       if (err) return callback(err);
@@ -671,7 +671,7 @@ PackagesAPI.prototype.removeAsset = function (packageName, assetPath, callback) 
 PackagesAPI.prototype.getAsset = function (packageName, assetPath, callback) {
   var self = this;
 
-  var grid = new GridFSBucket(self.db, 'package_assets');
+  var grid = new GridFSBucket(self.db, { bucketName: 'package_assets' });
 
   var cursor = grid.find({
     'metadata.package': packageName,
@@ -797,7 +797,7 @@ PackagesAPI.prototype.setScripts = function (packageName, scripts, callback, sil
 PackagesAPI.prototype.getAssetMetadata = function (packageName, assetPath, callback) {
   var self = this;
 
-  var grid = new GridFSBucket(self.db, 'package_assets');
+  var grid = new GridFSBucket(self.db, { bucketName: 'package_assets' });
 
   var cursor = grid.find({
     'metadata.package': packageName,
@@ -978,6 +978,23 @@ PackagesAPI.prototype.updatePackage = function (packageName, zippedBuffer, impor
 
 PackagesAPI.prototype.setAssetMetadata = function (packageName, assetPath, newMetadata, callback, silent) {
   var self = this;
+  // var grid = new GridFSBucket(self.db, { bucketName: 'package_assets'});
+
+  // var cursor = grid.find({
+  //   'metadata.package': packageName,
+  //   'metadata.path': assetPath
+  // }, { limit: 1 });
+  
+  // cursor
+  // .next(function (err, doc) {
+  //   if (err) return callback(err);
+  //   if (!doc) return callback('asset not found');
+    
+  //   cursor.close(function () {
+    // })
+  // });
+  
+  // var self = this;
 
   self.getAssetMetadata(packageName, assetPath, function (err, metadata) {
     if (err) return callback(err);
