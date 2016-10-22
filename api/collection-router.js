@@ -1,9 +1,11 @@
 /* eslint-disable semi */
 
 var debug = require('debug')('origami:collection-router');
+var shortid = require('shortid');
 
-function CollectionRouter (db) {
+function CollectionRouter (db, collectionsDbName) {
   this.db = db;
+  this.collectionsDbName = collectionsDbName;
 };
 
 CollectionRouter.prototype.routeCollection = function (boxName, collectionName, callback) {
@@ -18,19 +20,23 @@ CollectionRouter.prototype.routeCollection = function (boxName, collectionName, 
   }, function (err, box) {
     if (err) return callback(err);
 
-    var collection;
-    if (box && box.collections) {
-      collection = box.collections[collectionName];
+    if (!box) return callback('box not found');
 
-      if (collection) {
-        return callback(null, {
-          database: collection.database,
-          collection: collection.collection
-        });
-      }
+    var collections = box.collections || {};
+
+    if (collections[collectionName]) return callback(null, collections[collectionName]);
+    else {
+      var route = collections[collectionName] = {
+        database: self.collectionsDbName,
+        collection: [boxName, collectionName, shortid.generate()].join('_')
+      };
+      
+      self.db.collection('boxes').update({name: boxName}, {$set: {collections: collections } }, function (err) {
+        if (err) return callback(err);
+        
+        callback(null, route);
+      });
     }
-
-    return callback('box/collection not found');
   });
 };
 

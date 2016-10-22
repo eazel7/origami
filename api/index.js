@@ -86,7 +86,9 @@ module.exports = function (config, callback) {
         callback(
           null,
           new CollectionRouter(
-            results.db));
+            results.db,
+            results.config.collectionsDbName
+          ));
       }
     ],
     'syncWrapper': [

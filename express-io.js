@@ -10,7 +10,7 @@ var session = require('express-session');
 var path = require('path');
 var config = require('./config');
 var async = require('async');
-var MongoStore = require('connect-mongo')(session);
+var MongoDBStore = require('connect-mongodb-session')(session);
 
 /**
  * Express configuration
@@ -100,7 +100,8 @@ module.exports = function (app, io, debugLog, callback) {
       return;
     }
 
-    var appSessionStore = new MongoStore(config.mongoSessions);
+    var appSessionStore = new MongoDBStore(config.mongoSessions);
+    
     app.use(session({
       resave: true,
       saveUninitialized: true,

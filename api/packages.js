@@ -1,6 +1,6 @@
 /* eslint-disable semi */
 
-var Grid = require('mongodb').Grid;
+var GridFSBucket = require('mongodb').GridFSBucket;
 var async = require('async');
 var path = require('path');
 var Archiver = require('archiver');
@@ -203,7 +203,7 @@ PackagesAPI.prototype.setDependencies = function (packageName, dependencies, cal
       dependencies: dependencies
     }
   }, {w: 1}, function (err) {
-    if (err) callback(err);
+    if (err) return callback(err);
 
     if (!silent) {
       self.updateBoxesManifest(function (err) {
@@ -600,7 +600,7 @@ PackagesAPI.prototype.updateAsset = function (packageName, assetPath, bytes, cal
   }, function (err, doc) {
     if (err) return callback(err);
 
-    var grid = new Grid(self.db, 'package_assets');
+    var grid = new GridFSBucket(self.db, 'package_assets');
 
     function done (err) {
       if (err) return callback(err);
@@ -614,16 +614,15 @@ PackagesAPI.prototype.updateAsset = function (packageName, assetPath, bytes, cal
         if (err) {
           return callback(err);
         }
+        
+        var upload = grid.openUploadStreamWithId(doc._id, assetPath, { metadata: doc.metadata });
 
-        grid.put(bytes, {metadata: doc.metadata}, done);
+        upload.end(bytes, done);
       });
     } else {
-      grid.put(bytes, {
-        metadata: {
-          'package': packageName,
-          'path': assetPath
-        }
-      }, done);
+      var upload = grid.openUploadStream(assetPath, { metadata: { 'package': packageName, 'path': assetPath } });
+      
+      upload.end(bytes, done);
     }
   });
 };
@@ -639,7 +638,7 @@ PackagesAPI.prototype.removeAsset = function (packageName, assetPath, callback) 
   }, function (err, doc) {
     if (err) return callback(err);
 
-    var grid = new Grid(self.db, 'package_assets');
+    var grid = new GridFSBucket(self.db, 'package_assets');
 
     function done (err) {
       if (err) return callback(err);
@@ -672,19 +671,32 @@ PackagesAPI.prototype.removeAsset = function (packageName, assetPath, callback) 
 PackagesAPI.prototype.getAsset = function (packageName, assetPath, callback) {
   var self = this;
 
-  var grid = new Grid(self.db, 'package_assets');
+  var grid = new GridFSBucket(self.db, 'package_assets');
 
-  self.db.collection('package_assets.files').findOne({
+  var cursor = grid.find({
     'metadata.package': packageName,
     'metadata.path': assetPath
-  }, function (err, doc) {
+  }, { limit: 1 });
+  
+  cursor
+  .next(function (err, doc) {
     if (err) return callback(err);
-
-    if (doc) {
-      grid.get(doc._id, callback);
-    } else {
-      callback('Asset does not exists');
-    }
+    
+    var buffer = new Buffer([]);
+    
+    var download = grid.openDownloadStream(doc._id);
+    
+    download.on('end', function () {
+      cursor.close(function () {
+        download.abort(function () {
+          callback(null, buffer);
+        });
+      });
+    });
+    
+    download.on('data', function (data) {
+      buffer = Buffer.concat([buffer, data]);
+    });
   });
 };
 
@@ -785,11 +797,20 @@ PackagesAPI.prototype.setScripts = function (packageName, scripts, callback, sil
 PackagesAPI.prototype.getAssetMetadata = function (packageName, assetPath, callback) {
   var self = this;
 
-  self.db.collection('package_assets.files').findOne({
+  var grid = new GridFSBucket(self.db, 'package_assets');
+
+  var cursor = grid.find({
     'metadata.package': packageName,
     'metadata.path': assetPath
-  }, function (err, doc) {
-    callback(err, doc ? doc.metadata : undefined);
+  }, { limit: 1 });
+  
+  cursor
+  .next(function (err, doc) {
+    if (err) return callback(err);
+    
+    cursor.close(function () {
+      callback(null, doc ? doc.metadata : undefined);
+    })
   });
 };
 
@@ -963,7 +984,7 @@ PackagesAPI.prototype.setAssetMetadata = function (packageName, assetPath, newMe
 
     var replacement = {
       $set: {
-        'metadata': metadata
+        'metadata': metadata || {}
       }
     };
 

@@ -2,6 +2,7 @@
   "expressSecret": "supercalifragilisticexpialidocious",
   "ip": "0.0.0.0",
   "port": 9000,
+  "collectionsDbName": "origami-collections",
   "singleDbMode": true,
   "auth": {
     "../auth-local": {
@@ -17,20 +18,10 @@
   },
   "protocol": "spdy",
   "prefix": "https://localhost:9000/",
-  "mongo": {
-    "database": "origami-refactor",
-    "host": "127.0.0.1",
-    "port": 27017,
-    "username": "",
-    "password": ""
-  },
+  "mongo": "mongodb://localhost:27017/origami",
   "mongoSessions": {
-    "db": "origami-refactor",
-    "host": "127.0.0.1",
-    "port": 27017,
-    "username": "",
-    "password": "",
-    "auto_reconnect": true
+    "url": "mongodb://localhost:27017/origami",
+    "collection": "sessions"
   },
   "keys": {
     "key": "keys/localhost.pem",

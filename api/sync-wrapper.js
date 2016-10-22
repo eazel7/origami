@@ -3,10 +3,11 @@
 var mongo = require('mongodb');
 var debug = require('debug')('origami:sync-wrapper');
 
-function WrappedCollection (logCollection, base, info) {
+function WrappedCollection (logCollection, base, info, eventBus) {
   this.base = base;
   this.logCollection = logCollection;
   this.info = info;
+  this.eventBus = eventBus;
 }
 
 WrappedCollection.prototype.find = function (predicate, callback) {
@@ -136,7 +137,7 @@ SyncWrapper.prototype.wrap = function (base, info, callback) {
 
     var logCollection = self.db.db(route.database).collection(route.collection);
 
-    var wrapped = new WrappedCollection(logCollection, base, info);
+    var wrapped = new WrappedCollection(logCollection, base, info, self.eventBus);
 
     return callback(null, wrapped);
   });

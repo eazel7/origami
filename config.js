@@ -14,6 +14,9 @@ config.ip = process.env.IP || config.ip;
 if (process.env.C9_HOSTNAME) {
   config.prefix = 'https://' + process.env.C9_HOSTNAME + '/';
   config.protocol = 'http';
+} else if (process.env.HOSTNAME) {
+  config.prefix = 'https://' + process.env.C9_HOSTNAME + '/';
+  config.protocol = 'http';
 }
 
 if (process.env.OPENSHIFT_APP_NAME) {
